@@ -2,7 +2,8 @@
 import actions
 
 COMMANDS = {
-    "call phone" : actions.CallPhone
+    "call phone" : actions.CallPhone,
+    "rolodex" : actions.Rolodex
 }
 
 # returns a two tuple
@@ -13,13 +14,9 @@ COMMANDS = {
 # errorMessage on fail or action on success
 def parse(userInput):
     for (command, action) in COMMANDS.iteritems():
-        words = command.split()
-        if all(word in userInput for word in words):
+        words = [word.lower() for word in command.split()]
+        lowerInput = userInput.lower()
+        if all(word in lowerInput for word in words):
             return (True, action)
 
     return (False, "Don't understand command.")
-
-    # fuzzy input from user.  Basic idea is
-    # if all key words appear then accept it.
-    return (False, "Can't do that!")
-

@@ -1,10 +1,21 @@
 
+class PhoneNumber:
+    def __init__(self, name, number):
+        self.name   = name
+        self.number = number
+
+    def __str__(self):
+        return "{name}: {number}".format(name=self.name, number=self.number)
+
+    def __eq__(self, other):
+        return other == self.number
+
 class GameState:
     BEGIN           = 0
     APARTMENT_READY = 1
 
     def __init__(self):
-        self.phoneNumbers = set()
+        self.phoneNumbers = [PhoneNumber("Grocery", "288-7955")]
         self.currFSMState = GameState.BEGIN
 
     def emit(self, s):
