@@ -8,11 +8,10 @@ def run():
         userInput = state.prompt()
         (ok, action) = inputparser.parse(userInput)
         if ok:
-            (ok, errMsg) = action(state)
-            if not ok:
-                print errMsg
+            action(state)
         else:
             errMsg = action
             print errMsg
+            print
 
 
