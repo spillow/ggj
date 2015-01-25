@@ -9,15 +9,11 @@ class GovChecks:
         self.lastTime = lastTime
 
     def CheckChecks(self, state, queue, currTime):
-        def updateBalance():
-            state.currBalance += 100
-
         if currTime >= self.lastTime + timedelta(weeks=2):
             order = delivery.Order(
                 "check",
                 currTime + timedelta(weeks=2),
-                "cabinet",
-                updateBalance)
+                "cabinet")
             queue.AddOrder(order)
             self.lastTime = currTime
 

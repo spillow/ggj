@@ -153,7 +153,7 @@ class GameState:
         toolbox = RoomObject("toolbox", "in", RoomObject.CLOSED, [])
         fridge  = RoomObject("fridge", "in", RoomObject.CLOSED, [])
         table   = RoomObject("table", "on")
-        cabinet = RoomObject("cabinet", "in")
+        cabinet = RoomObject("cabinet", "in", RoomObject.OPEN, [])
 
         self.mainRoomObjects = [toolbox, fridge, table, cabinet]
         self.carryingObjects = []
