@@ -25,3 +25,7 @@ def Rolodex(state):
         print phonenumber
     print
 
+def LookAtWatch(state):
+    emit("The current time is {time}".format(time=state.GetDateAsString()))
+
+

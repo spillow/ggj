@@ -1,3 +1,4 @@
+import datetime
 
 class PhoneNumber:
     def __init__(self, name, number):
@@ -17,13 +18,25 @@ class GameState:
     def __init__(self):
         self.phoneNumbers = [PhoneNumber("Grocery", "288-7955")]
         self.currFSMState = GameState.BEGIN
+        # March 15, 1982 at 3:14 AM
+        self.currTime = datetime.datetime(
+            1982, # year
+            3,    # month
+            15,   # day
+            3,    # hour
+            14)   # minute
+
+    def GetDateAsString(self):
+        return self.currTime.strftime("%A %B %d, %Y at %I:%M %p")
+
 
     def emit(self, s):
         print s
         print
 
     def STATE_BEGIN_Prompt(self):
-        self.emit("You wake up in your apartment.")
+        self.emit("You wake up in your apartment.  It is {date}".
+            format(date=self.GetDateAsString()))
 
     # state machine
 

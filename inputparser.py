@@ -3,7 +3,8 @@ import actions
 
 COMMANDS = {
     "call phone" : actions.CallPhone,
-    "rolodex" : actions.Rolodex
+    "rolodex" : actions.Rolodex,
+    "look at watch" : actions.LookAtWatch
 }
 
 # returns a two tuple
