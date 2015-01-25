@@ -9,8 +9,12 @@ COMMANDS = {
     "balance" : actions.CheckBalance,
     "feel" : actions.CheckFeel,
     "examine toolbox" : actions.ExamineToolbox,
+    "look in toolbox" : actions.ExamineToolbox,
     "open toolbox" : actions.OpenToolbox,
     "close toolbox" : actions.CloseToolbox,
+    "pick up toolbox" : actions.PickUpToolbox,
+    "get hammer" : actions.GetHammer,
+#    "inventory" : actions.Inventory,
 }
 
 # returns a two tuple

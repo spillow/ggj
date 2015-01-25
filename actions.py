@@ -67,22 +67,19 @@ def CheckFeel(state):
     else:
         emit("I'm about to hit the sheets!")
 
-def GetRoomObjects(state, name):
-    return [o for o in state.roomObjects if o.name==name]
-
 
 def ExamineToolbox(state):
-    objs = GetRoomObjects(state, "toolbox")
+    objs = GameState.GetRoomObjects(state, "toolbox")
 
     if not objs:
         emit("\nI see no toolbox here")
 
-    for o in state.roomObjects:
+    for o in state.mainRoomObjects:
         if o.name == 'toolbox':
             emit("\nYou see " + str(o))
 
 def OpenToolbox(state):
-    objs = GetRoomObjects(state, "toolbox")
+    objs = GameState.GetRoomObjects(state, "toolbox")
 
     if not objs:
         emit("\nI see no toolbox here")
@@ -92,12 +89,13 @@ def OpenToolbox(state):
 
     if toolbox.open_or_closed == RoomObject.OPEN:
         emit("\nThe toolbox is already open.")
+        return
 
     objs[0].open_or_closed = RoomObject.OPEN
     emit("\nThe toolbox is now open.")
 
 def CloseToolbox(state):
-    objs = GetRoomObjects(state, "toolbox")
+    objs = GameState.GetRoomObjects(state, "toolbox")
 
     if not objs:
         emit("\nI see no toolbox here")
@@ -111,3 +109,42 @@ def CloseToolbox(state):
 
     objs[0].open_or_closed = RoomObject.CLOSED
     emit("\nThe toolbox is now closed.")
+
+def PickUpToolbox(state):
+    emit("\nThe toolbox is to heavy to carry")
+    return
+
+def GetHammer(state):
+    if state.currFSMState == GameState.APARTMENT_READY:
+        if GameState.GetCarryingObjects(state, "hammer"):
+            emit("\nYou already have the hammer")
+            return
+        else:
+            objs = GameState.GetRoomObjects(state, "toolbox")
+            toolbox = objs[0]
+
+            if toolbox.open_or_closed == RoomObject.CLOSED:
+                emit("\nI see no hammer here")
+                return
+
+            emit("\nYou grab the hammer from the toolbox")
+
+            hammer = [obj for obj in toolbox.contents if obj.name=="hammer"][0]
+            new_contents = [obj for obj in toolbox.contents if obj.name!="hammer"]
+            toolbox.contents = new_contents
+    else:
+        if GameState.GetCarryingObjects(state, "hammer"):
+            emit("\nYou already have the hammer")
+            return
+        else:
+            emit("\nI see no hammer here")
+            return
+
+#def Inventory(state):
+#    objs = GameState.GetCarryingObjects(state)
+#    if not objs:
+#        emit("\nYou have no objects in your inventory")
+#        return
+#
+#    for obj in objs:
+

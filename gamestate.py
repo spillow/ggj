@@ -39,11 +39,11 @@ class RoomObject:
             if self.contents:
                 descr = "an open {name}, containing:\n".format(name=self.name)
                 for o in self.contents:
-                    descr += "    a {name}".format(name=o.name)
+                    descr += "    a {name}\n".format(name=o.name)
             else:
                 descr = "an open {name} with nothing in it".format(name=self.name)
 
-            return descr
+            return descr.strip()
         elif self.open_or_closed == RoomObject.CLOSED:
             return "a {name}, it is closed".format(name=self.name,
                     open_or_closed=self.open_or_closed)
@@ -133,9 +133,11 @@ class GameState:
             14)   # minute
 
         nails = RoomObject("box of nails")
-        toolbox = RoomObject("toolbox", "in", RoomObject.CLOSED, [nails])
+        hammer = RoomObject("hammer")
+        toolbox = RoomObject("toolbox", "in", RoomObject.CLOSED, [nails, hammer])
 
-        self.roomObjects = [toolbox]
+        self.mainRoomObjects = [toolbox]
+        self.carryingObjects = []
         self.currBalance = 100 # dollars
         self.feel = GameState.INITIAL_FEEL
         self.ownedFood = []
@@ -148,11 +150,23 @@ class GameState:
         print s
         print
 
+    def GetRoomObjects(self, name=None):
+        if name:
+            return [o for o in self.mainRoomObjects if o.name==name]
+        else:
+            return self.mainRoomObjects
+
+    def GetCarryingObjects(self, name=None):
+        if name:
+            return [o for o in self.carryingObjects if o.name==name]
+        else:
+            return self.carryingObjects
+
     def STATE_BEGIN_Prompt(self):
         self.emit("You wake up in your apartment.  It is {date}".
             format(date=self.GetDateAsString()))
 
-        if self.roomObjects:
+        if self.mainRoomObjects:
             self.emit("In the corner you see a toolbox.")
 
     # state machine
