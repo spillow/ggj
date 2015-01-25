@@ -4,7 +4,7 @@ import actions
 COMMANDS = {
     "call phone" : actions.CallPhone,
     "rolodex" : actions.Rolodex,
-    "look at watch" : actions.LookAtWatch
+    "look at watch" : actions.LookAtWatch,
 }
 
 # returns a two tuple
