@@ -273,5 +273,7 @@ def NailSelfIn(state):
     emit("\nYou have successfully nailed yourself into a rather small closet.")
 
     state.currFSMState = GameState.CLOSET_NAILED
-    return
 
+    numHours = 2
+    state.currTime += timedelta(hours=numHours)
+    state.feel -= 10 * numHours
