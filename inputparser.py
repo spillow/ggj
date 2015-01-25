@@ -5,7 +5,9 @@ COMMANDS = {
     "call phone" : actions.CallPhone,
     "rolodex" : actions.Rolodex,
     "look at watch" : actions.LookAtWatch,
-    "ponder" : actions.Ponder
+    "ponder" : actions.Ponder,
+    "balance" : actions.CheckBalance,
+    "feel" : actions.CheckFeel,
 }
 
 # returns a two tuple

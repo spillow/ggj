@@ -17,10 +17,12 @@ def emit(s):
 
 def CallPhone(state):
     number = prompt("What number?: ")
-    if number in state.phoneNumbers:
-        emit("Okay, you've called the number.")
-    else:
-        emit("Who's number is that?")
+    for phoneNumber in state.phoneNumbers:
+        if number == phoneNumber.number:
+            phoneNumber.Interact()
+            return
+
+    emit("Who's number is that?")
 
 def Rolodex(state):
     for phonenumber in state.phoneNumbers:
@@ -44,4 +46,16 @@ def Ponder(state):
             emit("What? Give me a number.")
 
     state.currTime += timedelta(hours=numHours)
+
+def CheckBalance(state):
+    emit("Current Balance: ${0}".format(state.currBalance))
+
+def CheckFeel(state):
+    feel = state.feel
+    if feel >= 40:
+        emit("Feeling good")
+    elif feel >= 20:
+        emit("Feeling okay")
+    else:
+        emit("I'm about to hit the sheets!")
 

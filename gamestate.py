@@ -1,9 +1,10 @@
 import datetime
 
 class PhoneNumber:
-    def __init__(self, name, number):
-        self.name   = name
-        self.number = number
+    def __init__(self, name, number, gamestate):
+        self.name      = name
+        self.number    = number
+        self.gamestate = gamestate
 
     def __str__(self):
         return "{name}: {number}".format(name=self.name, number=self.number)
@@ -11,12 +12,37 @@ class PhoneNumber:
     def __eq__(self, other):
         return other == self.number
 
+class GroceryNumber(PhoneNumber):
+    def Interact(self):
+        foods = {
+            "Spicy food" : 10,
+            "Caffeine"   : 5,
+            "Bananas"    : 2
+        }
+        emit = self.gamestate.emit
+        emit("Hello this is the grocery store.  What would you like to order?")
+        maxlen = max(len(x) for (x,_) in foods.iteritems())
+        for (food, cost) in foods.iteritems():
+            print "{0}${1}.00".format(food+'.'*(maxlen-len(food))+'.........', cost)
+        while True:
+            choice = raw_input("> ")
+            if not choice in (x for (x,_) in foods.iteritems()):
+                emit("We don't have that.")
+                continue
+
+            if self.gamestate.currBalance < foods[choice]:
+                emit("Insufficient funds.")
+                break
+            else:
+                emit("Thanks!")
+                break
+
 class GameState:
     BEGIN           = 0
     APARTMENT_READY = 1
 
     def __init__(self):
-        self.phoneNumbers = [PhoneNumber("Grocery", "288-7955")]
+        self.phoneNumbers = [GroceryNumber("Grocery", "288-7955", self)]
         self.currFSMState = GameState.BEGIN
         # March 15, 1982 at 3:14 AM
         self.currTime = datetime.datetime(
@@ -25,7 +51,9 @@ class GameState:
             15,   # day
             3,    # hour
             14)   # minute
-        self.startingBalance = 100 # dollars
+        self.currBalance = 100 # dollars
+        self.feel = 50
+        self.ownedFood = []
 
     def GetDateAsString(self):
         return self.currTime.strftime("%A %B %d, %Y at %I:%M %p")
