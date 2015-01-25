@@ -25,10 +25,10 @@ class GameState:
             15,   # day
             3,    # hour
             14)   # minute
+        self.startingBalance = 100 # dollars
 
     def GetDateAsString(self):
         return self.currTime.strftime("%A %B %d, %Y at %I:%M %p")
-
 
     def emit(self, s):
         print s
