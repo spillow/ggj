@@ -28,15 +28,15 @@ class RoomObject:
     def __str__(self):
         if self.open_or_closed == RoomObject.OPEN:
             if self.contents:
-                descr = "An open {name}, containing:\n".format(name=self.name)
+                descr = "an open {name}, containing:\n".format(name=self.name)
                 for o in self.contents:
                     descr += "    a {name}".format(name=o.name)
             else:
-                descr = "An open {name} with nothing in it".format(name=self.name)
+                descr = "an open {name} with nothing in it".format(name=self.name)
 
             return descr
         elif self.open_or_closed == RoomObject.CLOSED:
-            return "A {name}, it is closed".format(name=self.name,
+            return "a {name}, it is closed".format(name=self.name,
                     open_or_closed=self.open_or_closed)
 
 class GroceryNumber(PhoneNumber):
@@ -80,7 +80,7 @@ class GameState:
             14)   # minute
         
         nails = RoomObject("box of nails")
-        toolbox = RoomObject("toolbox", "in", RoomObject.OPEN, [nails])
+        toolbox = RoomObject("toolbox", "in", RoomObject.CLOSED, [nails])
 
         self.roomObjects = [toolbox]
         self.currBalance = 100 # dollars
@@ -98,6 +98,9 @@ class GameState:
         self.emit("You wake up in your apartment.  It is {date}".
             format(date=self.GetDateAsString()))
 
+        if self.roomObjects:
+            self.emit("In the corner you see a toolbox.")
+
     # state machine
 
     def prompt(self):
@@ -109,12 +112,6 @@ class GameState:
             pass
         else:
             assert "Unknown game state!"
-
-        if self.currFSMState == GameState.APARTMENT_READY:
-            if self.roomObjects:
-                print "In the corner you see a toolbox."
-                print
-
 
         userInput = raw_input("What do we do next?: ")
         return userInput
