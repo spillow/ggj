@@ -44,7 +44,7 @@ def Ponder(state):
         length = prompt("How many hours?: ")
         if length.isdigit():
             numHours = int(length)
-            if numHours > 100: # TODO: make this shorter.
+            if numHours > 1000: # TODO: make this shorter.
                 emit("\nThat's too long to sit and do nothing.")
                 continue
             else:

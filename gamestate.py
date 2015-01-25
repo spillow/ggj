@@ -79,10 +79,10 @@ class StoreNumber(PhoneNumber):
 class GroceryNumber(StoreNumber):
     def GetStoreItems(self):
         foods = {
-            "Spicy food" : (10, "fridge"),
-            "Caffeine"   : (5, "fridge"),
-            "Bananas"    : (2, "fridge"),
-            "Ice Cubes"  : (6, "fridge"),
+            "spicy food" : (10, "fridge"),
+            "caffeine"   : (5, "fridge"),
+            "bananas"    : (2, "fridge"),
+            "ice Cubes"  : (6, "fridge"),
         }
         return foods
 
@@ -106,9 +106,9 @@ class GroceryNumber(StoreNumber):
 class HardwareNumber(StoreNumber):
     def GetStoreItems(self):
         hardware = {
-            "Hammer"        : (20, "toolbox"),
+            "hammer"        : (20, "toolbox"),
             "box of nails"  : (5, "toolbox"),
-            "Plywood Sheet" : (30, "toolbox"),
+            "plywood sheet" : (30, "table"),
         }
         return hardware
 
@@ -150,11 +150,12 @@ class GameState:
             3,    # hour
             14)   # minute
 
-        #nails = RoomObject("box of nails")
-        hammer = RoomObject("hammer")
-        toolbox = RoomObject("toolbox", "in", RoomObject.CLOSED, [hammer])
+        toolbox = RoomObject("toolbox", "in", RoomObject.CLOSED, [])
+        fridge  = RoomObject("fridge", "in", RoomObject.CLOSED, [])
+        table   = RoomObject("table", "on")
+        cabinet = RoomObject("cabinet", "in")
 
-        self.mainRoomObjects = [toolbox]
+        self.mainRoomObjects = [toolbox, fridge, table, cabinet]
         self.carryingObjects = []
         self.currBalance = 100 # dollars
         self.feel = GameState.INITIAL_FEEL
@@ -198,8 +199,6 @@ class GameState:
 
         if self.mainRoomObjects:
             self.emit("In the corner you see a toolbox.")
-
-    # state machine
 
     def prompt(self):
         # Check the 'feel' of our hero to see whether he needs to hit
