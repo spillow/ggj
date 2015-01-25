@@ -14,7 +14,9 @@ COMMANDS = {
     "close toolbox" : actions.CloseToolbox,
     "pick up toolbox" : actions.PickUpToolbox,
     "get hammer" : actions.GetHammer,
-#    "inventory" : actions.Inventory,
+    "get nails" : actions.GetNails,
+    "get box of nails" : actions.GetNails,
+    "inventory" : actions.Inventory,
 }
 
 # returns a two tuple

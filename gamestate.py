@@ -41,6 +41,8 @@ class RoomObject:
         elif self.open_or_closed == RoomObject.CLOSED:
             return "a {name}, it is closed".format(name=self.name,
                     open_or_closed=self.open_or_closed)
+        else:
+            return "a {name}".format(name=self.name)
 
 class StoreNumber(PhoneNumber):
     def Interact(self):
@@ -155,6 +157,9 @@ class GameState:
             return [o for o in self.carryingObjects if o.name==name]
         else:
             return self.carryingObjects
+
+    def AddCarryingObjects(self, obj):
+        self.carryingObjects.append(obj)
 
     def STATE_BEGIN_Prompt(self):
         self.emit("You wake up in your apartment.  It is {date}".
