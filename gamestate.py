@@ -111,6 +111,7 @@ class HardwareNumber(StoreNumber):
 class GameState:
     BEGIN           = 0
     APARTMENT_READY = 1
+    CLOSET_READY    = 2
 
     INITIAL_FEEL = 50
 
@@ -147,6 +148,9 @@ class GameState:
         print
 
     def GetRoomObjects(self, name=None):
+        if self.currFSMState != GameState.APARTMENT_READY:
+            return []
+
         if name:
             return [o for o in self.mainRoomObjects if o.name==name]
         else:

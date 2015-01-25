@@ -67,6 +67,7 @@ def ExamineToolbox(state):
 
     if not objs:
         emit("\nI see no toolbox here")
+        return
 
     for o in state.mainRoomObjects:
         if o.name == 'toolbox':
@@ -153,3 +154,26 @@ def Inventory(state):
         print "    ", str(obj)
 
     print
+
+def EnterCloset(state):
+    if state.currFSMState == GameState.CLOSET_READY:
+        emit("\nYou are in a very nice closet already")
+        return
+    if state.currFSMState != GameState.APARTMENT_READY:
+        emit("\nThat would be very difficult from your current location")
+        return
+
+    state.currFSMState = GameState.CLOSET_READY
+
+    emit("\nYou are now in the closet")
+    return
+
+def LeaveCloset(state):
+    if state.currFSMState != GameState.CLOSET_READY:
+        emit("\nThat would be very difficult from your current location")
+        return
+
+    if state.currFSMState == GameState.CLOSET_READY:
+        emit("\nYou have left the closet and are now back in your apartment's main room");
+        state.currFSMState = GameState.APARTMENT_READY
+        return

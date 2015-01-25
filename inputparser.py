@@ -17,6 +17,14 @@ COMMANDS = {
     "get nails" : actions.GetNails,
     "get box of nails" : actions.GetNails,
     "inventory" : actions.Inventory,
+    "go in closet" : actions.EnterCloset,
+    "enter closet" : actions.EnterCloset,
+    "enter the closet" : actions.EnterCloset,
+    "leave closet" : actions.LeaveCloset,
+    # examine room
+    # ice bath
+    # examine checks
+    # mail checks
 }
 
 # returns a two tuple
