@@ -112,6 +112,7 @@ class GameState:
     BEGIN           = 0
     APARTMENT_READY = 1
     CLOSET_READY    = 2
+    CLOSET_NAILED   = 3
 
     INITIAL_FEEL = 50
 
@@ -133,7 +134,10 @@ class GameState:
         hammer = RoomObject("hammer")
         toolbox = RoomObject("toolbox", "in", RoomObject.CLOSED, [nails, hammer])
 
-        self.mainRoomObjects = [toolbox]
+        plywood = RoomObject("plywood sheet")
+        table = RoomObject("table", "on", contents=[plywood])
+
+        self.mainRoomObjects = [toolbox, table]
         self.carryingObjects = []
         self.currBalance = 100 # dollars
         self.feel = GameState.INITIAL_FEEL

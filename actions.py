@@ -109,38 +109,70 @@ def PickUpToolbox(state):
     emit("\nThe toolbox is to heavy to carry")
     return
 
-def _GetToolboxItem(state, item):
+#def _GetToolboxItem(state, item):
+#    if state.currFSMState == GameState.APARTMENT_READY:
+#        if GameState.GetCarryingObjects(state, item):
+#            emit("\nYou already have the %s" % item)
+#            return
+#        else:
+#            objs = GameState.GetRoomObjects(state, "toolbox")
+#            toolbox = objs[0]
+#
+#            if toolbox.open_or_closed == RoomObject.CLOSED:
+#                emit("\nI see no %s here" % item)
+#                return
+#
+#            emit("\nYou grab the %s from the toolbox" % item)
+#
+#            the_item = [obj for obj in toolbox.contents if obj.name==item][0]
+#            new_contents = [obj for obj in toolbox.contents if obj.name!=item]
+#            toolbox.contents = new_contents
+#            GameState.AddCarryingObjects(state, the_item)
+#    else:
+#        if GameState.GetCarryingObjects(state, item):
+#            emit("\nYou already have the %s" % item)
+#            return
+#        else:
+#            emit("\nI see no %s here" % item)
+#            return
+
+def _GetRoomItem(state, item_name):
     if state.currFSMState == GameState.APARTMENT_READY:
-        if GameState.GetCarryingObjects(state, item):
-            emit("\nYou already have the %s" % item)
+        if GameState.GetCarryingObjects(state, item_name):
+            emit("\nYou already have the %s" % item_name)
             return
         else:
-            objs = GameState.GetRoomObjects(state, "toolbox")
-            toolbox = objs[0]
+            containers = GameState.GetRoomObjects(state)
 
-            if toolbox.open_or_closed == RoomObject.CLOSED:
-                emit("\nI see no %s here" % item)
-                return
+            for container in containers:
+                if container.name == 'toolbox':
+                    if container.open_or_closed == RoomObject.CLOSED:
+                        continue
 
-            emit("\nYou grab the %s from the toolbox" % item)
+                items = [obj for obj in container.contents if obj.name==item_name]
 
-            the_item = [obj for obj in toolbox.contents if obj.name==item][0]
-            new_contents = [obj for obj in toolbox.contents if obj.name!=item]
-            toolbox.contents = new_contents
-            GameState.AddCarryingObjects(state, the_item)
+                if not items:
+                    continue
+                else:
+                    emit("\nYou grab the %s from the %s" % (item_name, container.name))
+                    new_contents = [obj for obj in container.contents
+                            if obj.name!=item_name]
+                    container.contents = new_contents
+                    GameState.AddCarryingObjects(state, items[0])
+                    return
     else:
-        if GameState.GetCarryingObjects(state, item):
-            emit("\nYou already have the %s" % item)
+        if GameState.GetCarryingObjects(state, item_name):
+            emit("\nYou already have the %s" % item_name)
             return
-        else:
-            emit("\nI see no %s here" % item)
-            return
+
+    emit("\nI see no %s here" % item_name)
+    return
 
 def GetHammer(state):
-    _GetToolboxItem(state, "hammer")
+    _GetRoomItem(state, "hammer")
 
 def GetNails(state):
-    _GetToolboxItem(state, "box of nails")
+    _GetRoomItem(state, "box of nails")
 
 def Inventory(state):
     objs = GameState.GetCarryingObjects(state)
@@ -154,6 +186,19 @@ def Inventory(state):
         print "    ", str(obj)
 
     print
+
+def _GetInventoryItem(state, item_name):
+    objs = GameState.GetCarryingObjects(state)
+
+    if not objs:
+        return None
+
+    obj = [o for o in objs if o.name==item_name]
+
+    if not obj:
+        return None
+
+    return obj[0]
 
 def EnterCloset(state):
     if state.currFSMState == GameState.CLOSET_READY:
@@ -169,6 +214,10 @@ def EnterCloset(state):
     return
 
 def LeaveCloset(state):
+    if state.currFSMState == GameState.CLOSET_NAILED:
+        emit("\nPerhaps you should ponder exactly how you'll do that?")
+        return
+
     if state.currFSMState != GameState.CLOSET_READY:
         emit("\nThat would be very difficult from your current location")
         return
@@ -177,3 +226,46 @@ def LeaveCloset(state):
         emit("\nYou have left the closet and are now back in your apartment's main room");
         state.currFSMState = GameState.APARTMENT_READY
         return
+
+def GetWood(state):
+    _GetRoomItem(state, 'plywood sheet')
+
+def NailSelfIn(state):
+    if state.currFSMState == GameState.CLOSET_NAILED:
+        emit("\nWasn't once enough?")
+        return
+
+    if state.currFSMState != GameState.CLOSET_READY:
+        emit("\nThat would be very difficult from your current location")
+        return
+
+    objs = GameState.GetCarryingObjects(state)
+    if not objs:
+        emit("\nYou have no objects with which to do that")
+        return
+
+    hammer = _GetInventoryItem(state, 'hammer')
+    nails = _GetInventoryItem(state, 'box of nails')
+    plywood = _GetInventoryItem(state, 'plywood sheet')
+
+    if not hammer or not nails or not plywood:
+        if not plywood:
+            s = 'Perhaps some wood?'
+        if not hammer:
+            s = 'Perhaps a hammer?'
+        if not nails:
+            s = 'Perhaps some nails?'
+
+        emit("\nYou are missing something.  %s" % s)
+        return
+
+    new_objs = [o for o in objs if o.name not in
+            ['hammer', 'box of nails', 'plywood sheet']]
+
+    state.carryingObjects = new_objs
+
+    emit("\nYou have successfully nailed yourself into a rather small closet.")
+
+    state.currFSMState = GameState.CLOSET_NAILED
+    return
+

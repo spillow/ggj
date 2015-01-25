@@ -21,6 +21,12 @@ COMMANDS = {
     "enter closet" : actions.EnterCloset,
     "enter the closet" : actions.EnterCloset,
     "leave closet" : actions.LeaveCloset,
+    "exit closet" : actions.LeaveCloset,
+    "get wood" : actions.GetWood,
+    "nail wood to exit" : actions.NailSelfIn,
+    "nail wood to door" : actions.NailSelfIn,
+    "nail self in" : actions.NailSelfIn,
+    "nail self in closet" : actions.NailSelfIn,
     # examine room
     # ice bath
     # examine checks
