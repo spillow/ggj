@@ -6,8 +6,9 @@ import delivery
 def run():
     state = gamestate.GameState()
     deliveryQueue = delivery.DeliveryQueue(state)
+    state.SetDeliveryQueue(deliveryQueue)
     while True:
-        deliveryQueue.examine()
+        deliveryQueue.Examine()
         userInput = state.prompt()
         (ok, action) = inputparser.parse(userInput)
         if ok:

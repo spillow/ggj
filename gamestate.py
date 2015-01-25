@@ -2,6 +2,7 @@ import datetime
 from datetime import timedelta
 import alterego
 import time
+import delivery
 
 class PhoneNumber:
     def __init__(self, name, number, gamestate):
@@ -54,7 +55,7 @@ class StoreNumber(PhoneNumber):
         items = self.GetStoreItems()
         self.Greeting()
         maxlen = max(len(x) for (x,_) in items.iteritems())
-        for (item, cost) in items.iteritems():
+        for (item, (cost,_)) in items.iteritems():
             print "{0}${1}.00".format(item+'.'*(maxlen-len(item))+'.........', cost)
         while True:
             choice = raw_input("> ")
@@ -65,21 +66,21 @@ class StoreNumber(PhoneNumber):
             self.TimeWaste(choice)
             self.FeelChange()
 
-            if self.gamestate.currBalance < items[choice]:
+            if self.gamestate.currBalance < items[choice][0]:
                 emit("Insufficient funds.")
                 break
             else:
-                emit("Thanks!")
-                self.gamestate.currBalance -= items[choice]
+                self.gamestate.currBalance -= items[choice][0]
+                self.ScheduleOrder(choice, items[choice][1])
                 break
 
 class GroceryNumber(StoreNumber):
     def GetStoreItems(self):
         foods = {
-            "Spicy food" : 10,
-            "Caffeine"   : 5,
-            "Bananas"    : 2,
-            "Ice Cubes"  : 6,
+            "Spicy food" : (10, "fridge"),
+            "Caffeine"   : (5, "fridge"),
+            "Bananas"    : (2, "fridge"),
+            "Ice Cubes"  : (6, "fridge"),
         }
         return foods
 
@@ -93,12 +94,19 @@ class GroceryNumber(StoreNumber):
     def FeelChange(self):
         self.gamestate.feel -= 2
 
+    def ScheduleOrder(self, choice, whereToPut):
+        emit = self.gamestate.emit
+        emit("Thanks! We'll get that out to you tomorrow.")
+        tomorrow = self.gamestate.currTime + timedelta(days=1)
+        self.gamestate.deliveryQueue.AddOrder(
+            delivery.Order(choice, tomorrow, whereToPut))
+
 class HardwareNumber(StoreNumber):
     def GetStoreItems(self):
         hardware = {
-            "Hammer"        : 20,
-            "Nails"         : 5,
-            "Plywood Sheet" : 30,
+            "Hammer"        : (20, "toolbox"),
+            "box of nails"  : (5, "toolbox"),
+            "Plywood Sheet" : (30, "toolbox"),
         }
         return hardware
 
@@ -111,6 +119,13 @@ class HardwareNumber(StoreNumber):
 
     def FeelChange(self):
         self.gamestate.feel -= 10
+
+    def ScheduleOrder(self, choice, whereToPut):
+        emit = self.gamestate.emit
+        emit("Thanks! We'll get that out to you in a couple days.")
+        twoDays = self.gamestate.currTime + timedelta(days=2)
+        self.gamestate.deliveryQueue.AddOrder(
+            delivery.Order(choice, twoDays, whereToPut))
 
 class GameState:
     BEGIN           = 0
@@ -132,9 +147,9 @@ class GameState:
             3,    # hour
             14)   # minute
 
-        nails = RoomObject("box of nails")
+        #nails = RoomObject("box of nails")
         hammer = RoomObject("hammer")
-        toolbox = RoomObject("toolbox", "in", RoomObject.CLOSED, [nails, hammer])
+        toolbox = RoomObject("toolbox", "in", RoomObject.CLOSED, [hammer])
 
         self.mainRoomObjects = [toolbox]
         self.carryingObjects = []
@@ -143,12 +158,18 @@ class GameState:
         self.ownedFood = []
         self.alterEgo = alterego.AlterEgo()
 
+    def SetDeliveryQueue(self, queue):
+        self.deliveryQueue = queue
+
     def GetDateAsString(self):
         return self.currTime.strftime("%A %B %d, %Y at %I:%M %p")
 
     def emit(self, s):
         print s
         print
+
+    def MakeRoomObject(self, s):
+        return RoomObject(s)
 
     def GetRoomObjects(self, name=None):
         if name:
