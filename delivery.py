@@ -20,14 +20,16 @@ class DeliveryQueue:
         self.pendingOrders = remaining
 
         # place the objects in their appropriate places.
-        print
+        if delivered:
+          print
         for order in delivered:
             print "Delivery: {0}!".format(order.thing)
             container = self.gamestate.GetRoomObjects(order.whereToPut)[0]
             container.contents.append(self.gamestate.MakeRoomObject(order.thing))
             if order.action is not None:
                 order.action()
-        print
+        if delivered:
+          print
 
     def AddOrder(self, order):
         self.pendingOrders.append(order)

@@ -217,7 +217,6 @@ def EnterCloset(state):
     state.currFSMState = GameState.CLOSET_READY
 
     emit("\nYou are now in the closet")
-    return
 
 def LeaveCloset(state):
     if state.currFSMState == GameState.CLOSET_NAILED:
