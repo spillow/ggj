@@ -17,18 +17,24 @@ def emit(s):
     print
 
 def CallPhone(state):
-    number = prompt("What number?: ")
-    for phoneNumber in state.phoneNumbers:
-        if number == phoneNumber.number:
-            phoneNumber.Interact()
-            return
+    if state.currFSMState == GameState.APARTMENT_READY:
+        number = prompt("What number?: ")
+        for phoneNumber in state.phoneNumbers:
+            if number == phoneNumber.number:
+                phoneNumber.Interact()
+                return
 
-    emit("Who's number is that?")
+        emit("Who's number is that?")
+    else:
+        emit("Not in a position to make a phone call.")
 
 def Rolodex(state):
-    for phonenumber in state.phoneNumbers:
-        print phonenumber
-    print
+    if state.currFSMState == GameState.APARTMENT_READY:
+        for phonenumber in state.phoneNumbers:
+            print phonenumber
+        print
+    else:
+        emit("Can't check the rolodex.")
 
 def LookAtWatch(state):
     emit("\nThe current time is {time}".format(time=state.GetDateAsString()))
@@ -38,7 +44,7 @@ def Ponder(state):
         length = prompt("How many hours?: ")
         if length.isdigit():
             numHours = int(length)
-            if numHours > 3:
+            if numHours > 1000: # TODO: make this shorter.
                 emit("\nThat's too long to sit and do nothing.")
                 continue
             else:
