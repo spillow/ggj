@@ -42,34 +42,69 @@ class RoomObject:
             return "a {name}, it is closed".format(name=self.name,
                     open_or_closed=self.open_or_closed)
 
-class GroceryNumber(PhoneNumber):
+class StoreNumber(PhoneNumber):
     def Interact(self):
-        foods = {
-            "Spicy food" : 10,
-            "Caffeine"   : 5,
-            "Bananas"    : 2
-        }
         emit = self.gamestate.emit
-        emit("Hello this is the grocery store.  What would you like to order?")
-        maxlen = max(len(x) for (x,_) in foods.iteritems())
-        for (food, cost) in foods.iteritems():
-            print "{0}${1}.00".format(food+'.'*(maxlen-len(food))+'.........', cost)
+        items = self.GetStoreItems()
+        self.Greeting()
+        maxlen = max(len(x) for (x,_) in items.iteritems())
+        for (item, cost) in items.iteritems():
+            print "{0}${1}.00".format(item+'.'*(maxlen-len(item))+'.........', cost)
         while True:
             choice = raw_input("> ")
-            if not choice in (x for (x,_) in foods.iteritems()):
+            if not choice in (x for (x,_) in items.iteritems()):
                 emit("We don't have that.")
                 continue
 
-            self.gamestate.currTime += timedelta(minutes=30)
-            self.feel -= 2
+            self.TimeWaste(choice)
+            self.FeelChange()
 
-            if self.gamestate.currBalance < foods[choice]:
+            if self.gamestate.currBalance < items[choice]:
                 emit("Insufficient funds.")
                 break
             else:
                 emit("Thanks!")
-                self.gamestate.currBalance -= foods[choice]
+                self.gamestate.currBalance -= items[choice]
                 break
+
+class GroceryNumber(StoreNumber):
+    def GetStoreItems(self):
+        foods = {
+            "Spicy food" : 10,
+            "Caffeine"   : 5,
+            "Bananas"    : 2,
+            "Ice Cubes"  : 6,
+        }
+        return foods
+
+    def Greeting(self):
+        emit = self.gamestate.emit
+        emit("Hello this is the grocery store.  What would you like to order?")
+
+    def TimeWaste(self, choice):
+        self.gamestate.currTime += timedelta(minutes=30)
+
+    def FeelChange(self):
+        self.gamestate.feel -= 2
+
+class HardwareNumber(StoreNumber):
+    def GetStoreItems(self):
+        hardware = {
+            "Hammer"        : 20,
+            "Nails"         : 5,
+            "Plywood Sheet" : 30,
+        }
+        return hardware
+
+    def Greeting(self):
+        emit = self.gamestate.emit
+        emit("Hello this is the hardware store.  Hope we got what you're looking for!")
+
+    def TimeWaste(self, choice):
+        self.gamestate.currTime += timedelta(minutes=2)
+
+    def FeelChange(self):
+        self.gamestate.feel -= 10
 
 class GameState:
     BEGIN           = 0
@@ -78,7 +113,10 @@ class GameState:
     INITIAL_FEEL = 50
 
     def __init__(self):
-        self.phoneNumbers = [GroceryNumber("Grocery", "288-7955", self)]
+        self.phoneNumbers = [
+            GroceryNumber("Grocery", "288-7955", self),
+            HardwareNumber("Hardware Store", "592-2874", self)
+        ]
         self.currFSMState = GameState.BEGIN
         # March 15, 1982 at 3:14 AM
         self.currTime = datetime.datetime(
