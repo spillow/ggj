@@ -29,6 +29,8 @@ COMMANDS = {
     "nail self in closet" : actions.NailSelfIn,
     # examine room
     # ice bath
+    # watch television
+
     # examine checks
     # mail checks
 }
