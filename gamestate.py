@@ -1,4 +1,7 @@
 import datetime
+from datetime import timedelta
+import alterego
+import time
 
 class PhoneNumber:
     def __init__(self, name, number, gamestate):
@@ -57,16 +60,22 @@ class GroceryNumber(PhoneNumber):
                 emit("We don't have that.")
                 continue
 
+            self.gamestate.currTime += timedelta(minutes=30)
+            self.feel -= 2
+
             if self.gamestate.currBalance < foods[choice]:
                 emit("Insufficient funds.")
                 break
             else:
                 emit("Thanks!")
+                self.gamestate.currBalance -= foods[choice]
                 break
 
 class GameState:
     BEGIN           = 0
     APARTMENT_READY = 1
+
+    INITIAL_FEEL = 50
 
     def __init__(self):
         self.phoneNumbers = [GroceryNumber("Grocery", "288-7955", self)]
@@ -78,14 +87,15 @@ class GameState:
             15,   # day
             3,    # hour
             14)   # minute
-        
+
         nails = RoomObject("box of nails")
         toolbox = RoomObject("toolbox", "in", RoomObject.OPEN, [nails])
 
         self.roomObjects = [toolbox]
         self.currBalance = 100 # dollars
-        self.feel = 50
+        self.feel = GameState.INITIAL_FEEL
         self.ownedFood = []
+        self.alterEgo = alterego.AlterEgo()
 
     def GetDateAsString(self):
         return self.currTime.strftime("%A %B %d, %Y at %I:%M %p")
@@ -101,6 +111,20 @@ class GameState:
     # state machine
 
     def prompt(self):
+        # Check the 'feel' of our hero to see whether he needs to hit
+        # the sack.
+        if self.feel <= 0:
+            self.feel = 0
+            self.emit("I'm feeling very tired.  I'm going to pass out.....")
+            for i in xrange(5):
+                self.emit(".")
+                time.sleep(1)
+            # Now run the alterego during his sleep
+            self.alterEgo.run(self)
+            # Now that he is finished, reset
+            self.currFSMState = GameState.BEGIN
+            self.feel = GameState.INITIAL_FEEL
+
         if self.currFSMState == GameState.BEGIN:
             self.STATE_BEGIN_Prompt()
             # only printed at the beginning of the game
@@ -114,7 +138,6 @@ class GameState:
             if self.roomObjects:
                 print "In the corner you see a toolbox."
                 print
-
 
         userInput = raw_input("What do we do next?: ")
         return userInput

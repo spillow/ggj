@@ -46,6 +46,7 @@ def Ponder(state):
             emit("What? Give me a number.")
 
     state.currTime += timedelta(hours=numHours)
+    state.feel -= 10 * numHours
 
 def CheckBalance(state):
     emit("Current Balance: ${0}".format(state.currBalance))
