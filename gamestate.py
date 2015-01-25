@@ -23,7 +23,13 @@ class RoomObject:
     # defines objects within the primary room.
     # objects (i.e. toolbox) can contain other objects, or objects (i.e table)
     # can have other objects on top of them.
-    def __init__(self, object_name, in_or_on=None, open_or_closed=None, contents=[]):
+    def __init__(
+        self,
+        object_name,
+        in_or_on=None,
+        open_or_closed=None,
+        contents=[]):
+
         self.name = object_name
         self.contents = list(contents)
         self.open_or_closed = open_or_closed

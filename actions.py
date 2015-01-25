@@ -7,7 +7,7 @@
 # the clock forward.
 
 from datetime import timedelta
-from gamestate import RoomObject
+from gamestate import RoomObject, GameState
 
 def prompt(s):
     return raw_input(s)
@@ -17,18 +17,24 @@ def emit(s):
     print
 
 def CallPhone(state):
-    number = prompt("What number?: ")
-    for phoneNumber in state.phoneNumbers:
-        if number == phoneNumber.number:
-            phoneNumber.Interact()
-            return
+    if state.currFSMState == GameState.APARTMENT_READY:
+        number = prompt("What number?: ")
+        for phoneNumber in state.phoneNumbers:
+            if number == phoneNumber.number:
+                phoneNumber.Interact()
+                return
 
-    emit("Who's number is that?")
+        emit("Who's number is that?")
+    else:
+        emit("Not in a position to make a phone call.")
 
 def Rolodex(state):
-    for phonenumber in state.phoneNumbers:
-        print phonenumber
-    print
+    if state.currFSMState == GameState.APARTMENT_READY:
+        for phonenumber in state.phoneNumbers:
+            print phonenumber
+        print
+    else:
+        emit("Can't check the rolodex.")
 
 def LookAtWatch(state):
     emit("\nThe current time is {time}".format(time=state.GetDateAsString()))
