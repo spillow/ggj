@@ -7,7 +7,7 @@
 # the clock forward.
 
 from datetime import timedelta
-from gamestate import GameState, Container
+from gamestate import GameState, Container, Object
 
 def prompt(s):
     return raw_input(s)
@@ -15,6 +15,17 @@ def prompt(s):
 def emit(s):
     print s
     print
+
+def DebugItems(state):
+    # Give me a few things to play with
+
+    hammer  = Object("hammer", state.apartment.main)
+    nails   = Object("box of nails", state.apartment.main)
+    plywood = Object("plywood sheet", state.apartment.main)
+
+    state.hero.Pickup(hammer)
+    state.hero.Pickup(nails)
+    state.hero.Pickup(plywood)
 
 def CallPhone(state):
     if state.currFSMState == GameState.APARTMENT_READY:
@@ -185,7 +196,7 @@ def NailSelfIn(state):
         emit("\nYou are missing something.  %s" % s)
         return
 
-    hero.Destroy([hammer, nails, plywood])
+    hero.Destroy([plywood])
 
     emit("\nYou have successfully nailed yourself into a rather small closet.")
 

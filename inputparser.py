@@ -2,6 +2,7 @@
 import actions
 
 COMMANDS = {
+    "debug items"         : actions.DebugItems,
     "call phone"          : actions.CallPhone,
     "rolodex"             : actions.Rolodex,
     "look at watch"       : actions.LookAtWatch,
