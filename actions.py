@@ -16,6 +16,14 @@ def emit(s):
     print s
     print
 
+def DebugItems(state):
+    # Give me a few things to play with
+
+    hammer = RoomObject("hammer")
+    nails = RoomObject("box of nails")
+    plywood = RoomObject("plywood sheet")
+    state.carryingObjects += [hammer, nails, plywood]
+
 def CallPhone(state):
     if state.currFSMState == GameState.APARTMENT_READY:
         number = prompt("What number?: ")
@@ -264,8 +272,9 @@ def NailSelfIn(state):
         emit("\nYou are missing something.  %s" % s)
         return
 
+    # Consume the plywood
     new_objs = [o for o in objs if o.name not in
-            ['hammer', 'box of nails', 'plywood sheet']]
+            ['plywood sheet']]
 
     state.carryingObjects = new_objs
 
