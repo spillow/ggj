@@ -16,27 +16,111 @@ class PhoneNumber:
     def __eq__(self, other):
         return other == self.number
 
-class RoomObject:
-    OPEN        = 0
-    CLOSED      = 1
-    IN          = 2
-    ON          = 3
-    # defines objects within the primary room.
-    # objects (i.e. toolbox) can contain other objects, or objects (i.e table)
-    # can have other objects on top of them.
-    def __init__(
-        self,
-        object_name,
-        in_or_on=None,
-        open_or_closed=None,
-        contents=[]):
+class ContentsWalker:
+    def GetItemsByName(self, name):
+        return [x for x in self.contents if x.name == name]
 
-        self.name = object_name
-        self.contents = list(contents)
-        self.open_or_closed = open_or_closed
+    def GetFirstItemByName(self, name):
+        items = self.GetItemsByName(name)
+        if items:
+            return items[0]
+        else:
+            return None
+
+class Object(object):
+    def __init__(self, name, parent):
+        self.name = name
+        # set if this is important for a particular object
+        self.weight = 0
+        self.parent = parent
+
+    def Interact(self):
+        assert 'Implement your own Interact()!'
 
     def __str__(self):
-        if self.open_or_closed == RoomObject.OPEN:
+        return "{0}".format(self.name)
+
+    def GetRoom(self):
+        currParent = self.parent
+        while not isinstance(currParent, Room):
+            currParent = currParent.parent
+
+        return currParent
+
+class Hero(Object, ContentsWalker):
+    INITIAL_FEEL = 50
+    def __init__(self, startRoom):
+        super(Hero, self).__init__("", startRoom)
+        self.feel          = Hero.INITIAL_FEEL
+        self.currBalance   = 100
+        self.inventory = []
+
+    def GetItemsByName(self, name):
+        return [x for x in self.inventory if x.name == name]
+
+    def ClearPath(self, thing):
+        if not isinstance(thing.parent, Container):
+            return True
+
+        return thing.parent.state == Container.State.OPEN and \
+            self.ClearPath(thing.parent)
+
+    def Pickup(self, thing):
+        if not self.parent is thing.GetRoom():
+            print "I can't pick up something in a different room."
+        elif not self.ClearPath(thing):
+            print "Got to dig a little deeper."
+        elif thing.weight > 100:
+            print "I can't pick this up."
+        else:
+            self.inventory.append(thing)
+            if isinstance(thing.parent, Container):
+                thing.parent.contents.remove(thing)
+            print "Got it."
+        print
+
+    def Destroy(self, thing):
+        if isinstance(thing, list):
+            for item in thing:
+                self.inventory.remove(item)
+        else:
+            self.inventory.remove(thing)
+
+    def ChangeRoom(self, room):
+        # stopping logic
+        self.parent = room
+        for item in self.inventory:
+            item.parent = room
+
+class Container(Object, ContentsWalker):
+    class State:
+        OPEN   = 0
+        CLOSED = 1
+
+    def __init__(self, name, parent):
+        super(Container, self).__init__(name, parent)
+        self.state = Container.State.CLOSED
+        self.contents = []
+        self.weight = 1000 # containers are just too much
+
+    def Open(self):
+        if self.state == Container.State.OPEN:
+            print "\nThe {0} is already open.".format(self.name)
+        else:
+            print "\nThe {0} is now open.".format(self.name)
+
+        self.state = Container.State.OPEN
+
+    def Close(self):
+        if self.state == Container.State.CLOSED:
+            print "\nThe {0} is already closed.".format(self.name)
+        else:
+            print "\nThe {0} is now closed.".format(self.name)
+
+        self.state = Container.State.CLOSED
+
+    def __str__(self):
+        if self.state == Container.State.OPEN:
             if self.contents:
                 descr = "an open {name}, containing:\n".format(name=self.name)
                 for o in self.contents:
@@ -45,11 +129,41 @@ class RoomObject:
                 descr = "an open {name} with nothing in it".format(name=self.name)
 
             return descr.strip()
-        elif self.open_or_closed == RoomObject.CLOSED:
-            return "a {name}, it is closed".format(name=self.name,
-                    open_or_closed=self.open_or_closed)
+        elif self.state == Container.State.CLOSED:
+            return "a {name}, it is closed".format(name=self.name)
         else:
-            return "a {name}".format(name=self.name)
+            assert 'unknown state!'
+
+class Surface(Object, ContentsWalker):
+    def __init__(self, name, parent):
+        super(Surface, self).__init__(name, parent)
+        self.contents = []
+
+class Room:
+    def __init__(self, name, contents):
+        self.name = name
+        self.contents = contents
+
+    def GenFields(self):
+        for item in self.contents:
+            setattr(self, item.name, item)
+
+class Apartment:
+    def __init__(self):
+        self.main     = Room("main room", [])
+        self.bedroom  = Room("bedroom", [])
+        self.bathroom = Room("bathroom", [])
+        self.closet   = Room("closet", [])
+        self.rooms    = [self.main, self.bedroom, self.bathroom, self.closet]
+
+        phone   = Object("phone", self.main)
+        toolbox = Container("toolbox", self.main)
+        fridge  = Container("fridge", self.main)
+        cabinet = Container("cabinet", self.main)
+        table   = Surface("table", self.main)
+
+        self.main.contents = [phone, toolbox, fridge, cabinet, table]
+        self.main.GenFields()
 
 class StoreNumber(PhoneNumber):
     def Interact(self):
@@ -68,21 +182,22 @@ class StoreNumber(PhoneNumber):
             self.TimeWaste(choice)
             self.FeelChange()
 
-            if self.gamestate.currBalance < items[choice][0]:
+            if self.gamestate.hero.currBalance < items[choice][0]:
                 emit("Insufficient funds.")
                 break
             else:
-                self.gamestate.currBalance -= items[choice][0]
-                self.ScheduleOrder(choice, items[choice][1])
+                self.gamestate.hero.currBalance -= items[choice][0]
+                self.ScheduleOrder(Object(choice, items[choice][1]))
                 break
 
 class GroceryNumber(StoreNumber):
     def GetStoreItems(self):
+        mainroom = self.gamestate.apartment.main
         foods = {
-            "spicy food" : (10, "fridge"),
-            "caffeine"   : (5, "fridge"),
-            "bananas"    : (2, "fridge"),
-            "ice Cubes"  : (6, "fridge"),
+            "spicy food" : (10, mainroom.fridge),
+            "caffeine"   : (5,  mainroom.fridge),
+            "bananas"    : (2,  mainroom.fridge),
+            "ice cubes"  : (6,  mainroom.fridge),
         }
         return foods
 
@@ -94,21 +209,22 @@ class GroceryNumber(StoreNumber):
         self.gamestate.currTime += timedelta(minutes=30)
 
     def FeelChange(self):
-        self.gamestate.feel -= 2
+        self.gamestate.hero.feel -= 2
 
-    def ScheduleOrder(self, choice, whereToPut):
+    def ScheduleOrder(self, choice):
         emit = self.gamestate.emit
         emit("Thanks! We'll get that out to you tomorrow.")
         tomorrow = self.gamestate.currTime + timedelta(days=1)
         self.gamestate.deliveryQueue.AddOrder(
-            delivery.Order(choice, tomorrow, whereToPut))
+            delivery.Order(choice, tomorrow))
 
 class HardwareNumber(StoreNumber):
     def GetStoreItems(self):
+        mainroom = self.gamestate.apartment.main
         hardware = {
-            "hammer"        : (20, "toolbox"),
-            "box of nails"  : (5, "toolbox"),
-            "plywood sheet" : (30, "table"),
+            "hammer"        : (20, mainroom.toolbox),
+            "box of nails"  : (5,  mainroom.toolbox),
+            "plywood sheet" : (30, mainroom.table),
         }
         return hardware
 
@@ -120,22 +236,20 @@ class HardwareNumber(StoreNumber):
         self.gamestate.currTime += timedelta(minutes=2)
 
     def FeelChange(self):
-        self.gamestate.feel -= 10
+        self.gamestate.hero.feel -= 10
 
-    def ScheduleOrder(self, choice, whereToPut):
+    def ScheduleOrder(self, choice):
         emit = self.gamestate.emit
         emit("Thanks! We'll get that out to you in a couple days.")
         twoDays = self.gamestate.currTime + timedelta(days=2)
         self.gamestate.deliveryQueue.AddOrder(
-            delivery.Order(choice, twoDays, whereToPut))
+            delivery.Order(choice, twoDays))
 
 class GameState:
     BEGIN           = 0
     APARTMENT_READY = 1
     CLOSET_READY    = 2
     CLOSET_NAILED   = 3
-
-    INITIAL_FEEL = 50
 
     def __init__(self):
         self.phoneNumbers = [
@@ -151,16 +265,8 @@ class GameState:
             3,    # hour
             14)   # minute
 
-        toolbox = RoomObject("toolbox", "in", RoomObject.CLOSED, [])
-        fridge  = RoomObject("fridge", "in", RoomObject.CLOSED, [])
-        table   = RoomObject("table", "on")
-        cabinet = RoomObject("cabinet", "in", RoomObject.OPEN, [])
-
-        self.mainRoomObjects = [toolbox, fridge, table, cabinet]
-        self.carryingObjects = []
-        self.currBalance = 100 # dollars
-        self.feel = GameState.INITIAL_FEEL
-        self.ownedFood = []
+        self.apartment = Apartment()
+        self.hero      = Hero(self.apartment.main)
         self.alterEgo = alterego.AlterEgo()
 
     def SetDeliveryQueue(self, queue):
@@ -173,39 +279,17 @@ class GameState:
         print s
         print
 
-    def MakeRoomObject(self, s):
-        return RoomObject(s)
-
-    def GetRoomObjects(self, name=None):
-        if self.currFSMState != GameState.APARTMENT_READY:
-            return []
-
-        if name:
-            return [o for o in self.mainRoomObjects if o.name==name]
-        else:
-            return self.mainRoomObjects
-
-    def GetCarryingObjects(self, name=None):
-        if name:
-            return [o for o in self.carryingObjects if o.name==name]
-        else:
-            return self.carryingObjects
-
-    def AddCarryingObjects(self, obj):
-        self.carryingObjects.append(obj)
-
     def STATE_BEGIN_Prompt(self):
         self.emit("You wake up in your apartment.  It is {date}".
             format(date=self.GetDateAsString()))
 
-        if self.mainRoomObjects:
-            self.emit("In the corner you see a toolbox.")
+        self.emit("In the corner you see a toolbox.")
 
     def prompt(self):
         # Check the 'feel' of our hero to see whether he needs to hit
         # the sack.
-        if self.feel <= 0:
-            self.feel = 0
+        if self.hero.feel <= 0:
+            self.hero.feel = 0
             self.emit("I'm feeling very tired.  I'm going to pass out.....")
             for i in xrange(5):
                 self.emit(".")
@@ -214,7 +298,7 @@ class GameState:
             self.alterEgo.run(self)
             # Now that he is finished, reset
             self.currFSMState = GameState.BEGIN
-            self.feel = GameState.INITIAL_FEEL
+            self.hero.feel = self.hero.INITIAL_FEEL
 
         if self.currFSMState == GameState.BEGIN:
             self.STATE_BEGIN_Prompt()

@@ -1,5 +1,5 @@
 
-import gamestate
+from gamestate import GameState, Object
 import inputparser
 import delivery
 from datetime import timedelta
@@ -11,14 +11,13 @@ class GovChecks:
     def CheckChecks(self, state, queue, currTime):
         if currTime >= self.lastTime + timedelta(weeks=2):
             order = delivery.Order(
-                "check",
-                currTime + timedelta(weeks=2),
-                "cabinet")
+                Object("check", state.apartment.main.cabinet),
+                currTime + timedelta(weeks=2))
             queue.AddOrder(order)
             self.lastTime = currTime
 
 def run():
-    state = gamestate.GameState()
+    state = GameState()
     deliveryQueue = delivery.DeliveryQueue(state)
     state.SetDeliveryQueue(deliveryQueue)
     checks = GovChecks(state.currTime - timedelta(weeks=2))
@@ -29,6 +28,7 @@ def run():
         (ok, action) = inputparser.parse(userInput)
         if ok:
             action(state)
+            print
         else:
             errMsg = action
             print errMsg

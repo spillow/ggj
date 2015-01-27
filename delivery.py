@@ -1,8 +1,7 @@
 class Order:
-    def __init__(self, thing, deliveryDate, whereToPut, action=None):
+    def __init__(self, thing, deliveryDate, action=None):
         self.thing = thing
         self.deliveryDate = deliveryDate
-        self.whereToPut = whereToPut
         self.action = action
 
 class DeliveryQueue:
@@ -24,8 +23,8 @@ class DeliveryQueue:
           print
         for order in delivered:
             print "Delivery: {0}!".format(order.thing)
-            container = self.gamestate.GetRoomObjects(order.whereToPut)[0]
-            container.contents.append(self.gamestate.MakeRoomObject(order.thing))
+            container = order.thing.parent
+            container.contents.append(order.thing)
             if order.action is not None:
                 order.action()
         if delivered:
