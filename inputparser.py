@@ -11,19 +11,16 @@ COMMANDS = {
     "feel"                : actions.CheckFeel,
     "examine toolbox"     : actions.ExamineToolbox,
     "look in toolbox"     : actions.ExamineToolbox,
-    "open toolbox"        : actions.OpenToolbox,
-    "close toolbox"       : actions.CloseToolbox,
+    "open {a}"            : actions.OpenThing,
+    "close {a}"           : actions.CloseThing,
     "pick up toolbox"     : actions.PickUpToolbox,
-    "get hammer"          : actions.GetHammer,
-    "get nails"           : actions.GetNails,
-    "get box of nails"    : actions.GetNails,
+    "get {a} from {b}"    : actions.GetObject,
     "inventory"           : actions.Inventory,
     "go in closet"        : actions.EnterCloset,
     "enter closet"        : actions.EnterCloset,
     "enter the closet"    : actions.EnterCloset,
     "leave closet"        : actions.LeaveCloset,
     "exit closet"         : actions.LeaveCloset,
-    "get wood"            : actions.GetWood,
     "nail wood to exit"   : actions.NailSelfIn,
     "nail wood to door"   : actions.NailSelfIn,
     "nail self in"        : actions.NailSelfIn,
@@ -36,6 +33,32 @@ COMMANDS = {
     # mail checks
 }
 
+class PatVar:
+    def __init__(self, s):
+        self.s = s
+
+    def __nonzero__(self):
+        return self.s and self.s[0] == '{' and self.s[-1] == '}'
+
+def unify(commandTokens, inputTokens):
+    bindings = []
+    for (ct, it) in zip(commandTokens, inputTokens):
+        if PatVar(ct):
+            bindings.append(it)
+        elif ct != it:
+            return (False, [])
+
+    return (True, bindings)
+
+def expand(command, userInput):
+    commandTokens = command.split()
+    inputTokens   = userInput.split()
+
+    if len(commandTokens) != len(inputTokens):
+        return (False, [])
+
+    return unify(commandTokens, inputTokens)
+
 # returns a two tuple
 # (ok, errorMessage)
 # or
@@ -44,9 +67,8 @@ COMMANDS = {
 # errorMessage on fail or action on success
 def parse(userInput):
     for (command, action) in COMMANDS.iteritems():
-        words = [word.lower() for word in command.split()]
-        lowerInput = userInput.lower()
-        if all(word in lowerInput for word in words):
-            return (True, action)
+        (ok, args) = expand(command, userInput)
+        if ok:
+            return (True, action, args)
 
-    return (False, "Don't understand command.")
+    return (False, "Don't understand command.", [])

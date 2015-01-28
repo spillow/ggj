@@ -47,6 +47,146 @@ class Object(object):
 
         return currParent
 
+class StoreNumber(PhoneNumber):
+    def Interact(self):
+        emit = self.gamestate.emit
+        items = self.GetStoreItems()
+        self.Greeting()
+        maxlen = max(len(x) for (x,_) in items.iteritems())
+        for (item, (cost,_)) in items.iteritems():
+            print "{0}${1}.00".format(item+'.'*(maxlen-len(item))+'.........', cost)
+        while True:
+            choice = raw_input("> ")
+            if not choice in (x for (x,_) in items.iteritems()):
+                emit("We don't have that.")
+                continue
+
+            self.TimeWaste(choice)
+            self.FeelChange()
+
+            if self.gamestate.hero.currBalance < items[choice][0]:
+                emit("Insufficient funds.")
+                break
+            else:
+                self.gamestate.hero.currBalance -= items[choice][0]
+                self.ScheduleOrder(Object(choice, items[choice][1]))
+                break
+
+class GroceryNumber(StoreNumber):
+    def GetStoreItems(self):
+        mainroom = self.gamestate.apartment.main
+        foods = {
+            "spicy food" : (10, mainroom.fridge),
+            "caffeine"   : (5,  mainroom.fridge),
+            "bananas"    : (2,  mainroom.fridge),
+            "ice cubes"  : (6,  mainroom.fridge),
+        }
+        return foods
+
+    def Greeting(self):
+        emit = self.gamestate.emit
+        emit("Hello this is the grocery store.  What would you like to order?")
+
+    def TimeWaste(self, choice):
+        self.gamestate.watch.currTime += timedelta(minutes=30)
+
+    def FeelChange(self):
+        self.gamestate.hero.feel -= 2
+
+    def ScheduleOrder(self, choice):
+        emit = self.gamestate.emit
+        emit("Thanks! We'll get that out to you tomorrow.")
+        tomorrow = self.gamestate.watch.currTime + timedelta(days=1)
+        self.gamestate.deliveryQueue.AddOrder(
+            delivery.Order(choice, tomorrow))
+
+class HardwareNumber(StoreNumber):
+    def GetStoreItems(self):
+        mainroom = self.gamestate.apartment.main
+        hardware = {
+            "hammer"        : (20, mainroom.toolbox),
+            "box-of-nails"  : (5,  mainroom.toolbox),
+            "plywood-sheet" : (30, mainroom.table),
+        }
+        return hardware
+
+    def Greeting(self):
+        emit = self.gamestate.emit
+        emit("Hello this is the hardware store.  Hope we got what you're looking for!")
+
+    def TimeWaste(self, choice):
+        self.gamestate.watch.currTime += timedelta(minutes=2)
+
+    def FeelChange(self):
+        self.gamestate.hero.feel -= 10
+
+    def ScheduleOrder(self, choice):
+        emit = self.gamestate.emit
+        emit("Thanks! We'll get that out to you in a couple days.")
+        twoDays = self.gamestate.watch.currTime + timedelta(days=2)
+        self.gamestate.deliveryQueue.AddOrder(
+            delivery.Order(choice, twoDays))
+
+# decorator for Interact()
+def sameroom(func):
+    def check(self, hero):
+        if hero.parent == self.parent:
+            func(self, hero)
+        else:
+            print "Must be in the same room as the {0}".format(self.name)
+    
+    return check
+
+class Phone(Object):
+    def __init__(self, gamestate, parent):
+        super(Phone, self).__init__("phone", parent)
+        self.gamestate = gamestate
+
+        self.phoneNumbers = [
+            GroceryNumber("Grocery", "288-7955", gamestate),
+            HardwareNumber("Hardware Store", "592-2874", gamestate)
+        ]
+
+    def prompt(self, s):
+        return raw_input(s)
+
+    @sameroom
+    def Rolodex(self, hero):
+        for phonenumber in self.phoneNumbers:
+            print phonenumber
+        print
+
+    @sameroom
+    def Interact(self, hero):
+        number = self.prompt("What number?: ")
+        for phoneNumber in self.phoneNumbers:
+            if number == phoneNumber.number:
+                phoneNumber.Interact()
+                return
+
+        print "Who's number is that?"
+        print
+
+class Watch(Object):
+    def __init__(self, parent):
+        super(Watch, self).__init__("watch", parent)
+
+        # March 15, 1982 at 3:14 AM
+        self.currTime = datetime.datetime(
+            1982, # year
+            3,    # month
+            15,   # day
+            3,    # hour
+            14)   # minute
+
+    def GetDateAsString(self):
+        return self.currTime.strftime("%A %B %d, %Y at %I:%M %p")
+
+    @sameroom
+    def Interact(self, hero):
+        print "\nThe current time is {time}".format(time=self.GetDateAsString())
+        print
+
 class Hero(Object, ContentsWalker):
     INITIAL_FEEL = 50
     def __init__(self, startRoom):
@@ -90,6 +230,7 @@ class Hero(Object, ContentsWalker):
         # stopping logic
         self.parent = room
         for item in self.inventory:
+            item.parent.contents.remove(item)
             item.parent = room
 
 class Container(Object, ContentsWalker):
@@ -139,7 +280,7 @@ class Surface(Object, ContentsWalker):
         super(Surface, self).__init__(name, parent)
         self.contents = []
 
-class Room:
+class Room(ContentsWalker):
     def __init__(self, name, contents):
         self.name = name
         self.contents = contents
@@ -149,14 +290,16 @@ class Room:
             setattr(self, item.name, item)
 
 class Apartment:
-    def __init__(self):
+    def __init__(self, gamestate):
+        self.gamestate = gamestate
+
         self.main     = Room("main room", [])
         self.bedroom  = Room("bedroom", [])
         self.bathroom = Room("bathroom", [])
         self.closet   = Room("closet", [])
         self.rooms    = [self.main, self.bedroom, self.bathroom, self.closet]
 
-        phone   = Object("phone", self.main)
+        phone   = Phone(gamestate, self.main)
         toolbox = Container("toolbox", self.main)
         fridge  = Container("fridge", self.main)
         cabinet = Container("cabinet", self.main)
@@ -165,86 +308,6 @@ class Apartment:
         self.main.contents = [phone, toolbox, fridge, cabinet, table]
         self.main.GenFields()
 
-class StoreNumber(PhoneNumber):
-    def Interact(self):
-        emit = self.gamestate.emit
-        items = self.GetStoreItems()
-        self.Greeting()
-        maxlen = max(len(x) for (x,_) in items.iteritems())
-        for (item, (cost,_)) in items.iteritems():
-            print "{0}${1}.00".format(item+'.'*(maxlen-len(item))+'.........', cost)
-        while True:
-            choice = raw_input("> ")
-            if not choice in (x for (x,_) in items.iteritems()):
-                emit("We don't have that.")
-                continue
-
-            self.TimeWaste(choice)
-            self.FeelChange()
-
-            if self.gamestate.hero.currBalance < items[choice][0]:
-                emit("Insufficient funds.")
-                break
-            else:
-                self.gamestate.hero.currBalance -= items[choice][0]
-                self.ScheduleOrder(Object(choice, items[choice][1]))
-                break
-
-class GroceryNumber(StoreNumber):
-    def GetStoreItems(self):
-        mainroom = self.gamestate.apartment.main
-        foods = {
-            "spicy food" : (10, mainroom.fridge),
-            "caffeine"   : (5,  mainroom.fridge),
-            "bananas"    : (2,  mainroom.fridge),
-            "ice cubes"  : (6,  mainroom.fridge),
-        }
-        return foods
-
-    def Greeting(self):
-        emit = self.gamestate.emit
-        emit("Hello this is the grocery store.  What would you like to order?")
-
-    def TimeWaste(self, choice):
-        self.gamestate.currTime += timedelta(minutes=30)
-
-    def FeelChange(self):
-        self.gamestate.hero.feel -= 2
-
-    def ScheduleOrder(self, choice):
-        emit = self.gamestate.emit
-        emit("Thanks! We'll get that out to you tomorrow.")
-        tomorrow = self.gamestate.currTime + timedelta(days=1)
-        self.gamestate.deliveryQueue.AddOrder(
-            delivery.Order(choice, tomorrow))
-
-class HardwareNumber(StoreNumber):
-    def GetStoreItems(self):
-        mainroom = self.gamestate.apartment.main
-        hardware = {
-            "hammer"        : (20, mainroom.toolbox),
-            "box of nails"  : (5,  mainroom.toolbox),
-            "plywood sheet" : (30, mainroom.table),
-        }
-        return hardware
-
-    def Greeting(self):
-        emit = self.gamestate.emit
-        emit("Hello this is the hardware store.  Hope we got what you're looking for!")
-
-    def TimeWaste(self, choice):
-        self.gamestate.currTime += timedelta(minutes=2)
-
-    def FeelChange(self):
-        self.gamestate.hero.feel -= 10
-
-    def ScheduleOrder(self, choice):
-        emit = self.gamestate.emit
-        emit("Thanks! We'll get that out to you in a couple days.")
-        twoDays = self.gamestate.currTime + timedelta(days=2)
-        self.gamestate.deliveryQueue.AddOrder(
-            delivery.Order(choice, twoDays))
-
 class GameState:
     BEGIN           = 0
     APARTMENT_READY = 1
@@ -252,28 +315,20 @@ class GameState:
     CLOSET_NAILED   = 3
 
     def __init__(self):
-        self.phoneNumbers = [
-            GroceryNumber("Grocery", "288-7955", self),
-            HardwareNumber("Hardware Store", "592-2874", self)
-        ]
         self.currFSMState = GameState.BEGIN
-        # March 15, 1982 at 3:14 AM
-        self.currTime = datetime.datetime(
-            1982, # year
-            3,    # month
-            15,   # day
-            3,    # hour
-            14)   # minute
 
-        self.apartment = Apartment()
+        self.apartment = Apartment(self)
         self.hero      = Hero(self.apartment.main)
-        self.alterEgo = alterego.AlterEgo()
+        self.alterEgo  = alterego.AlterEgo()
+
+        # TODO: set parent's content in Object constructor
+        self.watch = Watch(self.apartment.main)
+        self.watch.parent.contents.append(self.watch)
+
+        self.hero.inventory.append(self.watch)
 
     def SetDeliveryQueue(self, queue):
         self.deliveryQueue = queue
-
-    def GetDateAsString(self):
-        return self.currTime.strftime("%A %B %d, %Y at %I:%M %p")
 
     def emit(self, s):
         print s
@@ -281,7 +336,7 @@ class GameState:
 
     def STATE_BEGIN_Prompt(self):
         self.emit("You wake up in your apartment.  It is {date}".
-            format(date=self.GetDateAsString()))
+            format(date=self.watch.GetDateAsString()))
 
         self.emit("In the corner you see a toolbox.")
 

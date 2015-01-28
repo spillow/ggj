@@ -7,7 +7,7 @@
 # the clock forward.
 
 from datetime import timedelta
-from gamestate import GameState, Container, Object
+from gamestate import GameState, Container, Object, Surface
 
 def prompt(s):
     return raw_input(s)
@@ -20,35 +20,27 @@ def DebugItems(state):
     # Give me a few things to play with
 
     hammer  = Object("hammer", state.apartment.main)
-    nails   = Object("box of nails", state.apartment.main)
-    plywood = Object("plywood sheet", state.apartment.main)
+    nails   = Object("box-of-nails", state.apartment.main)
+    plywood = Object("plywood-sheet", state.apartment.main)
 
     state.hero.Pickup(hammer)
     state.hero.Pickup(nails)
     state.hero.Pickup(plywood)
 
 def CallPhone(state):
-    if state.currFSMState == GameState.APARTMENT_READY:
-        number = prompt("What number?: ")
-        for phoneNumber in state.phoneNumbers:
-            if number == phoneNumber.number:
-                phoneNumber.Interact()
-                return
-
-        emit("Who's number is that?")
-    else:
-        emit("Not in a position to make a phone call.")
+    state.apartment.main.phone.Interact(state.hero)
 
 def Rolodex(state):
-    if state.currFSMState == GameState.APARTMENT_READY:
-        for phonenumber in state.phoneNumbers:
-            print phonenumber
-        print
-    else:
-        emit("Can't check the rolodex.")
+    phone = state.apartment.main.phone
+    phone.Rolodex(state.hero)
 
 def LookAtWatch(state):
-    emit("\nThe current time is {time}".format(time=state.GetDateAsString()))
+    watch = state.hero.GetFirstItemByName("watch")
+    if watch:
+        watch.Interact(state.hero)
+    else:
+        print "Not carrying a watch!"
+        print
 
 def Ponder(state):
     while True:
@@ -63,7 +55,7 @@ def Ponder(state):
         else:
             emit("\nWhat? Give me a number.")
 
-    state.currTime += timedelta(hours=numHours)
+    state.watch.currTime += timedelta(hours=numHours)
     state.hero.feel -= 10 * numHours
 
 def CheckBalance(state):
@@ -93,33 +85,56 @@ def ExamineToolbox(state):
             print "    {0}".format(item)
         print
 
-def OpenToolbox(state):
-    toolbox = state.apartment.main.toolbox
-    toolbox.Open()
+def OpenThing(state, thing):
+    roomObject = state.hero.parent.GetFirstItemByName(thing)
+    if roomObject:
+        if isinstance(roomObject, Container):
+            roomObject.Open()
+        else:
+            print "I can't open that."
+    else:
+        print "I don't see that in the room."
 
-def CloseToolbox(state):
-    toolbox = state.apartment.main.toolbox
-    toolbox.Close()
+def CloseThing(state, thing):
+    roomObject = state.hero.parent.GetFirstItemByName(thing)
+    if roomObject:
+        if isinstance(roomObject, Container):
+            roomObject.Close()
+        else:
+            print "I can't close that."
+    else:
+        print "I don't see that in the room."
 
 def PickUpToolbox(state):
     toolbox = state.apartment.main.toolbox
     state.hero.Pickup(toolbox)
 
-def GetHammer(state):
-    toolbox = state.apartment.main.toolbox
-    item = toolbox.GetFirstItemByName("hammer")
-    if item:
-        state.hero.Pickup(item)
+def GetObject(state, obj, roomObject):
+    roomObject = state.hero.parent.GetFirstItemByName(roomObject)
+    if roomObject:
+        if isinstance(roomObject, Container):
+            container = roomObject
+            if container.state == Container.State.OPEN:
+                thing = container.GetFirstItemByName(obj)
+                if thing:
+                    state.hero.Pickup(thing)
+                else:
+                    print "I don't see that in the {}.".format(container.name)
+            else:
+                print "Try opening it first."
+        elif isinstance(roomObject, Surface):
+            surface = roomObject
+            thing = surface.GetFirstItemByName(obj)
+            if thing:
+                state.hero.Pickup(thing)
+            else:
+                print "I don't see that on the {}.".format(surface.name)
+        else:
+            print "How could I do that?"
     else:
-        print "No hammer in the toolbox."
+        print "I don't see that in the room."
 
-def GetNails(state):
-    toolbox = state.apartment.main.toolbox
-    item = toolbox.GetFirstItemByName("box of nails")
-    if item:
-        state.hero.Pickup(item)
-    else:
-        print "No nails in the toolbox."
+    print
 
 def Inventory(state):
     objs = state.hero.inventory
@@ -160,12 +175,6 @@ def LeaveCloset(state):
         state.currFSMState = GameState.APARTMENT_READY
         return
 
-def GetWood(state):
-    table = state.apartment.main.table
-    item = table.GetFirstItemByName("plywood sheet")
-    if item:
-        state.hero.Pickup(item)
-
 def NailSelfIn(state):
     if state.currFSMState == GameState.CLOSET_NAILED:
         emit("\nWasn't once enough?")
@@ -182,8 +191,8 @@ def NailSelfIn(state):
         return
 
     hammer  = hero.GetFirstItemByName('hammer')
-    nails   = hero.GetFirstItemByName('box of nails')
-    plywood = hero.GetFirstItemByName('plywood sheet')
+    nails   = hero.GetFirstItemByName('box-of-nails')
+    plywood = hero.GetFirstItemByName('plywood-sheet')
 
     if not hammer or not nails or not plywood:
         if not plywood:
@@ -203,6 +212,6 @@ def NailSelfIn(state):
     state.currFSMState = GameState.CLOSET_NAILED
 
     numHours = 2
-    state.currTime += timedelta(hours=numHours)
+    state.watch.currTime += timedelta(hours=numHours)
     hero.feel -= 10 * numHours
 

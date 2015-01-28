@@ -12,9 +12,9 @@ class DeliveryQueue:
     def Examine(self):
         # Get items that have hit the delivery time.
         delivered = [x for x in self.pendingOrders if
-            self.gamestate.currTime >= x.deliveryDate]
+            self.gamestate.watch.currTime >= x.deliveryDate]
         remaining = [x for x in self.pendingOrders if
-            self.gamestate.currTime < x.deliveryDate]
+            self.gamestate.watch.currTime < x.deliveryDate]
 
         self.pendingOrders = remaining
 

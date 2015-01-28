@@ -20,14 +20,14 @@ def run():
     state = GameState()
     deliveryQueue = delivery.DeliveryQueue(state)
     state.SetDeliveryQueue(deliveryQueue)
-    checks = GovChecks(state.currTime - timedelta(weeks=2))
+    checks = GovChecks(state.watch.currTime - timedelta(weeks=2))
     while True:
-        checks.CheckChecks(state, deliveryQueue, state.currTime)
+        checks.CheckChecks(state, deliveryQueue, state.watch.currTime)
         deliveryQueue.Examine()
         userInput = state.prompt()
-        (ok, action) = inputparser.parse(userInput)
+        (ok, action, args) = inputparser.parse(userInput)
         if ok:
-            action(state)
+            action(state, *args)
             print
         else:
             errMsg = action
