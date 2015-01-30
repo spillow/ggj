@@ -16,6 +16,22 @@ def emit(s):
     print s
     print
 
+def attempt(thunk, errorMsg):
+    try:
+        thunk()
+    except AttributeError:
+        print errorMsg
+
+def thingify(func):
+    def inner(state, arg):
+        roomObject = state.hero.GetRoom().GetFirstItemByName(arg)
+        if roomObject:
+            func(state, roomObject)
+        else:
+            print "I don't see that in the room."
+
+    return inner
+
 def DebugItems(state):
     # Give me a few things to play with
 
@@ -70,44 +86,17 @@ def CheckFeel(state):
     else:
         emit("I'm about to hit the sheets!")
 
-def ExamineToolbox(state):
-    toolbox = state.apartment.main.toolbox
-    if toolbox.state != Openable.State.OPEN:
-        print "The toolbox must be opened first."
-        return
+@thingify
+def ExamineThing(state, roomObject):
+    attempt(lambda: roomObject.Examine(state.hero), "I don't know how to examine that.")
 
-    if not toolbox.contents:
-        print "nothing in the toolbox."
-        print
-    else:
-        print "toolbox contains:"
-        for item in toolbox.contents:
-            print "    {0}".format(item)
-        print
+@thingify
+def OpenThing(state, roomObject):
+    attempt(lambda: roomObject.Open(state.hero), "I can't open that.")
 
-def OpenThing(state, thing):
-    roomObject = state.hero.GetRoom().GetFirstItemByName(thing)
-    if roomObject:
-        if isinstance(roomObject, Openable):
-            roomObject.Open()
-        else:
-            print "I can't open that."
-    else:
-        print "I don't see that in the room."
-
-def CloseThing(state, thing):
-    roomObject = state.hero.parent.GetFirstItemByName(thing)
-    if roomObject:
-        if isinstance(roomObject, Openable):
-            roomObject.Close()
-        else:
-            print "I can't close that."
-    else:
-        print "I don't see that in the room."
-
-def PickUpToolbox(state):
-    toolbox = state.apartment.main.toolbox
-    state.hero.Pickup(toolbox)
+@thingify
+def CloseThing(state, roomObject):
+    attempt(lambda: roomObject.Close(state.hero), "I can't close that.")
 
 def GetObject(state, obj, roomObject):
     roomObject = state.hero.GetRoom().GetFirstItemByName(roomObject)

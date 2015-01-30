@@ -258,7 +258,23 @@ class Openable(Container):
         super(Openable, self).__init__(name, parent)
         self.state = Openable.State.CLOSED
 
-    def Open(self):
+    @sameroom
+    def Examine(self, hero):
+        if self.state != Openable.State.OPEN:
+            print "The {} must be opened first.".format(self.name)
+            return
+
+        if not self.contents:
+            print "nothing in the {}.".format(self.name)
+            print
+        else:
+            print "{} contains:".format(self.name)
+            for item in self.contents:
+                print "    {0}".format(item)
+            print
+
+    @sameroom
+    def Open(self, hero):
         if self.state == Openable.State.OPEN:
             print "\nThe {0} is already open.".format(self.name)
         else:
@@ -266,7 +282,8 @@ class Openable(Container):
 
         self.state = Openable.State.OPEN
 
-    def Close(self):
+    @sameroom    
+    def Close(self, hero):
         if self.state == Openable.State.CLOSED:
             print "\nThe {0} is already closed.".format(self.name)
         else:
