@@ -4,35 +4,15 @@ import alterego
 import time
 import delivery
 
-class PhoneNumber:
-    def __init__(self, name, number, gamestate):
-        self.name      = name
-        self.number    = number
-        self.gamestate = gamestate
-
-    def __str__(self):
-        return "{name}: {number}".format(name=self.name, number=self.number)
-
-    def __eq__(self, other):
-        return other == self.number
-
-class ContentsWalker:
-    def GetItemsByName(self, name):
-        return [x for x in self.contents if x.name == name]
-
-    def GetFirstItemByName(self, name):
-        items = self.GetItemsByName(name)
-        if items:
-            return items[0]
-        else:
-            return None
-
 class Object(object):
-    def __init__(self, name, parent):
+    def __init__(self, name, parent, delay=False):
         self.name = name
         # set if this is important for a particular object
         self.weight = 0
         self.parent = parent
+
+        if not delay and parent is not None:
+            self.parent.contents.append(self)
 
     def Interact(self):
         assert 'Implement your own Interact()!'
@@ -46,6 +26,38 @@ class Object(object):
             currParent = currParent.parent
 
         return currParent
+
+class Container(Object):
+    def __init__(self, name, parent):
+        super(Container, self).__init__(name, parent)
+        self.contents = []
+        self.weight = 1000 # containers are just too much
+
+    def GetItemsByName(self, name):
+        return [x for x in self.contents if x.name == name]
+
+    def GetFirstItemByName(self, name):
+        items = self.GetItemsByName(name)
+        if items:
+            return items[0]
+        else:
+            return None
+
+    def GenFields(self):
+        for item in self.contents:
+            setattr(self, item.name, item)
+
+class PhoneNumber:
+    def __init__(self, name, number, gamestate):
+        self.name      = name
+        self.number    = number
+        self.gamestate = gamestate
+
+    def __str__(self):
+        return "{name}: {number}".format(name=self.name, number=self.number)
+
+    def __eq__(self, other):
+        return other == self.number
 
 class StoreNumber(PhoneNumber):
     def Interact(self):
@@ -69,7 +81,7 @@ class StoreNumber(PhoneNumber):
                 break
             else:
                 self.gamestate.hero.currBalance -= items[choice][0]
-                self.ScheduleOrder(Object(choice, items[choice][1]))
+                self.ScheduleOrder(Object(choice, items[choice][1], delay=True))
                 break
 
 class GroceryNumber(StoreNumber):
@@ -130,11 +142,11 @@ class HardwareNumber(StoreNumber):
 # decorator for Interact()
 def sameroom(func):
     def check(self, hero):
-        if hero.parent == self.parent:
+        if hero.GetRoom() == self.GetRoom():
             func(self, hero)
         else:
             print "Must be in the same room as the {0}".format(self.name)
-    
+
     return check
 
 class Phone(Object):
@@ -187,81 +199,83 @@ class Watch(Object):
         print "\nThe current time is {time}".format(time=self.GetDateAsString())
         print
 
-class Hero(Object, ContentsWalker):
+class Hero(Container):
     INITIAL_FEEL = 50
     def __init__(self, startRoom):
-        super(Hero, self).__init__("", startRoom)
+        super(Hero, self).__init__("me", startRoom)
         self.feel          = Hero.INITIAL_FEEL
         self.currBalance   = 100
-        self.inventory = []
-
-    def GetItemsByName(self, name):
-        return [x for x in self.inventory if x.name == name]
+        self.state         = Openable.State.OPEN
 
     def ClearPath(self, thing):
-        if not isinstance(thing.parent, Container):
+        if self.parent == thing.parent:
             return True
 
-        return thing.parent.state == Container.State.OPEN and \
-            self.ClearPath(thing.parent)
+        if isinstance(thing.parent, Openable):
+            if thing.parent.state == Openable.State.CLOSED:
+                return False
+
+        return self.ClearPath(thing.parent)
 
     def Pickup(self, thing):
-        if not self.parent is thing.GetRoom():
+        if not self.GetRoom() is thing.GetRoom():
             print "I can't pick up something in a different room."
         elif not self.ClearPath(thing):
             print "Got to dig a little deeper."
         elif thing.weight > 100:
             print "I can't pick this up."
+        elif thing in self.contents:
+            print "Yup, already got that."
         else:
-            self.inventory.append(thing)
-            if isinstance(thing.parent, Container):
-                thing.parent.contents.remove(thing)
+            self.contents.append(thing)
+            thing.parent.contents.remove(thing)
             print "Got it."
         print
 
     def Destroy(self, thing):
         if isinstance(thing, list):
             for item in thing:
-                self.inventory.remove(item)
+                if item in self.contents:
+                    self.contents.remove(item)
+                else:
+                    print "I don't have that."
         else:
-            self.inventory.remove(thing)
+            if item in self.contents:
+                self.contents.remove(thing)
+            else:
+                print "I don't have that."
 
     def ChangeRoom(self, room):
         # stopping logic
         self.parent = room
-        for item in self.inventory:
-            item.parent.contents.remove(item)
-            item.parent = room
 
-class Container(Object, ContentsWalker):
+class Openable(Container):
     class State:
         OPEN   = 0
         CLOSED = 1
 
     def __init__(self, name, parent):
-        super(Container, self).__init__(name, parent)
-        self.state = Container.State.CLOSED
-        self.contents = []
-        self.weight = 1000 # containers are just too much
+        super(Openable, self).__init__(name, parent)
+        self.state = Openable.State.CLOSED
 
     def Open(self):
-        if self.state == Container.State.OPEN:
+        if self.state == Openable.State.OPEN:
             print "\nThe {0} is already open.".format(self.name)
         else:
             print "\nThe {0} is now open.".format(self.name)
 
-        self.state = Container.State.OPEN
+        self.state = Openable.State.OPEN
 
     def Close(self):
-        if self.state == Container.State.CLOSED:
+        if self.state == Openable.State.CLOSED:
             print "\nThe {0} is already closed.".format(self.name)
         else:
             print "\nThe {0} is now closed.".format(self.name)
 
-        self.state = Container.State.CLOSED
+        self.state = Openable.State.CLOSED
 
     def __str__(self):
-        if self.state == Container.State.OPEN:
+        if self.state == Openable.State.OPEN:
             if self.contents:
                 descr = "an open {name}, containing:\n".format(name=self.name)
                 for o in self.contents:
@@ -270,42 +284,32 @@ class Container(Object, ContentsWalker):
                 descr = "an open {name} with nothing in it".format(name=self.name)
 
             return descr.strip()
-        elif self.state == Container.State.CLOSED:
+        elif self.state == Openable.State.CLOSED:
             return "a {name}, it is closed".format(name=self.name)
         else:
             assert 'unknown state!'
 
-class Surface(Object, ContentsWalker):
+class Room(Container):
     def __init__(self, name, parent):
-        super(Surface, self).__init__(name, parent)
-        self.contents = []
+        super(Room, self).__init__(name, parent)
 
-class Room(ContentsWalker):
-    def __init__(self, name, contents):
-        self.name = name
-        self.contents = contents
-
-    def GenFields(self):
-        for item in self.contents:
-            setattr(self, item.name, item)
-
-class Apartment:
+class Apartment(Container):
     def __init__(self, gamestate):
+        super(Apartment, self).__init__("apartment", None)
         self.gamestate = gamestate
 
-        self.main     = Room("main room", [])
-        self.bedroom  = Room("bedroom", [])
-        self.bathroom = Room("bathroom", [])
-        self.closet   = Room("closet", [])
-        self.rooms    = [self.main, self.bedroom, self.bathroom, self.closet]
+        self.main     = Room("main", self)
+        self.bedroom  = Room("bedroom", self)
+        self.bathroom = Room("bathroom", self)
+        self.closet   = Room("closet", self)
+        self.GenFields()
 
         phone   = Phone(gamestate, self.main)
-        toolbox = Container("toolbox", self.main)
-        fridge  = Container("fridge", self.main)
-        cabinet = Container("cabinet", self.main)
-        table   = Surface("table", self.main)
+        toolbox = Openable("toolbox", self.main)
+        fridge  = Openable("fridge", self.main)
+        cabinet = Openable("cabinet", self.main)
+        table   = Container("table", self.main)
 
-        self.main.contents = [phone, toolbox, fridge, cabinet, table]
         self.main.GenFields()
 
 class GameState:
@@ -321,11 +325,7 @@ class GameState:
         self.hero      = Hero(self.apartment.main)
         self.alterEgo  = alterego.AlterEgo()
 
-        # TODO: set parent's content in Object constructor
-        self.watch = Watch(self.apartment.main)
-        self.watch.parent.contents.append(self.watch)
-
-        self.hero.inventory.append(self.watch)
+        self.watch = Watch(self.hero)
 
     def SetDeliveryQueue(self, queue):
         self.deliveryQueue = queue
@@ -366,4 +366,3 @@ class GameState:
 
         userInput = raw_input("What do we do next?: ")
         return userInput
-

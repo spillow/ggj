@@ -7,7 +7,7 @@
 # the clock forward.
 
 from datetime import timedelta
-from gamestate import GameState, Container, Object, Surface
+from gamestate import GameState, Container, Object, Openable
 
 def prompt(s):
     return raw_input(s)
@@ -72,7 +72,7 @@ def CheckFeel(state):
 
 def ExamineToolbox(state):
     toolbox = state.apartment.main.toolbox
-    if toolbox.state != Container.State.OPEN:
+    if toolbox.state != Openable.State.OPEN:
         print "The toolbox must be opened first."
         return
 
@@ -86,9 +86,9 @@ def ExamineToolbox(state):
         print
 
 def OpenThing(state, thing):
-    roomObject = state.hero.parent.GetFirstItemByName(thing)
+    roomObject = state.hero.GetRoom().GetFirstItemByName(thing)
     if roomObject:
-        if isinstance(roomObject, Container):
+        if isinstance(roomObject, Openable):
             roomObject.Open()
         else:
             print "I can't open that."
@@ -98,7 +98,7 @@ def OpenThing(state, thing):
 def CloseThing(state, thing):
     roomObject = state.hero.parent.GetFirstItemByName(thing)
     if roomObject:
-        if isinstance(roomObject, Container):
+        if isinstance(roomObject, Openable):
             roomObject.Close()
         else:
             print "I can't close that."
@@ -110,25 +110,25 @@ def PickUpToolbox(state):
     state.hero.Pickup(toolbox)
 
 def GetObject(state, obj, roomObject):
-    roomObject = state.hero.parent.GetFirstItemByName(roomObject)
+    roomObject = state.hero.GetRoom().GetFirstItemByName(roomObject)
     if roomObject:
-        if isinstance(roomObject, Container):
-            container = roomObject
-            if container.state == Container.State.OPEN:
-                thing = container.GetFirstItemByName(obj)
+        if isinstance(roomObject, Openable):
+            openable = roomObject
+            if openable.state == Openable.State.OPEN:
+                thing = openable.GetFirstItemByName(obj)
                 if thing:
                     state.hero.Pickup(thing)
                 else:
-                    print "I don't see that in the {}.".format(container.name)
+                    print "I don't see that in the {}.".format(openable.name)
             else:
                 print "Try opening it first."
-        elif isinstance(roomObject, Surface):
-            surface = roomObject
-            thing = surface.GetFirstItemByName(obj)
+        elif isinstance(roomObject, Container):
+            container = roomObject
+            thing = container.GetFirstItemByName(obj)
             if thing:
                 state.hero.Pickup(thing)
             else:
-                print "I don't see that on the {}.".format(surface.name)
+                print "I don't see that on the {}.".format(container.name)
         else:
             print "How could I do that?"
     else:
@@ -137,7 +137,7 @@ def GetObject(state, obj, roomObject):
     print
 
 def Inventory(state):
-    objs = state.hero.inventory
+    objs = state.hero.contents
     if not objs:
         emit("\nYou have no objects in your inventory")
         return
@@ -186,7 +186,7 @@ def NailSelfIn(state):
 
     hero = state.hero
 
-    if not hero.inventory:
+    if not hero.contents:
         emit("\nYou have no objects with which to do that")
         return
 
@@ -214,4 +214,3 @@ def NailSelfIn(state):
     numHours = 2
     state.watch.currTime += timedelta(hours=numHours)
     hero.feel -= 10 * numHours
-

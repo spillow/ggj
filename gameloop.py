@@ -11,7 +11,7 @@ class GovChecks:
     def CheckChecks(self, state, queue, currTime):
         if currTime >= self.lastTime + timedelta(weeks=2):
             order = delivery.Order(
-                Object("check", state.apartment.main.cabinet),
+                Object("check", state.apartment.main.cabinet, delay=True),
                 currTime + timedelta(weeks=2))
             queue.AddOrder(order)
             self.lastTime = currTime
@@ -33,4 +33,3 @@ def run():
             errMsg = action
             print errMsg
             print
-
