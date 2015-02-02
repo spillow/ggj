@@ -328,6 +328,31 @@ class Room(Container):
     def __init__(self, name, parent):
         super(Room, self).__init__(name, parent)
 
+    def Leave(self, hero):
+        return True
+
+    def Enter(self, fromRoom, hero):
+        if fromRoom.Leave(hero):
+            hero.ChangeRoom(self)
+            print "You are now in the {}".format(self.name)
+
+class Closet(Room):
+    CLOSET_READY    = 0
+    CLOSET_NAILED   = 1
+
+    def __init__(self, name, parent):
+        super(Closet, self).__init__(name, parent)
+        self.state = Closet.CLOSET_READY
+
+    def Leave(self, hero):
+        if self.state == Closet.CLOSET_NAILED:
+            print "\nPerhaps you should ponder exactly how you'll do that?"
+            return False
+        elif self.state == Closet.CLOSET_READY:
+            return True
+        else:
+            assert 'unknown closet state!'
+
 class Apartment(Container):
     def __init__(self, gamestate):
         super(Apartment, self).__init__("apartment", None)
@@ -336,7 +361,7 @@ class Apartment(Container):
         self.main     = Room("main", self)
         self.bedroom  = Room("bedroom", self)
         self.bathroom = Room("bathroom", self)
-        self.closet   = Room("closet", self)
+        self.closet   = Closet("closet", self)
         self.GenFields()
 
         phone   = Phone(gamestate, self.main)
@@ -350,12 +375,8 @@ class Apartment(Container):
 class GameState:
     BEGIN           = 0
     APARTMENT_READY = 1
-    CLOSET_READY    = 2
-    CLOSET_NAILED   = 3
 
     def __init__(self):
-        self.currFSMState = GameState.BEGIN
-
         self.apartment = Apartment(self)
         self.hero      = Hero(self.apartment.main)
         self.alterEgo  = alterego.AlterEgo()
@@ -369,13 +390,13 @@ class GameState:
         print s
         print
 
-    def STATE_BEGIN_Prompt(self):
+    def IntroPrompt(self):
         self.emit("You wake up in your apartment.  It is {date}".
             format(date=self.watch.GetDateAsString()))
 
         self.emit("In the corner you see a toolbox.")
 
-    def prompt(self):
+    def Examine(self):
         # Check the 'feel' of our hero to see whether he needs to hit
         # the sack.
         if self.hero.feel <= 0:
@@ -387,17 +408,9 @@ class GameState:
             # Now run the alterego during his sleep
             self.alterEgo.run(self)
             # Now that he is finished, reset
-            self.currFSMState = GameState.BEGIN
             self.hero.feel = self.hero.INITIAL_FEEL
+            self.IntroPrompt()
 
-        if self.currFSMState == GameState.BEGIN:
-            self.STATE_BEGIN_Prompt()
-            # only printed at the beginning of the game
-            self.currFSMState = GameState.APARTMENT_READY
-        elif self.currFSMState == GameState.APARTMENT_READY:
-            pass
-        else:
-            assert "Unknown game state!"
-
+    def prompt(self):
         userInput = raw_input("What do we do next?: ")
         return userInput

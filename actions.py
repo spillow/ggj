@@ -7,7 +7,7 @@
 # the clock forward.
 
 from datetime import timedelta
-from gamestate import GameState, Container, Object, Openable
+from gamestate import GameState, Container, Object, Openable, Closet
 
 def prompt(s):
     return raw_input(s)
@@ -138,45 +138,32 @@ def Inventory(state):
 
     print
 
-def EnterCloset(state):
-    if state.currFSMState == GameState.CLOSET_READY:
-        emit("\nYou are in a very nice closet already")
-        return
-    if state.currFSMState != GameState.APARTMENT_READY:
-        emit("\nThat would be very difficult from your current location")
-        return
-
-    state.currFSMState = GameState.CLOSET_READY
-
-    emit("\nYou are now in the closet")
-
-def LeaveCloset(state):
-    if state.currFSMState == GameState.CLOSET_NAILED:
-        emit("\nPerhaps you should ponder exactly how you'll do that?")
-        return
-
-    if state.currFSMState != GameState.CLOSET_READY:
-        emit("\nThat would be very difficult from your current location")
-        return
-
-    if state.currFSMState == GameState.CLOSET_READY:
-        emit("\nYou have left the closet and are now back in your apartment's main room");
-        state.currFSMState = GameState.APARTMENT_READY
-        return
+def EnterRoom(state, roomName):
+    toRoom = state.apartment.GetFirstItemByName(roomName)
+    if toRoom:
+        fromRoom = state.hero.GetRoom()
+        if toRoom == fromRoom:
+            print "Already there."
+        else:
+            attempt(lambda: toRoom.Enter(fromRoom, state.hero), "I can't enter.")
+    else:
+        print "I haven't built that wing yet."
 
 def NailSelfIn(state):
-    if state.currFSMState == GameState.CLOSET_NAILED:
-        emit("\nWasn't once enough?")
+    closet = state.apartment.closet
+
+    if state.hero.GetRoom() != closet:
+        print "Gotta be in the closet to start nailing!"
         return
 
-    if state.currFSMState != GameState.CLOSET_READY:
-        emit("\nThat would be very difficult from your current location")
+    if closet.state == Closet.CLOSET_NAILED:
+        print "\nWasn't once enough?"
         return
 
     hero = state.hero
 
     if not hero.contents:
-        emit("\nYou have no objects with which to do that")
+        print "\nYou have no objects with which to do that"
         return
 
     hammer  = hero.GetFirstItemByName('hammer')
@@ -191,14 +178,14 @@ def NailSelfIn(state):
         if not nails:
             s = 'Perhaps some nails?'
 
-        emit("\nYou are missing something.  %s" % s)
+        print "\nYou are missing something.  %s" % s
         return
 
     hero.Destroy([plywood])
 
-    emit("\nYou have successfully nailed yourself into a rather small closet.")
+    print "\nYou have successfully nailed yourself into a rather small closet."
 
-    state.currFSMState = GameState.CLOSET_NAILED
+    closet.state = Closet.CLOSET_NAILED
 
     numHours = 2
     state.watch.currTime += timedelta(hours=numHours)

@@ -12,10 +12,12 @@ def run():
     state.SetEventQueue(queue)
 
     def DeliverCheck(currTime, eventTime):
+        print "Government check in the mail!"
         Object("check", state.apartment.main.cabinet)
         queue.AddEvent(DeliverCheck, eventTime + timedelta(weeks=2))
 
     queue.AddEvent(DeliverCheck, state.watch.currTime + timedelta(weeks=2))
+    state.IntroPrompt()
     while True:
         queue.Examine()
         userInput = state.prompt()
@@ -23,6 +25,7 @@ def run():
         if ok:
             action(state, *args)
             print
+            state.Examine()
         else:
             errMsg = action
             print errMsg
