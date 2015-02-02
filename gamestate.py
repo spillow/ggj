@@ -4,14 +4,24 @@ import alterego
 import time
 import delivery
 
+# decorator for Interact()
+def sameroom(func):
+    def check(self, hero):
+        if hero.GetRoom() == self.GetRoom():
+            func(self, hero)
+        else:
+            print "Must be in the same room as the {0}".format(self.name)
+
+    return check
+
 class Object(object):
-    def __init__(self, name, parent, delay=False):
+    def __init__(self, name, parent):
         self.name = name
         # set if this is important for a particular object
         self.weight = 0
         self.parent = parent
 
-        if not delay and parent is not None:
+        if parent is not None:
             self.parent.contents.append(self)
 
     def Interact(self):
@@ -43,6 +53,17 @@ class Container(Object):
         else:
             return None
 
+    @sameroom
+    def Examine(self, hero):
+        if not self.contents:
+            print "nothing to see for the {}".format(self.name)
+            print
+        else:
+            print "{} contains:".format(self.name)
+            for item in self.contents:
+                print "    {0}".format(item)
+            print
+
     def GenFields(self):
         for item in self.contents:
             setattr(self, item.name, item)
@@ -65,7 +86,7 @@ class StoreNumber(PhoneNumber):
         items = self.GetStoreItems()
         self.Greeting()
         maxlen = max(len(x) for (x,_) in items.iteritems())
-        for (item, (cost,_)) in items.iteritems():
+        for (item, cost) in items.iteritems():
             print "{0}${1}.00".format(item+'.'*(maxlen-len(item))+'.........', cost)
         while True:
             choice = raw_input("> ")
@@ -76,22 +97,22 @@ class StoreNumber(PhoneNumber):
             self.TimeWaste(choice)
             self.FeelChange()
 
-            if self.gamestate.hero.currBalance < items[choice][0]:
+            if self.gamestate.hero.currBalance < items[choice]:
                 emit("Insufficient funds.")
                 break
             else:
-                self.gamestate.hero.currBalance -= items[choice][0]
-                self.ScheduleOrder(Object(choice, items[choice][1], delay=True))
+                self.gamestate.hero.currBalance -= items[choice]
+                self.ScheduleOrder(choice)
                 break
 
 class GroceryNumber(StoreNumber):
     def GetStoreItems(self):
         mainroom = self.gamestate.apartment.main
         foods = {
-            "spicy food" : (10, mainroom.fridge),
-            "caffeine"   : (5,  mainroom.fridge),
-            "bananas"    : (2,  mainroom.fridge),
-            "ice cubes"  : (6,  mainroom.fridge),
+            "spicy food" : 10,
+            "caffeine"   : 5,
+            "bananas"    : 2,
+            "ice cubes"  : 6
         }
         return foods
 
@@ -109,16 +130,17 @@ class GroceryNumber(StoreNumber):
         emit = self.gamestate.emit
         emit("Thanks! We'll get that out to you tomorrow.")
         tomorrow = self.gamestate.watch.currTime + timedelta(days=1)
-        self.gamestate.deliveryQueue.AddOrder(
-            delivery.Order(choice, tomorrow))
+        def purchase(a, b):
+            Object(choice, self.gamestate.apartment.main.fridge)
+        self.gamestate.eventQueue.AddEvent(purchase, tomorrow)
 
 class HardwareNumber(StoreNumber):
     def GetStoreItems(self):
         mainroom = self.gamestate.apartment.main
         hardware = {
-            "hammer"        : (20, mainroom.toolbox),
-            "box-of-nails"  : (5,  mainroom.toolbox),
-            "plywood-sheet" : (30, mainroom.table),
+            "hammer"        : 20,
+            "box-of-nails"  : 5,
+            "plywood-sheet" : 30
         }
         return hardware
 
@@ -136,18 +158,14 @@ class HardwareNumber(StoreNumber):
         emit = self.gamestate.emit
         emit("Thanks! We'll get that out to you in a couple days.")
         twoDays = self.gamestate.watch.currTime + timedelta(days=2)
-        self.gamestate.deliveryQueue.AddOrder(
-            delivery.Order(choice, twoDays))
+        def purchase(a, b):
+            if choice == 'plywood-sheet':
+                location = self.gamestate.apartment.main.table
+            else:
+                location = self.gamestate.apartment.main.toolbox
 
-# decorator for Interact()
-def sameroom(func):
-    def check(self, hero):
-        if hero.GetRoom() == self.GetRoom():
-            func(self, hero)
-        else:
-            print "Must be in the same room as the {0}".format(self.name)
-
-    return check
+            Object(choice, location)
+        self.gamestate.eventQueue.AddEvent(purchase, twoDays)
 
 class Phone(Object):
     def __init__(self, gamestate, parent):
@@ -282,7 +300,7 @@ class Openable(Container):
 
         self.state = Openable.State.OPEN
 
-    @sameroom    
+    @sameroom
     def Close(self, hero):
         if self.state == Openable.State.CLOSED:
             print "\nThe {0} is already closed.".format(self.name)
@@ -344,8 +362,8 @@ class GameState:
 
         self.watch = Watch(self.hero)
 
-    def SetDeliveryQueue(self, queue):
-        self.deliveryQueue = queue
+    def SetEventQueue(self, queue):
+        self.eventQueue = queue
 
     def emit(self, s):
         print s

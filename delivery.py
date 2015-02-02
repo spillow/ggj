@@ -1,35 +1,19 @@
-class Order:
-    def __init__(self, thing, deliveryDate, action=None):
-        self.thing = thing
-        self.deliveryDate = deliveryDate
-        self.action = action
+class EventQueue:
+    def __init__(self, state):
+        self.queue = []
+        self.state = state
 
-class DeliveryQueue:
-    def __init__(self, gamestate):
-        self.gamestate = gamestate
-        self.pendingOrders = []
+    def AddEvent(self, action, timeToFire):
+        self.queue.append((action, timeToFire))
 
     def Examine(self):
-        # Get items that have hit the delivery time.
-        delivered = [x for x in self.pendingOrders if
-            self.gamestate.watch.currTime >= x.deliveryDate]
-        remaining = [x for x in self.pendingOrders if
-            self.gamestate.watch.currTime < x.deliveryDate]
+        toFire = [(action, time) for (action, time) in self.queue if
+            self.state.watch.currTime >= time]
 
-        self.pendingOrders = remaining
+        rem = [(action, time) for (action, time) in self.queue if
+            self.state.watch.currTime < time]
 
-        # place the objects in their appropriate places.
-        if delivered:
-          print
-        for order in delivered:
-            print "Delivery: {0}!".format(order.thing)
-            container = order.thing.parent
-            container.contents.append(order.thing)
-            if order.action is not None:
-                order.action()
-        if delivered:
-          print
+        self.queue = rem
 
-    def AddOrder(self, order):
-        self.pendingOrders.append(order)
-
+        for (action, time) in toFire:
+            action(self.state.watch.currTime, time)
