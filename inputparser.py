@@ -9,7 +9,9 @@ COMMANDS = {
     "ponder"              : actions.Ponder,
     "balance"             : actions.CheckBalance,
     "feel"                : actions.CheckFeel,
+    "eat {a}"             : actions.EatThing,
     "examine {a}"         : actions.ExamineThing,
+    "watch {a}"           : actions.WatchTv,
     "look in {a}"         : actions.ExamineThing,
     "open {a}"            : actions.OpenThing,
     "close {a}"           : actions.CloseThing,
@@ -17,18 +19,18 @@ COMMANDS = {
     "get {a} from {b}"    : actions.GetObject,
     "inventory"           : actions.Inventory,
     "go in {a}"           : actions.EnterRoom,
+    "go to {a}"           : actions.EnterRoom,
     "enter {a}"           : actions.EnterRoom,
     "enter the {a}"       : actions.EnterRoom,
     "nail wood to exit"   : actions.NailSelfIn,
     "nail wood to door"   : actions.NailSelfIn,
     "nail self in"        : actions.NailSelfIn,
     "nail self in closet" : actions.NailSelfIn,
-    # examine room
+    "inspect room"        : actions.InspectRoom,
+    "view room"           : actions.InspectRoom,
+    "look around room"    : actions.InspectRoom,
+    "mail check"          : actions.MailCheck
     # ice bath
-    # watch television
-
-    # examine checks
-    # mail checks
 }
 
 class PatVar:

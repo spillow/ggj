@@ -19,8 +19,8 @@ def emit(s):
 def attempt(thunk, errorMsg):
     try:
         thunk()
-    except AttributeError:
-        print errorMsg
+    except AttributeError as e:
+        print errorMsg, e
 
 def thingify(func):
     def inner(state, arg):
@@ -86,9 +86,58 @@ def CheckFeel(state):
     else:
         emit("I'm about to hit the sheets!")
 
+def MailCheck(state):
+    check = state.hero.GetFirstItemByName("check")
+    if check:
+        tomorrow = state.watch.currTime + timedelta(days=1)
+        def mail(a, b):
+            print "new bank deposit!"
+            state.hero.currBalance += 100
+        state.eventQueue.AddEvent(mail, tomorrow)
+        state.hero.Destroy([check])
+        print "Check is out.  Big money tomorrow!"
+    else:
+        print "You're not holding a check.  How's the cabinet looking?"
+
+def InspectRoom(state):
+    room = state.hero.GetRoom()
+    print
+    print "You look around the room.  You see:"
+    print
+
+    if not room.contents:
+        print "Nothing!"
+
+    for item in room.contents:
+        print item
+    print
+
+def EatThing(state, foodName):
+    fridge = state.apartment.main.fridge
+    if state.hero.GetRoom() != fridge.GetRoom():
+        print "Step a little closer to the fridge."
+        return
+
+    if fridge.isClosed():
+        print "Right, I have to open the fridge first."
+        return
+
+    food = state.apartment.main.fridge.GetFirstItemByName(foodName)
+    if food:
+        attempt(lambda: food.Eat(state.hero), "Error!")
+    else:
+        print "I don't see that food in there."
+
 @thingify
 def ExamineThing(state, roomObject):
     attempt(lambda: roomObject.Examine(state.hero), "I don't know how to examine that.")
+
+@thingify
+def WatchTv(state, tv):
+    if tv.name != 'tv':
+        print "I don't know how to watch that!  Not for very long, at least."
+    else:
+        attempt(lambda: tv.Examine(state.hero), "Yeah, I don't know.")
 
 @thingify
 def OpenThing(state, roomObject):

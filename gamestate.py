@@ -37,6 +37,18 @@ class Object(object):
 
         return currParent
 
+class Food(Object):
+    def __init__(self, name, parent, feelBoost):
+        super(Food, self).__init__(name, parent)
+        self.feelBoost = feelBoost
+
+    def Eat(self, hero):
+        hero.Pickup(self)
+        hero.Destroy([self])
+        hero.feel += self.feelBoost
+        watch = hero.GetFirstItemByName('watch')
+        watch.currTime += timedelta(minutes=20)
+
 class Container(Object):
     def __init__(self, name, parent):
         super(Container, self).__init__(name, parent)
@@ -109,10 +121,10 @@ class GroceryNumber(StoreNumber):
     def GetStoreItems(self):
         mainroom = self.gamestate.apartment.main
         foods = {
-            "spicy food" : 10,
+            "spicy-food" : 10,
             "caffeine"   : 5,
             "bananas"    : 2,
-            "ice cubes"  : 6
+            "ice-cubes"  : 6
         }
         return foods
 
@@ -126,12 +138,23 @@ class GroceryNumber(StoreNumber):
     def FeelChange(self):
         self.gamestate.hero.feel -= 2
 
+    def FoodFeel(self):
+        feel = {
+            "spicy-food" : 30,
+            "caffeine"   : 20,
+            "bananas"    : 5,
+            "ice-cubes"  : 2
+        }
+        return feel
+
     def ScheduleOrder(self, choice):
         emit = self.gamestate.emit
         emit("Thanks! We'll get that out to you tomorrow.")
         tomorrow = self.gamestate.watch.currTime + timedelta(days=1)
         def purchase(a, b):
-            Object(choice, self.gamestate.apartment.main.fridge)
+            Food(choice, self.gamestate.apartment.main.fridge,
+                 self.FoodFeel()[choice])
+            print "Food truck order has arrived!"
         self.gamestate.eventQueue.AddEvent(purchase, tomorrow)
 
 class HardwareNumber(StoreNumber):
@@ -167,6 +190,30 @@ class HardwareNumber(StoreNumber):
             Object(choice, location)
         self.gamestate.eventQueue.AddEvent(purchase, twoDays)
 
+class SuperNumber(PhoneNumber):
+    def Interact(self):
+        print "Calling the super..."
+        for i in xrange(3):
+            print "ring..."
+            time.sleep(1)
+
+        print "Okay, doesn't look like anybody is answering."
+
+        self.gamestate.hero.feel -= 30
+        self.gamestate.watch.currTime += timedelta(minutes=20)
+
+class TV(Object):
+    def __init__(self, parent):
+        super(TV, self).__init__("tv", parent)
+
+    @sameroom
+    def Examine(self, hero):
+        print "You turn on the tv."
+        print
+        print """Breaking news: prominent astrophysicists have recently
+discovered a strange anomaly in space.  The origins are not yet clear.
+Stay tuned for further details."""
+
 class Phone(Object):
     def __init__(self, gamestate, parent):
         super(Phone, self).__init__("phone", parent)
@@ -174,7 +221,8 @@ class Phone(Object):
 
         self.phoneNumbers = [
             GroceryNumber("Grocery", "288-7955", gamestate),
-            HardwareNumber("Hardware Store", "592-2874", gamestate)
+            HardwareNumber("Hardware Store", "592-2874", gamestate),
+            SuperNumber("The Super", "198-2888", gamestate)
         ]
 
     def prompt(self, s):
@@ -291,6 +339,12 @@ class Openable(Container):
                 print "    {0}".format(item)
             print
 
+    def isOpen(self):
+        return self.state == Openable.State.OPEN
+
+    def isClosed(self):
+        return self.state == Openable.State.CLOSED
+
     @sameroom
     def Open(self, hero):
         if self.state == Openable.State.OPEN:
@@ -369,6 +423,7 @@ class Apartment(Container):
         fridge  = Openable("fridge", self.main)
         cabinet = Openable("cabinet", self.main)
         table   = Container("table", self.main)
+        tv      = TV(self.main)
 
         self.main.GenFields()
 
