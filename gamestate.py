@@ -3,10 +3,11 @@ from datetime import timedelta
 import alterego
 import time
 import delivery
+from typing import Callable, Any, Optional, List, Dict, Type, Union
 
 # decorator for Interact()
-def sameroom(func):
-    def check(self, hero):
+def sameroom(func: Callable) -> Callable:
+    def check(self: Any, hero: 'Hero') -> None:
         if hero.GetRoom() == self.GetRoom():
             func(self, hero)
         else:
@@ -15,7 +16,11 @@ def sameroom(func):
     return check
 
 class Object(object):
-    def __init__(self, name, parent):
+    name: str
+    weight: int
+    parent: Optional['Container']
+
+    def __init__(self, name: str, parent: Optional['Container']) -> None:
         self.name = name
         # set if this is important for a particular object
         self.weight = 0
@@ -24,25 +29,27 @@ class Object(object):
         if parent is not None:
             self.parent.contents.append(self)
 
-    def Interact(self):
+    def Interact(self) -> None:
         assert 'Implement your own Interact()!'
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "{0}".format(self.name)
 
-    def GetRoom(self):
+    def GetRoom(self) -> 'Room':
         currParent = self.parent
         while not isinstance(currParent, Room):
             currParent = currParent.parent
 
-        return currParent
+        return currParent  # type: ignore
 
 class Food(Object):
-    def __init__(self, name, parent, feelBoost):
+    feelBoost: int
+
+    def __init__(self, name: str, parent: Optional['Container'], feelBoost: int) -> None:
         super(Food, self).__init__(name, parent)
         self.feelBoost = feelBoost
 
-    def Eat(self, hero):
+    def Eat(self, hero: 'Hero') -> None:
         hero.Pickup(self)
         hero.Destroy([self])
         hero.feel += self.feelBoost
@@ -50,15 +57,17 @@ class Food(Object):
         watch.currTime += timedelta(minutes=20)
 
 class Container(Object):
-    def __init__(self, name, parent):
+    contents: List[Object]
+
+    def __init__(self, name: str, parent: Optional['Container']) -> None:
         super(Container, self).__init__(name, parent)
-        self.contents = []
+        self.contents: List[Object] = []
         self.weight = 1000 # containers are just too much
 
-    def GetItemsByName(self, name):
+    def GetItemsByName(self, name: str) -> List[Object]:
         return [x for x in self.contents if x.name == name]
 
-    def GetFirstItemByName(self, name):
+    def GetFirstItemByName(self, name: str) -> Optional[Object]:
         items = self.GetItemsByName(name)
         if items:
             return items[0]
@@ -66,7 +75,7 @@ class Container(Object):
             return None
 
     @sameroom
-    def Examine(self, hero):
+    def Examine(self, hero: 'Hero') -> None:
         if not self.contents:
             print("nothing to see for the {}".format(self.name))
             print()
@@ -76,24 +85,28 @@ class Container(Object):
                 print("    {0}".format(item))
             print()
 
-    def GenFields(self):
+    def GenFields(self) -> None:
         for item in self.contents:
             setattr(self, item.name, item)
 
 class PhoneNumber:
-    def __init__(self, name, number, gamestate):
+    name: str
+    number: str
+    gamestate: 'GameState'
+
+    def __init__(self, name: str, number: str, gamestate: 'GameState') -> None:
         self.name      = name
         self.number    = number
         self.gamestate = gamestate
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "{name}: {number}".format(name=self.name, number=self.number)
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         return other == self.number
 
 class StoreNumber(PhoneNumber):
-    def Interact(self):
+    def Interact(self) -> None:
         emit = self.gamestate.emit
         items = self.GetStoreItems()
         self.Greeting()
@@ -117,8 +130,23 @@ class StoreNumber(PhoneNumber):
                 self.ScheduleOrder(choice)
                 break
 
+    def GetStoreItems(self) -> Dict[str, int]:
+        raise NotImplementedError
+
+    def Greeting(self) -> None:
+        raise NotImplementedError
+
+    def TimeWaste(self, choice: str) -> None:
+        raise NotImplementedError
+
+    def FeelChange(self) -> None:
+        raise NotImplementedError
+
+    def ScheduleOrder(self, choice: str) -> None:
+        raise NotImplementedError
+
 class GroceryNumber(StoreNumber):
-    def GetStoreItems(self):
+    def GetStoreItems(self) -> Dict[str, int]:
         mainroom = self.gamestate.apartment.main
         foods = {
             "spicy-food" : 10,
@@ -128,17 +156,17 @@ class GroceryNumber(StoreNumber):
         }
         return foods
 
-    def Greeting(self):
+    def Greeting(self) -> None:
         emit = self.gamestate.emit
         emit("Hello this is the grocery store.  What would you like to order?")
 
-    def TimeWaste(self, choice):
+    def TimeWaste(self, choice: str) -> None:
         self.gamestate.watch.currTime += timedelta(minutes=30)
 
-    def FeelChange(self):
+    def FeelChange(self) -> None:
         self.gamestate.hero.feel -= 2
 
-    def FoodFeel(self):
+    def FoodFeel(self) -> Dict[str, int]:
         feel = {
             "spicy-food" : 30,
             "caffeine"   : 20,
@@ -147,18 +175,18 @@ class GroceryNumber(StoreNumber):
         }
         return feel
 
-    def ScheduleOrder(self, choice):
+    def ScheduleOrder(self, choice: str) -> None:
         emit = self.gamestate.emit
         emit("Thanks! We'll get that out to you tomorrow.")
         tomorrow = self.gamestate.watch.currTime + timedelta(days=1)
-        def purchase(a, b):
+        def purchase(a: Any, b: Any) -> None:
             Food(choice, self.gamestate.apartment.main.fridge,
                  self.FoodFeel()[choice])
             print("Food truck order has arrived!")
         self.gamestate.eventQueue.AddEvent(purchase, tomorrow)
 
 class HardwareNumber(StoreNumber):
-    def GetStoreItems(self):
+    def GetStoreItems(self) -> Dict[str, int]:
         mainroom = self.gamestate.apartment.main
         hardware = {
             "hammer"        : 20,
@@ -167,21 +195,21 @@ class HardwareNumber(StoreNumber):
         }
         return hardware
 
-    def Greeting(self):
+    def Greeting(self) -> None:
         emit = self.gamestate.emit
         emit("Hello this is the hardware store.  Hope we got what you're looking for!")
 
-    def TimeWaste(self, choice):
+    def TimeWaste(self, choice: str) -> None:
         self.gamestate.watch.currTime += timedelta(minutes=2)
 
-    def FeelChange(self):
+    def FeelChange(self) -> None:
         self.gamestate.hero.feel -= 10
 
-    def ScheduleOrder(self, choice):
+    def ScheduleOrder(self, choice: str) -> None:
         emit = self.gamestate.emit
         emit("Thanks! We'll get that out to you in a couple days.")
         twoDays = self.gamestate.watch.currTime + timedelta(days=2)
-        def purchase(a, b):
+        def purchase(a: Any, b: Any) -> None:
             if choice == 'plywood-sheet':
                 location = self.gamestate.apartment.main.table
             else:
@@ -191,7 +219,7 @@ class HardwareNumber(StoreNumber):
         self.gamestate.eventQueue.AddEvent(purchase, twoDays)
 
 class SuperNumber(PhoneNumber):
-    def Interact(self):
+    def Interact(self) -> None:
         print("Calling the super...")
         for i in range(3):
             print("ring...")
@@ -203,11 +231,11 @@ class SuperNumber(PhoneNumber):
         self.gamestate.watch.currTime += timedelta(minutes=20)
 
 class TV(Object):
-    def __init__(self, parent):
+    def __init__(self, parent: Optional['Container']) -> None:
         super(TV, self).__init__("tv", parent)
 
     @sameroom
-    def Examine(self, hero):
+    def Examine(self, hero: 'Hero') -> None:
         print("You turn on the tv.")
         print()
         print("""Breaking news: prominent astrophysicists have recently
@@ -215,7 +243,10 @@ discovered a strange anomaly in space.  The origins are not yet clear.
 Stay tuned for further details.""")
 
 class Phone(Object):
-    def __init__(self, gamestate, parent):
+    gamestate: 'GameState'
+    phoneNumbers: List[PhoneNumber]
+
+    def __init__(self, gamestate: 'GameState', parent: Optional['Container']) -> None:
         super(Phone, self).__init__("phone", parent)
         self.gamestate = gamestate
 
@@ -225,17 +256,17 @@ class Phone(Object):
             SuperNumber("The Super", "198-2888", gamestate)
         ]
 
-    def prompt(self, s):
+    def prompt(self, s: str) -> str:
         return input(s)
 
     @sameroom
-    def Rolodex(self, hero):
+    def Rolodex(self, hero: 'Hero') -> None:
         for phonenumber in self.phoneNumbers:
             print(phonenumber)
         print()
 
     @sameroom
-    def Interact(self, hero):
+    def Interact(self, hero: 'Hero') -> None:
         number = self.prompt("What number?: ")
         for phoneNumber in self.phoneNumbers:
             if number == phoneNumber.number:
@@ -246,7 +277,9 @@ class Phone(Object):
         print()
 
 class Watch(Object):
-    def __init__(self, parent):
+    currTime: datetime.datetime
+
+    def __init__(self, parent: Optional['Container']) -> None:
         super(Watch, self).__init__("watch", parent)
 
         # March 15, 1982 at 3:14 AM
@@ -257,23 +290,27 @@ class Watch(Object):
             3,    # hour
             14)   # minute
 
-    def GetDateAsString(self):
+    def GetDateAsString(self) -> str:
         return self.currTime.strftime("%A %B %d, %Y at %I:%M %p")
 
     @sameroom
-    def Interact(self, hero):
+    def Interact(self, hero: 'Hero') -> None:
         print("\nThe current time is {time}".format(time=self.GetDateAsString()))
         print()
 
 class Hero(Container):
-    INITIAL_FEEL = 50
-    def __init__(self, startRoom):
+    INITIAL_FEEL: int = 50
+    feel: int
+    currBalance: int
+    state: int
+
+    def __init__(self, startRoom: 'Room') -> None:
         super(Hero, self).__init__("me", startRoom)
         self.feel          = Hero.INITIAL_FEEL
         self.currBalance   = 100
         self.state         = Openable.State.OPEN
 
-    def ClearPath(self, thing):
+    def ClearPath(self, thing: Object) -> bool:
         if self.parent == thing.parent:
             return True
 
@@ -283,7 +320,7 @@ class Hero(Container):
 
         return self.ClearPath(thing.parent)
 
-    def Pickup(self, thing):
+    def Pickup(self, thing: Object) -> None:
         if not self.GetRoom() is thing.GetRoom():
             print("I can't pick up something in a different room.")
         elif not self.ClearPath(thing):
@@ -298,7 +335,7 @@ class Hero(Container):
             print("Got it.")
         print()
 
-    def Destroy(self, thing):
+    def Destroy(self, thing: Union[List[Object], Object]) -> None:
         if isinstance(thing, list):
             for item in thing:
                 if item in self.contents:
@@ -311,21 +348,23 @@ class Hero(Container):
             else:
                 print("I don't have that.")
 
-    def ChangeRoom(self, room):
+    def ChangeRoom(self, room: 'Room') -> None:
         # stopping logic
         self.parent = room
 
 class Openable(Container):
+    state: int
+
     class State:
         OPEN   = 0
         CLOSED = 1
 
-    def __init__(self, name, parent):
+    def __init__(self, name: str, parent: Optional['Container']) -> None:
         super(Openable, self).__init__(name, parent)
         self.state = Openable.State.CLOSED
 
     @sameroom
-    def Examine(self, hero):
+    def Examine(self, hero: 'Hero') -> None:
         if self.state != Openable.State.OPEN:
             print("The {} must be opened first.".format(self.name))
             return
@@ -339,14 +378,14 @@ class Openable(Container):
                 print("    {0}".format(item))
             print()
 
-    def isOpen(self):
+    def isOpen(self) -> bool:
         return self.state == Openable.State.OPEN
 
-    def isClosed(self):
+    def isClosed(self) -> bool:
         return self.state == Openable.State.CLOSED
 
     @sameroom
-    def Open(self, hero):
+    def Open(self, hero: 'Hero') -> None:
         if self.state == Openable.State.OPEN:
             print("\nThe {0} is already open.".format(self.name))
         else:
@@ -355,7 +394,7 @@ class Openable(Container):
         self.state = Openable.State.OPEN
 
     @sameroom
-    def Close(self, hero):
+    def Close(self, hero: 'Hero') -> None:
         if self.state == Openable.State.CLOSED:
             print("\nThe {0} is already closed.".format(self.name))
         else:
@@ -363,7 +402,7 @@ class Openable(Container):
 
         self.state = Openable.State.CLOSED
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self.state == Openable.State.OPEN:
             if self.contents:
                 descr = "an open {name}, containing:\n".format(name=self.name)
@@ -376,16 +415,16 @@ class Openable(Container):
         elif self.state == Openable.State.CLOSED:
             return "a {name}, it is closed".format(name=self.name)
         else:
-            assert 'unknown state!'
+            assert False, 'unknown state!'
 
 class Room(Container):
-    def __init__(self, name, parent):
+    def __init__(self, name: str, parent: Optional['Container']) -> None:
         super(Room, self).__init__(name, parent)
 
-    def Leave(self, hero):
+    def Leave(self, hero: 'Hero') -> bool:
         return True
 
-    def Enter(self, fromRoom, hero):
+    def Enter(self, fromRoom: 'Room', hero: 'Hero') -> None:
         if fromRoom.Leave(hero):
             hero.ChangeRoom(self)
             print("You are now in the {}".format(self.name))
@@ -393,12 +432,13 @@ class Room(Container):
 class Closet(Room):
     CLOSET_READY    = 0
     CLOSET_NAILED   = 1
+    state: int
 
-    def __init__(self, name, parent):
+    def __init__(self, name: str, parent: Optional['Container']) -> None:
         super(Closet, self).__init__(name, parent)
         self.state = Closet.CLOSET_READY
 
-    def Leave(self, hero):
+    def Leave(self, hero: 'Hero') -> bool:
         if self.state == Closet.CLOSET_NAILED:
             print("\nPerhaps you should ponder exactly how you'll do that?")
             return False
@@ -408,7 +448,13 @@ class Closet(Room):
             assert 'unknown closet state!'
 
 class Apartment(Container):
-    def __init__(self, gamestate):
+    gamestate: 'GameState'
+    main: 'Room'
+    bedroom: 'Room'
+    bathroom: 'Room'
+    closet: 'Closet'
+
+    def __init__(self, gamestate: 'GameState') -> None:
         super(Apartment, self).__init__("apartment", None)
         self.gamestate = gamestate
 
@@ -428,30 +474,34 @@ class Apartment(Container):
         self.main.GenFields()
 
 class GameState:
-    BEGIN           = 0
-    APARTMENT_READY = 1
+    BEGIN: int = 0
+    APARTMENT_READY: int = 1
+    apartment: Apartment
+    hero: Hero
+    alterEgo: Any
+    watch: Watch
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.apartment = Apartment(self)
         self.hero      = Hero(self.apartment.main)
         self.alterEgo  = alterego.AlterEgo()
 
         self.watch = Watch(self.hero)
 
-    def SetEventQueue(self, queue):
+    def SetEventQueue(self, queue: Any) -> None:
         self.eventQueue = queue
 
-    def emit(self, s):
+    def emit(self, s: str) -> None:
         print(s)
         print()
 
-    def IntroPrompt(self):
+    def IntroPrompt(self) -> None:
         self.emit("You wake up in your apartment.  It is {date}".
             format(date=self.watch.GetDateAsString()))
 
         self.emit("In the corner you see a toolbox.")
 
-    def Examine(self):
+    def Examine(self) -> None:
         # Check the 'feel' of our hero to see whether he needs to hit
         # the sack.
         if self.hero.feel <= 0:
@@ -466,6 +516,6 @@ class GameState:
             self.hero.feel = self.hero.INITIAL_FEEL
             self.IntroPrompt()
 
-    def prompt(self):
+    def prompt(self) -> str:
         userInput = input("What do we do next?: ")
         return userInput
