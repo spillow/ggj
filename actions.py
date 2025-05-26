@@ -10,17 +10,17 @@ from datetime import timedelta
 from gamestate import GameState, Container, Object, Openable, Closet
 
 def prompt(s):
-    return raw_input(s)
+    return input(s)
 
 def emit(s):
-    print s
-    print
+    print(s)
+    print()
 
 def attempt(thunk, errorMsg):
     try:
         thunk()
     except AttributeError as e:
-        print errorMsg, e
+        print(errorMsg, e)
 
 def thingify(func):
     def inner(state, arg):
@@ -28,7 +28,7 @@ def thingify(func):
         if roomObject:
             func(state, roomObject)
         else:
-            print "I don't see that in the room."
+            print("I don't see that in the room.")
 
     return inner
 
@@ -55,8 +55,8 @@ def LookAtWatch(state):
     if watch:
         watch.Interact(state.hero)
     else:
-        print "Not carrying a watch!"
-        print
+        print("Not carrying a watch!")
+        print()
 
 def Ponder(state):
     while True:
@@ -91,42 +91,42 @@ def MailCheck(state):
     if check:
         tomorrow = state.watch.currTime + timedelta(days=1)
         def mail(a, b):
-            print "new bank deposit!"
+            print("new bank deposit!")
             state.hero.currBalance += 100
         state.eventQueue.AddEvent(mail, tomorrow)
         state.hero.Destroy([check])
-        print "Check is out.  Big money tomorrow!"
+        print("Check is out.  Big money tomorrow!")
     else:
-        print "You're not holding a check.  How's the cabinet looking?"
+        print("You're not holding a check.  How's the cabinet looking?")
 
 def InspectRoom(state):
     room = state.hero.GetRoom()
-    print
-    print "You look around the room.  You see:"
-    print
+    print()
+    print("You look around the room.  You see:")
+    print()
 
     if not room.contents:
-        print "Nothing!"
+        print("Nothing!")
 
     for item in room.contents:
-        print item
-    print
+        print(item)
+    print()
 
 def EatThing(state, foodName):
     fridge = state.apartment.main.fridge
     if state.hero.GetRoom() != fridge.GetRoom():
-        print "Step a little closer to the fridge."
+        print("Step a little closer to the fridge.")
         return
 
     if fridge.isClosed():
-        print "Right, I have to open the fridge first."
+        print("Right, I have to open the fridge first.")
         return
 
     food = state.apartment.main.fridge.GetFirstItemByName(foodName)
     if food:
         attempt(lambda: food.Eat(state.hero), "Error!")
     else:
-        print "I don't see that food in there."
+        print("I don't see that food in there.")
 
 @thingify
 def ExamineThing(state, roomObject):
@@ -135,7 +135,7 @@ def ExamineThing(state, roomObject):
 @thingify
 def WatchTv(state, tv):
     if tv.name != 'tv':
-        print "I don't know how to watch that!  Not for very long, at least."
+        print("I don't know how to watch that!  Not for very long, at least.")
     else:
         attempt(lambda: tv.Examine(state.hero), "Yeah, I don't know.")
 
@@ -157,22 +157,22 @@ def GetObject(state, obj, roomObject):
                 if thing:
                     state.hero.Pickup(thing)
                 else:
-                    print "I don't see that in the {}.".format(openable.name)
+                    print("I don't see that in the {}.".format(openable.name))
             else:
-                print "Try opening it first."
+                print("Try opening it first.")
         elif isinstance(roomObject, Container):
             container = roomObject
             thing = container.GetFirstItemByName(obj)
             if thing:
                 state.hero.Pickup(thing)
             else:
-                print "I don't see that on the {}.".format(container.name)
+                print("I don't see that on the {}.".format(container.name))
         else:
-            print "How could I do that?"
+            print("How could I do that?")
     else:
-        print "I don't see that in the room."
+        print("I don't see that in the room.")
 
-    print
+    print()
 
 def Inventory(state):
     objs = state.hero.contents
@@ -180,39 +180,39 @@ def Inventory(state):
         emit("\nYou have no objects in your inventory")
         return
 
-    print "\nYou are carrying the following:"
+    print("\nYou are carrying the following:")
 
     for obj in objs:
-        print "    ", obj
+        print("    ", obj)
 
-    print
+    print()
 
 def EnterRoom(state, roomName):
     toRoom = state.apartment.GetFirstItemByName(roomName)
     if toRoom:
         fromRoom = state.hero.GetRoom()
         if toRoom == fromRoom:
-            print "Already there."
+            print("Already there.")
         else:
             attempt(lambda: toRoom.Enter(fromRoom, state.hero), "I can't enter.")
     else:
-        print "I haven't built that wing yet."
+        print("I haven't built that wing yet.")
 
 def NailSelfIn(state):
     closet = state.apartment.closet
 
     if state.hero.GetRoom() != closet:
-        print "Gotta be in the closet to start nailing!"
+        print("Gotta be in the closet to start nailing!")
         return
 
     if closet.state == Closet.CLOSET_NAILED:
-        print "\nWasn't once enough?"
+        print("\nWasn't once enough?")
         return
 
     hero = state.hero
 
     if not hero.contents:
-        print "\nYou have no objects with which to do that"
+        print("\nYou have no objects with which to do that")
         return
 
     hammer  = hero.GetFirstItemByName('hammer')
@@ -227,12 +227,12 @@ def NailSelfIn(state):
         if not nails:
             s = 'Perhaps some nails?'
 
-        print "\nYou are missing something.  %s" % s
+        print("\nYou are missing something.  %s" % s)
         return
 
     hero.Destroy([plywood])
 
-    print "\nYou have successfully nailed yourself into a rather small closet."
+    print("\nYou have successfully nailed yourself into a rather small closet.")
 
     closet.state = Closet.CLOSET_NAILED
 

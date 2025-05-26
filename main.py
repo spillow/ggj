@@ -1,4 +1,3 @@
-
 import gameloop
 
 def main():

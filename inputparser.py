@@ -1,4 +1,3 @@
-
 import actions
 
 COMMANDS = {
@@ -37,7 +36,7 @@ class PatVar:
     def __init__(self, s):
         self.s = s
 
-    def __nonzero__(self):
+    def __bool__(self):
         return self.s and self.s[0] == '{' and self.s[-1] == '}'
 
 def unify(commandTokens, inputTokens):
@@ -66,7 +65,7 @@ def expand(command, userInput):
 # ok whether the parse succeeded
 # errorMessage on fail or action on success
 def parse(userInput):
-    for (command, action) in COMMANDS.iteritems():
+    for (command, action) in COMMANDS.items():
         (ok, args) = expand(command, userInput)
         if ok:
             return (True, action, args)

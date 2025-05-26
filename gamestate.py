@@ -10,7 +10,7 @@ def sameroom(func):
         if hero.GetRoom() == self.GetRoom():
             func(self, hero)
         else:
-            print "Must be in the same room as the {0}".format(self.name)
+            print("Must be in the same room as the {0}".format(self.name))
 
     return check
 
@@ -68,13 +68,13 @@ class Container(Object):
     @sameroom
     def Examine(self, hero):
         if not self.contents:
-            print "nothing to see for the {}".format(self.name)
-            print
+            print("nothing to see for the {}".format(self.name))
+            print()
         else:
-            print "{} contains:".format(self.name)
+            print("{} contains:".format(self.name))
             for item in self.contents:
-                print "    {0}".format(item)
-            print
+                print("    {0}".format(item))
+            print()
 
     def GenFields(self):
         for item in self.contents:
@@ -97,12 +97,12 @@ class StoreNumber(PhoneNumber):
         emit = self.gamestate.emit
         items = self.GetStoreItems()
         self.Greeting()
-        maxlen = max(len(x) for (x,_) in items.iteritems())
-        for (item, cost) in items.iteritems():
-            print "{0}${1}.00".format(item+'.'*(maxlen-len(item))+'.........', cost)
+        maxlen = max(len(x) for (x,_) in items.items())
+        for (item, cost) in items.items():
+            print("{0}${1}.00".format(item+'.'*(maxlen-len(item))+'.........', cost))
         while True:
-            choice = raw_input("> ")
-            if not choice in (x for (x,_) in items.iteritems()):
+            choice = input("> ")
+            if not choice in (x for (x,_) in items.items()):
                 emit("We don't have that.")
                 continue
 
@@ -154,7 +154,7 @@ class GroceryNumber(StoreNumber):
         def purchase(a, b):
             Food(choice, self.gamestate.apartment.main.fridge,
                  self.FoodFeel()[choice])
-            print "Food truck order has arrived!"
+            print("Food truck order has arrived!")
         self.gamestate.eventQueue.AddEvent(purchase, tomorrow)
 
 class HardwareNumber(StoreNumber):
@@ -192,12 +192,12 @@ class HardwareNumber(StoreNumber):
 
 class SuperNumber(PhoneNumber):
     def Interact(self):
-        print "Calling the super..."
-        for i in xrange(3):
-            print "ring..."
+        print("Calling the super...")
+        for i in range(3):
+            print("ring...")
             time.sleep(1)
 
-        print "Okay, doesn't look like anybody is answering."
+        print("Okay, doesn't look like anybody is answering.")
 
         self.gamestate.hero.feel -= 30
         self.gamestate.watch.currTime += timedelta(minutes=20)
@@ -208,11 +208,11 @@ class TV(Object):
 
     @sameroom
     def Examine(self, hero):
-        print "You turn on the tv."
-        print
-        print """Breaking news: prominent astrophysicists have recently
+        print("You turn on the tv.")
+        print()
+        print("""Breaking news: prominent astrophysicists have recently
 discovered a strange anomaly in space.  The origins are not yet clear.
-Stay tuned for further details."""
+Stay tuned for further details.""")
 
 class Phone(Object):
     def __init__(self, gamestate, parent):
@@ -226,13 +226,13 @@ class Phone(Object):
         ]
 
     def prompt(self, s):
-        return raw_input(s)
+        return input(s)
 
     @sameroom
     def Rolodex(self, hero):
         for phonenumber in self.phoneNumbers:
-            print phonenumber
-        print
+            print(phonenumber)
+        print()
 
     @sameroom
     def Interact(self, hero):
@@ -242,8 +242,8 @@ class Phone(Object):
                 phoneNumber.Interact()
                 return
 
-        print "Who's number is that?"
-        print
+        print("Who's number is that?")
+        print()
 
 class Watch(Object):
     def __init__(self, parent):
@@ -262,8 +262,8 @@ class Watch(Object):
 
     @sameroom
     def Interact(self, hero):
-        print "\nThe current time is {time}".format(time=self.GetDateAsString())
-        print
+        print("\nThe current time is {time}".format(time=self.GetDateAsString()))
+        print()
 
 class Hero(Container):
     INITIAL_FEEL = 50
@@ -285,18 +285,18 @@ class Hero(Container):
 
     def Pickup(self, thing):
         if not self.GetRoom() is thing.GetRoom():
-            print "I can't pick up something in a different room."
+            print("I can't pick up something in a different room.")
         elif not self.ClearPath(thing):
-            print "Got to dig a little deeper."
+            print("Got to dig a little deeper.")
         elif thing.weight > 100:
-            print "I can't pick this up."
+            print("I can't pick this up.")
         elif thing in self.contents:
-            print "Yup, already got that."
+            print("Yup, already got that.")
         else:
             self.contents.append(thing)
             thing.parent.contents.remove(thing)
-            print "Got it."
-        print
+            print("Got it.")
+        print()
 
     def Destroy(self, thing):
         if isinstance(thing, list):
@@ -304,12 +304,12 @@ class Hero(Container):
                 if item in self.contents:
                     self.contents.remove(item)
                 else:
-                    print "I don't have that."
+                    print("I don't have that.")
         else:
-            if item in self.contents:
+            if thing in self.contents:
                 self.contents.remove(thing)
             else:
-                print "I don't have that."
+                print("I don't have that.")
 
     def ChangeRoom(self, room):
         # stopping logic
@@ -327,17 +327,17 @@ class Openable(Container):
     @sameroom
     def Examine(self, hero):
         if self.state != Openable.State.OPEN:
-            print "The {} must be opened first.".format(self.name)
+            print("The {} must be opened first.".format(self.name))
             return
 
         if not self.contents:
-            print "nothing in the {}.".format(self.name)
-            print
+            print("nothing in the {}.".format(self.name))
+            print()
         else:
-            print "{} contains:".format(self.name)
+            print("{} contains:".format(self.name))
             for item in self.contents:
-                print "    {0}".format(item)
-            print
+                print("    {0}".format(item))
+            print()
 
     def isOpen(self):
         return self.state == Openable.State.OPEN
@@ -348,18 +348,18 @@ class Openable(Container):
     @sameroom
     def Open(self, hero):
         if self.state == Openable.State.OPEN:
-            print "\nThe {0} is already open.".format(self.name)
+            print("\nThe {0} is already open.".format(self.name))
         else:
-            print "\nThe {0} is now open.".format(self.name)
+            print("\nThe {0} is now open.".format(self.name))
 
         self.state = Openable.State.OPEN
 
     @sameroom
     def Close(self, hero):
         if self.state == Openable.State.CLOSED:
-            print "\nThe {0} is already closed.".format(self.name)
+            print("\nThe {0} is already closed.".format(self.name))
         else:
-            print "\nThe {0} is now closed.".format(self.name)
+            print("\nThe {0} is now closed.".format(self.name))
 
         self.state = Openable.State.CLOSED
 
@@ -388,7 +388,7 @@ class Room(Container):
     def Enter(self, fromRoom, hero):
         if fromRoom.Leave(hero):
             hero.ChangeRoom(self)
-            print "You are now in the {}".format(self.name)
+            print("You are now in the {}".format(self.name))
 
 class Closet(Room):
     CLOSET_READY    = 0
@@ -400,7 +400,7 @@ class Closet(Room):
 
     def Leave(self, hero):
         if self.state == Closet.CLOSET_NAILED:
-            print "\nPerhaps you should ponder exactly how you'll do that?"
+            print("\nPerhaps you should ponder exactly how you'll do that?")
             return False
         elif self.state == Closet.CLOSET_READY:
             return True
@@ -442,8 +442,8 @@ class GameState:
         self.eventQueue = queue
 
     def emit(self, s):
-        print s
-        print
+        print(s)
+        print()
 
     def IntroPrompt(self):
         self.emit("You wake up in your apartment.  It is {date}".
@@ -457,7 +457,7 @@ class GameState:
         if self.hero.feel <= 0:
             self.hero.feel = 0
             self.emit("I'm feeling very tired.  I'm going to pass out.....")
-            for i in xrange(5):
+            for i in range(5):
                 self.emit(".")
                 time.sleep(1)
             # Now run the alterego during his sleep
@@ -467,5 +467,5 @@ class GameState:
             self.IntroPrompt()
 
     def prompt(self):
-        userInput = raw_input("What do we do next?: ")
+        userInput = input("What do we do next?: ")
         return userInput

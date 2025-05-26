@@ -1,4 +1,3 @@
-
 from gamestate import GameState, Object
 import inputparser
 import delivery
@@ -12,7 +11,7 @@ def run():
     state.SetEventQueue(queue)
 
     def DeliverCheck(currTime, eventTime):
-        print "Government check in the mail!"
+        print("Government check in the mail!")
         Object("check", state.apartment.main.cabinet)
         queue.AddEvent(DeliverCheck, eventTime + timedelta(weeks=2))
 
@@ -24,9 +23,9 @@ def run():
         (ok, action, args) = inputparser.parse(userInput)
         if ok:
             action(state, *args)
-            print
+            print()
             state.Examine()
         else:
             errMsg = action
-            print errMsg
-            print
+            print(errMsg)
+            print()
