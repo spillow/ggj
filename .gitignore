@@ -1,3 +1,4 @@
 *.pyc
 *.swp
 .venv
+.claude/settings.local.json
