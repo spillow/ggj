@@ -75,7 +75,7 @@ def Ponder(state):
     state.hero.feel -= 10 * numHours
 
 def CheckBalance(state):
-    emit("Current Balance: ${0}".format(state.hero.currBalance))
+    emit(f"Current Balance: ${state.hero.currBalance}")
 
 def CheckFeel(state):
     feel = state.hero.feel
@@ -157,7 +157,7 @@ def GetObject(state, obj, roomObject):
                 if thing:
                     state.hero.Pickup(thing)
                 else:
-                    print("I don't see that in the {}.".format(openable.name))
+                    print(f"I don't see that in the {openable.name}.")
             else:
                 print("Try opening it first.")
         elif isinstance(roomObject, Container):
@@ -166,7 +166,7 @@ def GetObject(state, obj, roomObject):
             if thing:
                 state.hero.Pickup(thing)
             else:
-                print("I don't see that on the {}.".format(container.name))
+                print(f"I don't see that on the {container.name}.")
         else:
             print("How could I do that?")
     else:

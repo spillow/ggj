@@ -23,7 +23,7 @@ def sameroom(func: Callable) -> Callable:
         if hero.GetRoom() == self.GetRoom():
             func(self, hero)
         else:
-            print("Must be in the same room as the {0}".format(self.name))
+            print(f"Must be in the same room as the {self.name}")
 
     return check
 
@@ -57,7 +57,7 @@ class Object(object):
         """
         Return the string representation of the object.
         """
-        return "{0}".format(self.name)
+        return f"{self.name}"
 
     def GetRoom(self) -> 'Room':
         """
@@ -128,7 +128,7 @@ class Container(Object):
         Print the contents of the container if the hero is in the same room.
         """
         if not self.contents:
-            print("nothing to see for the {}".format(self.name))
+            print(f"nothing to see for the {self.name}")
             print()
         else:
             print("{} contains:".format(self.name))
