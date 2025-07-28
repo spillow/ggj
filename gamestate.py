@@ -131,9 +131,9 @@ class Container(Object):
             print(f"nothing to see for the {self.name}")
             print()
         else:
-            print("{} contains:".format(self.name))
+            print(f"{self.name} contains:")
             for item in self.contents:
-                print("    {0}".format(item))
+                print(f"    {item}")
             print()
 
     def GenFields(self) -> None:
@@ -163,7 +163,7 @@ class PhoneNumber:
         """
         Return the string representation of the phone number.
         """
-        return "{name}: {number}".format(name=self.name, number=self.number)
+        return f"{self.name}: {self.number}"
 
     def __eq__(self, other: Any) -> bool:
         """
@@ -184,7 +184,7 @@ class StoreNumber(PhoneNumber):
         self.Greeting()
         maxlen = max(len(x) for (x,_) in items.items())
         for (item, cost) in items.items():
-            print("{0}${1}.00".format(item+'.'*(maxlen-len(item))+'.........', cost))
+            print(f"{item+'.'*(maxlen-len(item))+'.........'}${cost}.00")
         while True:
             choice = input("> ")
             if not choice in (x for (x,_) in items.items()):
@@ -463,7 +463,7 @@ class Watch(Object):
         """
         Display the current time.
         """
-        print("\nThe current time is {time}".format(time=self.GetDateAsString()))
+        print(f"\nThe current time is {self.GetDateAsString()}")
         print()
 
 class Hero(Container):
@@ -564,16 +564,16 @@ class Openable(Container):
         Print the contents if open, otherwise prompt to open first.
         """
         if self.state != Openable.State.OPEN:
-            print("The {} must be opened first.".format(self.name))
+            print(f"The {self.name} must be opened first.")
             return
 
         if not self.contents:
-            print("nothing in the {}.".format(self.name))
+            print(f"nothing in the {self.name}.")
             print()
         else:
-            print("{} contains:".format(self.name))
+            print("{self.name} contains:")
             for item in self.contents:
-                print("    {0}".format(item))
+                print(f"    {item}")
             print()
 
     def isOpen(self) -> bool:
@@ -594,9 +594,9 @@ class Openable(Container):
         Open the container.
         """
         if self.state == Openable.State.OPEN:
-            print("\nThe {0} is already open.".format(self.name))
+            print(f"\nThe {self.name} is already open.")
         else:
-            print("\nThe {0} is now open.".format(self.name))
+            print(f"\nThe {self.name} is now open.")
 
         self.state = Openable.State.OPEN
 
@@ -606,9 +606,9 @@ class Openable(Container):
         Close the container.
         """
         if self.state == Openable.State.CLOSED:
-            print("\nThe {0} is already closed.".format(self.name))
+            print(f"\nThe {self.name} is already closed.")
         else:
-            print("\nThe {0} is now closed.".format(self.name))
+            print(f"\nThe {self.name} is now closed.")
 
         self.state = Openable.State.CLOSED
 
@@ -618,15 +618,15 @@ class Openable(Container):
         """
         if self.state == Openable.State.OPEN:
             if self.contents:
-                descr = "an open {name}, containing:\n".format(name=self.name)
+                descr = f"an open {self.name}, containing:\n"
                 for o in self.contents:
-                    descr += "    a {name}\n".format(name=o.name)
+                    descr += f"    a {o.name}\n"
             else:
-                descr = "an open {name} with nothing in it".format(self.name)
+                descr = f"an open {self.name} with nothing in it"
 
             return descr.strip()
         elif self.state == Openable.State.CLOSED:
-            return "a {name}, it is closed".format(self.name)
+            return f"a {self.name}, it is closed"
         else:
             assert False, 'unknown state!'
 
@@ -652,7 +652,7 @@ class Room(Container):
         """
         if fromRoom.Leave(hero):
             hero.ChangeRoom(self)
-            print("You are now in the {}".format(self.name))
+            print(f"You are now in the {self.name}")
 
 class Closet(Room):
     """
@@ -751,8 +751,7 @@ class GameState:
         """
         Display the introductory prompt to the player.
         """
-        self.emit("You wake up in your apartment.  It is {date}".
-            format(date=self.watch.GetDateAsString()))
+        self.emit(f"You wake up in your apartment.  It is {self.watch.GetDateAsString()}")
 
         self.emit("In the corner you see a toolbox.")
 
