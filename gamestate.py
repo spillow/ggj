@@ -15,10 +15,13 @@ import delivery
 from typing import Callable, Any, Optional, List, Dict, Type, Union
 
 # decorator for Interact()
+
+
 def sameroom(func: Callable) -> Callable:
     """
     Decorator to ensure that the hero and the object are in the same room before allowing interaction.
     """
+
     def check(self: Any, hero: 'Hero') -> None:
         if hero.GetRoom() == self.GetRoom():
             func(self, hero)
@@ -26,6 +29,7 @@ def sameroom(func: Callable) -> Callable:
             print(f"Must be in the same room as the {self.name}")
 
     return check
+
 
 class Object(object):
     """
@@ -69,6 +73,7 @@ class Object(object):
 
         return currParent  # type: ignore
 
+
 class Food(Object):
     """
     Represents a food item that can be eaten to boost the hero's feel.
@@ -92,6 +97,7 @@ class Food(Object):
         watch = hero.GetFirstItemByName('watch')
         watch.currTime += timedelta(minutes=20)
 
+
 class Container(Object):
     """
     Represents a container that can hold other objects.
@@ -104,7 +110,7 @@ class Container(Object):
         """
         super(Container, self).__init__(name, parent)
         self.contents: List[Object] = []
-        self.weight = 1000 # containers are just too much
+        self.weight = 1000  # containers are just too much
 
     def GetItemsByName(self, name: str) -> List[Object]:
         """
@@ -143,6 +149,7 @@ class Container(Object):
         for item in self.contents:
             setattr(self, item.name, item)
 
+
 class PhoneNumber:
     """
     Represents a phone number that can be called in the game.
@@ -155,8 +162,8 @@ class PhoneNumber:
         """
         Initialize a phone number with a name and number.
         """
-        self.name      = name
-        self.number    = number
+        self.name = name
+        self.number = number
         self.gamestate = gamestate
 
     def __str__(self) -> str:
@@ -171,10 +178,12 @@ class PhoneNumber:
         """
         return other == self.number
 
+
 class StoreNumber(PhoneNumber):
     """
     Abstract base class for store phone numbers.
     """
+
     def Interact(self) -> None:
         """
         Handle the interaction when calling the store, including ordering items.
@@ -182,12 +191,12 @@ class StoreNumber(PhoneNumber):
         emit = self.gamestate.emit
         items = self.GetStoreItems()
         self.Greeting()
-        maxlen = max(len(x) for (x,_) in items.items())
+        maxlen = max(len(x) for (x, _) in items.items())
         for (item, cost) in items.items():
             print(f"{item+'.'*(maxlen-len(item))+'.........'}${cost}.00")
         while True:
             choice = input("> ")
-            if not choice in (x for (x,_) in items.items()):
+            if not choice in (x for (x, _) in items.items()):
                 emit("We don't have that.")
                 continue
 
@@ -232,20 +241,22 @@ class StoreNumber(PhoneNumber):
         """
         raise NotImplementedError
 
+
 class GroceryNumber(StoreNumber):
     """
     Phone number for the grocery store.
     """
+
     def GetStoreItems(self) -> Dict[str, int]:
         """
         Return available grocery items and their costs.
         """
         mainroom = self.gamestate.apartment.main
         foods = {
-            "spicy-food" : 10,
-            "caffeine"   : 5,
-            "bananas"    : 2,
-            "ice-cubes"  : 6
+            "spicy-food": 10,
+            "caffeine": 5,
+            "bananas": 2,
+            "ice-cubes": 6
         }
         return foods
 
@@ -273,10 +284,10 @@ class GroceryNumber(StoreNumber):
         Return the feel boost for each food item.
         """
         feel = {
-            "spicy-food" : 30,
-            "caffeine"   : 20,
-            "bananas"    : 5,
-            "ice-cubes"  : 2
+            "spicy-food": 30,
+            "caffeine": 20,
+            "bananas": 5,
+            "ice-cubes": 2
         }
         return feel
 
@@ -287,25 +298,28 @@ class GroceryNumber(StoreNumber):
         emit = self.gamestate.emit
         emit("Thanks! We'll get that out to you tomorrow.")
         tomorrow = self.gamestate.watch.currTime + timedelta(days=1)
+
         def purchase(a: Any, b: Any) -> None:
             Food(choice, self.gamestate.apartment.main.fridge,
                  self.FoodFeel()[choice])
             print("Food truck order has arrived!")
         self.gamestate.eventQueue.AddEvent(purchase, tomorrow)
 
+
 class HardwareNumber(StoreNumber):
     """
     Phone number for the hardware store.
     """
+
     def GetStoreItems(self) -> Dict[str, int]:
         """
         Return available hardware items and their costs.
         """
         mainroom = self.gamestate.apartment.main
         hardware = {
-            "hammer"        : 20,
-            "box-of-nails"  : 5,
-            "plywood-sheet" : 30
+            "hammer": 20,
+            "box-of-nails": 5,
+            "plywood-sheet": 30
         }
         return hardware
 
@@ -335,6 +349,7 @@ class HardwareNumber(StoreNumber):
         emit = self.gamestate.emit
         emit("Thanks! We'll get that out to you in a couple days.")
         twoDays = self.gamestate.watch.currTime + timedelta(days=2)
+
         def purchase(a: Any, b: Any) -> None:
             if choice == 'plywood-sheet':
                 location = self.gamestate.apartment.main.table
@@ -344,10 +359,12 @@ class HardwareNumber(StoreNumber):
             Object(choice, location)
         self.gamestate.eventQueue.AddEvent(purchase, twoDays)
 
+
 class SuperNumber(PhoneNumber):
     """
     Phone number for the building super.
     """
+
     def Interact(self) -> None:
         """
         Simulate calling the super, who does not answer.
@@ -362,10 +379,12 @@ class SuperNumber(PhoneNumber):
         self.gamestate.hero.feel -= 30
         self.gamestate.watch.currTime += timedelta(minutes=20)
 
+
 class TV(Object):
     """
     Represents a TV object that can be examined for news.
     """
+
     def __init__(self, parent: Optional['Container']) -> None:
         """
         Initialize the TV object.
@@ -382,6 +401,7 @@ class TV(Object):
         print("""Breaking news: prominent astrophysicists have recently
 discovered a strange anomaly in space.  The origins are not yet clear.
 Stay tuned for further details.""")
+
 
 class Phone(Object):
     """
@@ -432,6 +452,7 @@ class Phone(Object):
         print("Who's number is that?")
         print()
 
+
 class Watch(Object):
     """
     Represents a watch object that tracks the current game time.
@@ -446,7 +467,7 @@ class Watch(Object):
 
         # March 15, 1982 at 3:14 AM
         self.currTime = datetime.datetime(
-            1982, # year
+            1982,  # year
             3,    # month
             15,   # day
             3,    # hour
@@ -466,6 +487,7 @@ class Watch(Object):
         print(f"\nThe current time is {self.GetDateAsString()}")
         print()
 
+
 class Hero(Container):
     """
     Represents the player character.
@@ -480,9 +502,9 @@ class Hero(Container):
         Initialize the hero with starting feel and balance.
         """
         super(Hero, self).__init__("me", startRoom)
-        self.feel          = Hero.INITIAL_FEEL
-        self.currBalance   = 100
-        self.state         = Openable.State.OPEN
+        self.feel = Hero.INITIAL_FEEL
+        self.currBalance = 100
+        self.state = Openable.State.OPEN
 
     def ClearPath(self, thing: Object) -> bool:
         """
@@ -538,6 +560,7 @@ class Hero(Container):
         # stopping logic
         self.parent = room
 
+
 class Openable(Container):
     """
     Represents a container that can be opened or closed.
@@ -548,7 +571,7 @@ class Openable(Container):
         """
         Enum for open/closed state.
         """
-        OPEN   = 0
+        OPEN = 0
         CLOSED = 1
 
     def __init__(self, name: str, parent: Optional['Container']) -> None:
@@ -630,10 +653,12 @@ class Openable(Container):
         else:
             assert False, 'unknown state!'
 
+
 class Room(Container):
     """
     Represents a room in the apartment.
     """
+
     def __init__(self, name: str, parent: Optional['Container']) -> None:
         """
         Initialize a room.
@@ -654,12 +679,13 @@ class Room(Container):
             hero.ChangeRoom(self)
             print(f"You are now in the {self.name}")
 
+
 class Closet(Room):
     """
     Represents a closet, which may be nailed shut.
     """
-    CLOSET_READY    = 0
-    CLOSET_NAILED   = 1
+    CLOSET_READY = 0
+    CLOSET_NAILED = 1
     state: int
 
     def __init__(self, name: str, parent: Optional['Container']) -> None:
@@ -681,6 +707,7 @@ class Closet(Room):
         else:
             assert 'unknown closet state!'
 
+
 class Apartment(Container):
     """
     Represents the player's apartment, containing all rooms and main objects.
@@ -698,20 +725,21 @@ class Apartment(Container):
         super(Apartment, self).__init__("apartment", None)
         self.gamestate = gamestate
 
-        self.main     = Room("main", self)
-        self.bedroom  = Room("bedroom", self)
+        self.main = Room("main", self)
+        self.bedroom = Room("bedroom", self)
         self.bathroom = Room("bathroom", self)
-        self.closet   = Closet("closet", self)
+        self.closet = Closet("closet", self)
         self.GenFields()
 
-        phone   = Phone(gamestate, self.main)
+        phone = Phone(gamestate, self.main)
         toolbox = Openable("toolbox", self.main)
-        fridge  = Openable("fridge", self.main)
+        fridge = Openable("fridge", self.main)
         cabinet = Openable("cabinet", self.main)
-        table   = Container("table", self.main)
-        tv      = TV(self.main)
+        table = Container("table", self.main)
+        tv = TV(self.main)
 
         self.main.GenFields()
+
 
 class GameState:
     """
@@ -729,8 +757,8 @@ class GameState:
         Initialize the game state, apartment, hero, and watch.
         """
         self.apartment = Apartment(self)
-        self.hero      = Hero(self.apartment.main)
-        self.alterEgo  = alterego.AlterEgo()
+        self.hero = Hero(self.apartment.main)
+        self.alterEgo = alterego.AlterEgo()
 
         self.watch = Watch(self.hero)
 
@@ -751,7 +779,8 @@ class GameState:
         """
         Display the introductory prompt to the player.
         """
-        self.emit(f"You wake up in your apartment.  It is {self.watch.GetDateAsString()}")
+        self.emit(
+            f"You wake up in your apartment.  It is {self.watch.GetDateAsString()}")
 
         self.emit("In the corner you see a toolbox.")
 

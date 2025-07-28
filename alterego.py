@@ -5,4 +5,3 @@ class AlterEgo:
 
     def run(self, gamestate):
         pass
-

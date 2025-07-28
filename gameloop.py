@@ -5,6 +5,7 @@ from datetime import timedelta
 
 from delivery import EventQueue
 
+
 def run():
     state = GameState()
     queue = EventQueue(state)
