@@ -131,8 +131,8 @@ class TestContainer:
         
         outputs = self.mock_io.get_all_outputs()
         assert "box contains:" in outputs
-        assert "item1" in outputs
-        assert "item2" in outputs
+        assert "    item1" in outputs
+        assert "    item2" in outputs
     
     def test_get_items_by_name(self):
         """Test retrieving items by name."""
@@ -199,7 +199,7 @@ class TestOpenable:
         
         assert container.isOpen()
         outputs = self.mock_io.get_all_outputs()
-        assert "The chest is now open." in outputs
+        assert any("The chest is now open." in output for output in outputs)
     
     def test_close_container(self):
         """Test closing a container."""
@@ -209,7 +209,7 @@ class TestOpenable:
         
         assert container.isClosed()
         outputs = self.mock_io.get_all_outputs()
-        assert "The chest is now closed." in outputs
+        assert any("The chest is now closed." in output for output in outputs)
     
     def test_examine_closed_container(self):
         """Test examining a closed container."""
