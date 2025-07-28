@@ -8,10 +8,10 @@
 
 from datetime import timedelta
 from typing import Callable, Any
-from .gamestate import Container, Object, Openable, Closet
+from .gamestate import Container, Object, Openable, Closet, GameState
 
 # Type alias for game state
-GameStateType = Any  # Forward reference to avoid circular imports
+GameStateType = GameState
 
 
 def prompt(s: str) -> str:
