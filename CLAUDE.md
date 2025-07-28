@@ -106,7 +106,7 @@ The codebase has been refactored to follow testable design patterns:
 - `ConsoleIO`: Real console I/O for gameplay
 - `MockIO`: Test implementation that records outputs and provides scripted inputs
 
-**Benefits**: 
+**Benefits**:
 - Tests run instantly without blocking on user input
 - Deterministic testing with pre-configured responses
 - Complete verification of all game output
@@ -118,8 +118,8 @@ The codebase has been refactored to follow testable design patterns:
 # Before: Hard-coded dependencies
 def some_method(self):
     print("message")  # Hard to test
-    
-# After: Injected dependencies  
+
+# After: Injected dependencies
 def some_method(self):
     self.io.output("message")  # Easily mockable
 ```
@@ -167,12 +167,12 @@ When adding new features, follow these patterns:
 class NewFeature:
     def __init__(self, io: IOInterface):
         self.io = io
-    
+
     def process(self, data: str) -> bool:
         result = self._calculate(data)  # Pure function
         self.io.output(f"Result: {result}")  # I/O via interface
         return result > 0
-        
+
 # Test
 def test_new_feature():
     mock_io = MockIO()
@@ -182,3 +182,6 @@ def test_new_feature():
 ```
 
 This architecture ensures all new code is testable, maintainable, and follows separation of concerns.
+
+## Coding style
+This project adheres to PEP-8 guidelines and requires type hints.
