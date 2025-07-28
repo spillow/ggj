@@ -10,7 +10,28 @@ python main.py
 ```
 
 ### Testing
-No automated tests are present in the codebase. Testing is done manually by running the game and playing through scenarios.
+```bash
+# Install test dependencies
+pip install -r requirements.txt
+
+# Run all tests
+python -m pytest
+
+# Run tests with verbose output
+python -m pytest -v
+
+# Run specific test file
+python -m pytest tests/test_gamestate.py
+
+# Run specific test
+python -m pytest tests/test_gamestate.py::TestHero::test_pickup_success
+```
+
+The codebase uses pytest for automated testing with a comprehensive test suite covering:
+- Game object functionality (Hero, Container, Food, etc.)
+- Game mechanics (pickup, inventory, room navigation)
+- I/O operations using mock interfaces
+- State management and time progression
 
 ## Code Architecture
 
@@ -74,3 +95,90 @@ The game uses a centralized `GameState` object that contains:
 - `eventQueue`: Scheduled events system
 
 All game objects maintain parent-child relationships for location tracking, and the `@sameroom` decorator ensures actions only work when the player is in the same room as objects.
+
+## Testing Architecture & Design Principles
+
+The codebase has been refactored to follow testable design patterns:
+
+### I/O Abstraction (`io_interface.py`)
+
+**Interface Pattern**: All user interaction goes through the `IOInterface` abstraction:
+- `ConsoleIO`: Real console I/O for gameplay
+- `MockIO`: Test implementation that records outputs and provides scripted inputs
+
+**Benefits**: 
+- Tests run instantly without blocking on user input
+- Deterministic testing with pre-configured responses
+- Complete verification of all game output
+
+### Dependency Injection
+
+**Pattern**: Core classes accept their dependencies as constructor parameters:
+```python
+# Before: Hard-coded dependencies
+def some_method(self):
+    print("message")  # Hard to test
+    
+# After: Injected dependencies  
+def some_method(self):
+    self.io.output("message")  # Easily mockable
+```
+
+**Implementation**:
+- `GameState(io: IOInterface = None)` - accepts optional IO interface
+- `Hero(startRoom: Room, io: IOInterface)` - requires IO for interactions
+- All game objects use `hero.io` for output instead of direct `print()`
+
+### Pure Business Logic
+
+**Separation of Concerns**: Core game logic is separated from I/O side effects:
+- **Pure Functions**: Game mechanics like inventory rules, time calculations
+- **Stateful Objects**: Game state management without I/O coupling
+- **I/O Layer**: User interface completely abstracted away
+
+### Test Structure
+
+**Test Categories**:
+- **Unit Tests**: Individual object behavior (`TestHero`, `TestContainer`)
+- **Integration Tests**: Object interactions and game mechanics
+- **Mock Tests**: User interaction scenarios with scripted inputs
+
+**Test Fixtures**: Each test gets fresh instances to prevent test pollution:
+```python
+def setup_method(self):
+    self.mock_io = MockIO()
+    self.state = GameState(self.mock_io)
+    self.hero = self.state.hero
+```
+
+### Best Practices for New Features
+
+When adding new features, follow these patterns:
+
+1. **Accept IO Interface**: New classes should accept `IOInterface` parameter
+2. **Use Dependency Injection**: Don't create dependencies internally, accept them
+3. **Separate Logic from I/O**: Keep business logic pure, delegate I/O to interface
+4. **Write Tests First**: Use `MockIO` to script interactions and verify outputs
+5. **Test Edge Cases**: Cover error conditions, boundary values, and state transitions
+
+**Example**:
+```python
+# Good: Testable design
+class NewFeature:
+    def __init__(self, io: IOInterface):
+        self.io = io
+    
+    def process(self, data: str) -> bool:
+        result = self._calculate(data)  # Pure function
+        self.io.output(f"Result: {result}")  # I/O via interface
+        return result > 0
+        
+# Test
+def test_new_feature():
+    mock_io = MockIO()
+    feature = NewFeature(mock_io)
+    assert feature.process("test") == True
+    assert "Result:" in mock_io.get_all_outputs()
+```
+
+This architecture ensures all new code is testable, maintainable, and follows separation of concerns.
