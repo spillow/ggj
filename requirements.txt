@@ -1,8 +1,8 @@
 # Python requirements for Global Game Jam 2015 text adventure game
 # Add external packages here as needed
 
-# Development and testing tools (uncomment as needed)
-# pytest>=7.0.0
+# Development and testing tools
+pytest>=7.0.0
 # black>=22.0.0
 # flake8>=4.0.0
 # mypy>=0.900

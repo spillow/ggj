@@ -13,6 +13,7 @@ import alterego
 import time
 import delivery
 from typing import Callable, Any, Optional, List, Dict, Type, Union
+from io_interface import IOInterface, ConsoleIO
 
 # decorator for Interact()
 
@@ -26,7 +27,7 @@ def sameroom(func: Callable) -> Callable:
         if hero.GetRoom() == self.GetRoom():
             func(self, hero)
         else:
-            print(f"Must be in the same room as the {self.name}")
+            hero.io.output(f"Must be in the same room as the {self.name}")
 
     return check
 
@@ -134,13 +135,13 @@ class Container(Object):
         Print the contents of the container if the hero is in the same room.
         """
         if not self.contents:
-            print(f"nothing to see for the {self.name}")
-            print()
+            hero.io.output(f"nothing to see for the {self.name}")
+            hero.io.output("")
         else:
-            print(f"{self.name} contains:")
+            hero.io.output(f"{self.name} contains:")
             for item in self.contents:
-                print(f"    {item}")
-            print()
+                hero.io.output(f"    {item}")
+            hero.io.output("")
 
     def GenFields(self) -> None:
         """
@@ -193,9 +194,9 @@ class StoreNumber(PhoneNumber):
         self.Greeting()
         maxlen = max(len(x) for (x, _) in items.items())
         for (item, cost) in items.items():
-            print(f"{item+'.'*(maxlen-len(item))+'.........'}${cost}.00")
+            self.gamestate.io.output(f"{item+'.'*(maxlen-len(item))+'.........'}${cost}.00")
         while True:
-            choice = input("> ")
+            choice = self.gamestate.io.get_input("> ")
             if not choice in (x for (x, _) in items.items()):
                 emit("We don't have that.")
                 continue
@@ -302,7 +303,7 @@ class GroceryNumber(StoreNumber):
         def purchase(a: Any, b: Any) -> None:
             Food(choice, self.gamestate.apartment.main.fridge,
                  self.FoodFeel()[choice])
-            print("Food truck order has arrived!")
+            self.gamestate.io.output("Food truck order has arrived!")
         self.gamestate.eventQueue.AddEvent(purchase, tomorrow)
 
 
@@ -369,12 +370,12 @@ class SuperNumber(PhoneNumber):
         """
         Simulate calling the super, who does not answer.
         """
-        print("Calling the super...")
+        self.gamestate.io.output("Calling the super...")
         for i in range(3):
-            print("ring...")
-            time.sleep(1)
+            self.gamestate.io.output("ring...")
+            self.gamestate.io.sleep(1)
 
-        print("Okay, doesn't look like anybody is answering.")
+        self.gamestate.io.output("Okay, doesn't look like anybody is answering.")
 
         self.gamestate.hero.feel -= 30
         self.gamestate.watch.currTime += timedelta(minutes=20)
@@ -396,9 +397,9 @@ class TV(Object):
         """
         Display a news message when the TV is examined.
         """
-        print("You turn on the tv.")
-        print()
-        print("""Breaking news: prominent astrophysicists have recently
+        hero.io.output("You turn on the tv.")
+        hero.io.output("")
+        hero.io.output("""Breaking news: prominent astrophysicists have recently
 discovered a strange anomaly in space.  The origins are not yet clear.
 Stay tuned for further details.""")
 
@@ -427,7 +428,7 @@ class Phone(Object):
         """
         Prompt the user for input.
         """
-        return input(s)
+        return self.gamestate.io.get_input(s)
 
     @sameroom
     def Rolodex(self, hero: 'Hero') -> None:
@@ -435,8 +436,8 @@ class Phone(Object):
         List all available phone numbers.
         """
         for phonenumber in self.phoneNumbers:
-            print(phonenumber)
-        print()
+            hero.io.output(str(phonenumber))
+        hero.io.output("")
 
     @sameroom
     def Interact(self, hero: 'Hero') -> None:
@@ -449,8 +450,8 @@ class Phone(Object):
                 phoneNumber.Interact()
                 return
 
-        print("Who's number is that?")
-        print()
+        self.gamestate.io.output("Who's number is that?")
+        self.gamestate.io.output("")
 
 
 class Watch(Object):
@@ -484,8 +485,8 @@ class Watch(Object):
         """
         Display the current time.
         """
-        print(f"\nThe current time is {self.GetDateAsString()}")
-        print()
+        hero.io.output(f"\nThe current time is {self.GetDateAsString()}")
+        hero.io.output("")
 
 
 class Hero(Container):
@@ -496,8 +497,9 @@ class Hero(Container):
     feel: int
     currBalance: int
     state: int
+    io: IOInterface
 
-    def __init__(self, startRoom: 'Room') -> None:
+    def __init__(self, startRoom: 'Room', io: IOInterface) -> None:
         """
         Initialize the hero with starting feel and balance.
         """
@@ -505,6 +507,7 @@ class Hero(Container):
         self.feel = Hero.INITIAL_FEEL
         self.currBalance = 100
         self.state = Openable.State.OPEN
+        self.io = io
 
     def ClearPath(self, thing: Object) -> bool:
         """
@@ -524,18 +527,18 @@ class Hero(Container):
         Attempt to pick up an object, checking for room and path.
         """
         if not self.GetRoom() is thing.GetRoom():
-            print("I can't pick up something in a different room.")
+            self.io.output("I can't pick up something in a different room.")
         elif not self.ClearPath(thing):
-            print("Got to dig a little deeper.")
+            self.io.output("Got to dig a little deeper.")
         elif thing.weight > 100:
-            print("I can't pick this up.")
+            self.io.output("I can't pick this up.")
         elif thing in self.contents:
-            print("Yup, already got that.")
+            self.io.output("Yup, already got that.")
         else:
             self.contents.append(thing)
             thing.parent.contents.remove(thing)
-            print("Got it.")
-        print()
+            self.io.output("Got it.")
+        self.io.output("")
 
     def Destroy(self, thing: Union[List[Object], Object]) -> None:
         """
@@ -546,12 +549,12 @@ class Hero(Container):
                 if item in self.contents:
                     self.contents.remove(item)
                 else:
-                    print("I don't have that.")
+                    self.io.output("I don't have that.")
         else:
             if thing in self.contents:
                 self.contents.remove(thing)
             else:
-                print("I don't have that.")
+                self.io.output("I don't have that.")
 
     def ChangeRoom(self, room: 'Room') -> None:
         """
@@ -587,17 +590,17 @@ class Openable(Container):
         Print the contents if open, otherwise prompt to open first.
         """
         if self.state != Openable.State.OPEN:
-            print(f"The {self.name} must be opened first.")
+            hero.io.output(f"The {self.name} must be opened first.")
             return
 
         if not self.contents:
-            print(f"nothing in the {self.name}.")
-            print()
+            hero.io.output(f"nothing in the {self.name}.")
+            hero.io.output("")
         else:
-            print("{self.name} contains:")
+            hero.io.output(f"{self.name} contains:")
             for item in self.contents:
-                print(f"    {item}")
-            print()
+                hero.io.output(f"    {item}")
+            hero.io.output("")
 
     def isOpen(self) -> bool:
         """
@@ -617,9 +620,9 @@ class Openable(Container):
         Open the container.
         """
         if self.state == Openable.State.OPEN:
-            print(f"\nThe {self.name} is already open.")
+            hero.io.output(f"\nThe {self.name} is already open.")
         else:
-            print(f"\nThe {self.name} is now open.")
+            hero.io.output(f"\nThe {self.name} is now open.")
 
         self.state = Openable.State.OPEN
 
@@ -629,9 +632,9 @@ class Openable(Container):
         Close the container.
         """
         if self.state == Openable.State.CLOSED:
-            print(f"\nThe {self.name} is already closed.")
+            hero.io.output(f"\nThe {self.name} is already closed.")
         else:
-            print(f"\nThe {self.name} is now closed.")
+            hero.io.output(f"\nThe {self.name} is now closed.")
 
         self.state = Openable.State.CLOSED
 
@@ -677,7 +680,7 @@ class Room(Container):
         """
         if fromRoom.Leave(hero):
             hero.ChangeRoom(self)
-            print(f"You are now in the {self.name}")
+            hero.io.output(f"You are now in the {self.name}")
 
 
 class Closet(Room):
@@ -700,7 +703,7 @@ class Closet(Room):
         Determine if the hero can leave the closet.
         """
         if self.state == Closet.CLOSET_NAILED:
-            print("\nPerhaps you should ponder exactly how you'll do that?")
+            hero.io.output("\nPerhaps you should ponder exactly how you'll do that?")
             return False
         elif self.state == Closet.CLOSET_READY:
             return True
@@ -751,13 +754,15 @@ class GameState:
     hero: Hero
     alterEgo: Any
     watch: Watch
+    io: IOInterface
 
-    def __init__(self) -> None:
+    def __init__(self, io: IOInterface = None) -> None:
         """
         Initialize the game state, apartment, hero, and watch.
         """
+        self.io = io or ConsoleIO()
         self.apartment = Apartment(self)
-        self.hero = Hero(self.apartment.main)
+        self.hero = Hero(self.apartment.main, self.io)
         self.alterEgo = alterego.AlterEgo()
 
         self.watch = Watch(self.hero)
@@ -772,8 +777,8 @@ class GameState:
         """
         Print a message to the player.
         """
-        print(s)
-        print()
+        self.io.output(s)
+        self.io.output("")
 
     def IntroPrompt(self) -> None:
         """
@@ -793,7 +798,7 @@ class GameState:
             self.emit("I'm feeling very tired.  I'm going to pass out.....")
             for i in range(5):
                 self.emit(".")
-                time.sleep(1)
+                self.io.sleep(1)
             # Now run the alterego during his sleep
             self.alterEgo.run(self)
             # Now that he is finished, reset
@@ -804,5 +809,5 @@ class GameState:
         """
         Prompt the player for the next action.
         """
-        userInput = input("What do we do next?: ")
+        userInput = self.io.get_input("What do we do next?: ")
         return userInput
