@@ -4,13 +4,14 @@ Test suite for io_interface.py
 Tests the I/O interface implementations.
 """
 
-from io_interface import IOInterface, ConsoleIO, MockIO
 import pytest
 import sys
 import os
 
 # Add parent directory to path so we can import game modules
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from src.io_interface import IOInterface, ConsoleIO, MockIO
 
 
 class TestMockIO:

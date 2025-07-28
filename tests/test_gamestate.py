@@ -4,8 +4,6 @@ Test suite for gamestate.py
 Tests the core game objects and mechanics using the MockIO interface.
 """
 
-from io_interface import MockIO
-from gamestate import GameState, Object, Container, Hero, Food, Watch, Openable, Room
 import pytest
 from datetime import datetime, timedelta
 import sys
@@ -13,6 +11,9 @@ import os
 
 # Add parent directory to path so we can import game modules
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from src.io_interface import MockIO
+from src.gamestate import GameState, Object, Container, Hero, Food, Watch, Openable, Room
 
 
 class TestGameState:

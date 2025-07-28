@@ -1,10 +1,10 @@
-from gamestate import GameState, Object
-from io_interface import IOInterface, ConsoleIO
-import inputparser
-import delivery
+from .gamestate import GameState, Object
+from .io_interface import IOInterface, ConsoleIO
+from . import inputparser
+from . import delivery
 from datetime import timedelta
 
-from delivery import EventQueue
+from .delivery import EventQueue
 
 
 def run(io: IOInterface = None):

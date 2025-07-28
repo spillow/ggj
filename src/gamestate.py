@@ -9,11 +9,11 @@ between rooms, interacting with objects, and managing time and events is impleme
 
 import datetime
 from datetime import timedelta
-import alterego
+from . import alterego
 import time
-import delivery
+from . import delivery
 from typing import Callable, Any, Optional, List, Dict, Type, Union
-from io_interface import IOInterface, ConsoleIO
+from .io_interface import IOInterface, ConsoleIO
 
 # decorator for Interact()
 

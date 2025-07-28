@@ -39,12 +39,12 @@ This is a text-based adventure game written in Python for Global Game Jam 2015. 
 
 ### Core Architecture
 
-**Game Loop (`gameloop.py`)**
+**Game Loop (`src/gameloop.py`)**
 - Main game loop that initializes the game state and processes user input
 - Handles the event queue for scheduled deliveries (government checks every 2 weeks)
 - Coordinates between input parsing, action execution, and state examination
 
-**Game State (`gamestate.py`)**
+**Game State (`src/gamestate.py`)**
 - Contains the complete object model with inheritance hierarchy:
   - `Object` (base class for all game items)
   - `Container` (objects that hold other objects)
@@ -55,20 +55,25 @@ This is a text-based adventure game written in Python for Global Game Jam 2015. 
 - Implements time system using Python's datetime (starting March 15, 1982 at 3:14 AM)
 - Tracks player stats: feel (energy), balance (money)
 
-**Input System (`inputparser.py`)**
+**Input System (`src/inputparser.py`)**
 - Pattern-based command parser using string templates with variables like `{a}` and `{b}`
 - Maps natural language commands to action functions
 - Supports commands like "get {item} from {container}", "go to {room}", etc.
 
-**Actions (`actions.py`)**
+**Actions (`src/actions.py`)**
 - Individual action functions that modify game state
 - Each action handles time advancement and validation
 - Key mechanics: inventory management, room navigation, phone calls, eating food
 
-**Event System (`delivery.py`)**
+**Event System (`src/delivery.py`)**
 - Time-based event queue for scheduled events
 - Handles deliveries from stores (grocery, hardware)
 - Government check deliveries every 2 weeks
+
+**I/O Interface (`src/io_interface.py`)**
+- Abstraction layer for input/output operations
+- `ConsoleIO` for real gameplay, `MockIO` for testing
+- Enables deterministic, fast testing without blocking I/O
 
 ### Key Game Mechanics
 
@@ -100,7 +105,7 @@ All game objects maintain parent-child relationships for location tracking, and 
 
 The codebase has been refactored to follow testable design patterns:
 
-### I/O Abstraction (`io_interface.py`)
+### I/O Abstraction (`src/io_interface.py`)
 
 **Interface Pattern**: All user interaction goes through the `IOInterface` abstraction:
 - `ConsoleIO`: Real console I/O for gameplay

@@ -1,4 +1,4 @@
-import actions
+from . import actions
 
 COMMANDS = {
     "debug items": actions.DebugItems,

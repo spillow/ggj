@@ -7,7 +7,7 @@
 # the clock forward.
 
 from datetime import timedelta
-from gamestate import GameState, Container, Object, Openable, Closet
+from .gamestate import GameState, Container, Object, Openable, Closet
 
 
 def prompt(s):

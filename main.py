@@ -1,4 +1,4 @@
-import gameloop
+from src import gameloop
 
 
 def main():
