@@ -8,7 +8,7 @@
 
 from datetime import timedelta
 from typing import Callable, Any
-from .gamestate import Container, Object, Openable, Closet, GameState
+from .gamestate import Container, Object, Openable, Closet, GameState, Food
 
 # Type alias for game state
 GameStateType = GameState
@@ -142,7 +142,7 @@ def EatThing(state: GameStateType, food_name: str) -> None:
         return
 
     food = state.apartment.main.fridge.GetFirstItemByName(food_name)
-    if food:
+    if isinstance(food, Food):
         attempt(lambda: food.Eat(state.hero), "Error!")
     else:
         print("I don't see that food in there.")

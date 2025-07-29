@@ -7,12 +7,10 @@ various interactable items such as phones, food, and tools. The game logic for m
 between rooms, interacting with objects, and managing time and events is implemented here.
 """
 
+from typing import Callable, Any, Optional, List, Dict, Union
 import datetime
 from datetime import timedelta
 from . import alterego
-import time
-from . import delivery
-from typing import Callable, Any, Optional, List, Dict, Type, Union
 from .io_interface import IOInterface, ConsoleIO
 
 # decorator for Interact()
@@ -246,7 +244,6 @@ class GroceryNumber(StoreNumber):
         """
         Return available grocery items and their costs.
         """
-        mainroom = self.gamestate.apartment.main
         foods = {
             "spicy-food": 10,
             "caffeine": 5,
@@ -693,7 +690,7 @@ class MainRoom(Room):
         Initialize the main room with its objects.
         """
         super(MainRoom, self).__init__(name, parent)
-        
+
         self.phone = Phone(gamestate, self)
         self.toolbox = Openable("toolbox", self)
         self.fridge = Openable("fridge", self)
