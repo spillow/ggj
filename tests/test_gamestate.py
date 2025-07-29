@@ -29,7 +29,7 @@ class TestGameState:
         assert state.apartment is not None
         assert state.watch is not None
         assert state.hero.feel == Hero.INITIAL_FEEL
-        assert state.hero.currBalance == 100
+        assert state.hero.curr_balance == 100
 
 
 class TestHero:
@@ -44,7 +44,7 @@ class TestHero:
     def test_hero_initialization(self):
         """Test hero starts with correct values."""
         assert self.hero.feel == Hero.INITIAL_FEEL
-        assert self.hero.currBalance == 100
+        assert self.hero.curr_balance == 100
         assert self.hero.io is self.mock_io
 
     def test_pickup_success(self):
@@ -93,14 +93,14 @@ class TestFood:
     def test_food_eating(self):
         """Test that eating food increases feel and advances time."""
         initial_feel = self.hero.feel
-        initial_time = self.state.watch.currTime
+        initial_time = self.state.watch.curr_time
 
         # Create food in hero's inventory
         food = Food("apple", self.hero, 10)
         food.Eat(self.hero)
 
         assert self.hero.feel == initial_feel + 10
-        assert self.state.watch.currTime == initial_time + \
+        assert self.state.watch.curr_time == initial_time + \
             timedelta(minutes=20)
         assert food not in self.hero.contents
 
@@ -166,7 +166,7 @@ class TestWatch:
         """Test watch starts with correct date."""
         watch = Watch(self.hero)
         expected_date = datetime(1982, 3, 15, 3, 14)
-        assert watch.currTime == expected_date
+        assert watch.curr_time == expected_date
 
     def test_watch_interact(self):
         """Test interacting with watch displays time."""

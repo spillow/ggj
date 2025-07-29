@@ -135,10 +135,10 @@ class TestApartment:
         phone = main_room.GetFirstItemByName("phone")
         
         assert phone.gamestate is self.state
-        assert len(phone.phoneNumbers) == 3  # grocery, hardware, super
+        assert len(phone.phone_numbers) == 3  # grocery, hardware, super
         
         # Check phone number names
-        number_names = [pn.name for pn in phone.phoneNumbers]
+        number_names = [pn.name for pn in phone.phone_numbers]
         assert "Grocery" in number_names
         assert "Hardware Store" in number_names
         assert "The Super" in number_names
