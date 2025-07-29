@@ -17,23 +17,12 @@ from .gamestate import Container, Object, Openable, Closet, GameState, Food, Roo
 GameStateType = GameState
 
 
-def prompt(s: str) -> str:
-    """Prompt the user for input."""
-    return input(s)
-
-
-def emit(s: str) -> None:
-    """Print a message with a blank line after."""
-    print(s)
-    print()
-
-
-def attempt(thunk: Callable[[], None], error_msg: str) -> None:
+def attempt(thunk: Callable[[], None], error_msg: str, hero: Any) -> None:
     """Attempt to execute a function, catching AttributeError."""
     try:
         thunk()
     except AttributeError as e:
-        print(error_msg, e)
+        hero.io.output(f"{error_msg} {e}")
 
 
 def thingify(func: Callable[[GameStateType, Any], None]) -> Callable[[GameStateType, str], None]:
@@ -43,7 +32,7 @@ def thingify(func: Callable[[GameStateType, Any], None]) -> Callable[[GameStateT
         if room_object:
             func(state, room_object)
         else:
-            print("I don't see that in the room.")
+            state.hero.io.output("I don't see that in the room.")
 
     return inner
 
@@ -79,118 +68,122 @@ def look_at_watch(state: GameStateType) -> None:
     if watch and isinstance(watch, Watch):
         watch.Interact(state.hero)
     else:
-        print("Not carrying a watch!")
-        print()
+        state.hero.io.output("Not carrying a watch!")
+        state.hero.io.output("")
 
 
 def ponder(state: GameStateType) -> None:
     """Spend time pondering, advancing the clock and reducing feel."""
     while True:
-        length = prompt("How many hours?: ")
+        length = state.hero.io.get_input("How many hours?: ")
         if length.isdigit():
             num_hours = int(length)
             if num_hours > 1000:
-                emit("\nThat's too long to sit and do nothing.")
+                state.hero.io.output("\nThat's too long to sit and do nothing.")
+                state.hero.io.output("")
                 continue
             break
         else:
-            emit("\nWhat? Give me a number.")
+            state.hero.io.output("\nWhat? Give me a number.")
+            state.hero.io.output("")
 
-    state.watch.currTime += timedelta(hours=num_hours)
+    state.watch.curr_time += timedelta(hours=num_hours)
     state.hero.feel -= 10 * num_hours
 
 
 def check_balance(state: GameStateType) -> None:
     """Display the hero's current money balance."""
-    emit(f"Current Balance: ${state.hero.currBalance}")
+    state.hero.io.output(f"Current Balance: ${state.hero.curr_balance}")
+    state.hero.io.output("")
 
 
 def check_feel(state: GameStateType) -> None:
     """Display the hero's current feel/energy level."""
     feel = state.hero.feel
     if feel >= 40:
-        emit("Feeling good")
+        state.hero.io.output("Feeling good")
     elif feel >= 20:
-        emit("Feeling okay")
+        state.hero.io.output("Feeling okay")
     else:
-        emit("I'm about to hit the sheets!")
+        state.hero.io.output("I'm about to hit the sheets!")
+    state.hero.io.output("")
 
 
 def mail_check(state: GameStateType) -> None:
     """Mail a check, scheduling money to arrive tomorrow."""
     check = state.hero.GetFirstItemByName("check")
     if check:
-        tomorrow = state.watch.currTime + timedelta(days=1)
+        tomorrow = state.watch.curr_time + timedelta(days=1)
 
         def mail(_a: Any, _b: Any) -> None:
-            print("new bank deposit!")
-            state.hero.currBalance += 100
+            state.hero.io.output("new bank deposit!")
+            state.hero.curr_balance += 100
         state.eventQueue.AddEvent(mail, tomorrow)
         state.hero.Destroy([check])
-        print("Check is out.  Big money tomorrow!")
+        state.hero.io.output("Check is out.  Big money tomorrow!")
     else:
-        print("You're not holding a check.  How's the cabinet looking?")
+        state.hero.io.output("You're not holding a check.  How's the cabinet looking?")
 
 
 def inspect_room(state: GameStateType) -> None:
     """Look around the current room and list all objects."""
     room = state.hero.GetRoom()
-    print()
-    print("You look around the room.  You see:")
-    print()
+    state.hero.io.output("")
+    state.hero.io.output("You look around the room.  You see:")
+    state.hero.io.output("")
 
     if not room.contents:
-        print("Nothing!")
+        state.hero.io.output("Nothing!")
 
     for item in room.contents:
-        print(item)
-    print()
+        state.hero.io.output(str(item))
+    state.hero.io.output("")
 
 
 def eat_thing(state: GameStateType, food_name: str) -> None:
     """Eat food from the fridge to restore feel."""
     fridge = state.apartment.main.fridge
     if state.hero.GetRoom() != fridge.GetRoom():
-        print("Step a little closer to the fridge.")
+        state.hero.io.output("Step a little closer to the fridge.")
         return
 
     if fridge.isClosed():
-        print("Right, I have to open the fridge first.")
+        state.hero.io.output("Right, I have to open the fridge first.")
         return
 
     food = state.apartment.main.fridge.GetFirstItemByName(food_name)
     if isinstance(food, Food):
-        attempt(lambda: food.Eat(state.hero), "Error!")
+        attempt(lambda: food.Eat(state.hero), "Error!", state.hero)
     else:
-        print("I don't see that food in there.")
+        state.hero.io.output("I don't see that food in there.")
 
 
 @thingify
 def examine_thing(state: GameStateType, room_object: Any) -> None:
     """Examine an object in the current room."""
     attempt(lambda: room_object.Examine(state.hero),
-            "I don't know how to examine that.")
+            "I don't know how to examine that.", state.hero)
 
 
 @thingify
 def watch_tv(state: GameStateType, tv: Any) -> None:
     """Watch the TV to see the news."""
     if tv.name != 'tv':
-        print("I don't know how to watch that!  Not for very long, at least.")
+        state.hero.io.output("I don't know how to watch that!  Not for very long, at least.")
     else:
-        attempt(lambda: tv.Examine(state.hero), "Yeah, I don't know.")
+        attempt(lambda: tv.Examine(state.hero), "Yeah, I don't know.", state.hero)
 
 
 @thingify
 def open_thing(state: GameStateType, room_object: Any) -> None:
     """Open a container in the current room."""
-    attempt(lambda: room_object.Open(state.hero), "I can't open that.")
+    attempt(lambda: room_object.Open(state.hero), "I can't open that.", state.hero)
 
 
 @thingify
 def close_thing(state: GameStateType, room_object: Any) -> None:
     """Close a container in the current room."""
-    attempt(lambda: room_object.Close(state.hero), "I can't close that.")
+    attempt(lambda: room_object.Close(state.hero), "I can't close that.", state.hero)
 
 
 def get_object(state: GameStateType, obj: str, room_object: Any) -> None:
@@ -204,37 +197,38 @@ def get_object(state: GameStateType, obj: str, room_object: Any) -> None:
                 if thing:
                     state.hero.Pickup(thing)
                 else:
-                    print(f"I don't see that in the {openable.name}.")
+                    state.hero.io.output(f"I don't see that in the {openable.name}.")
             else:
-                print("Try opening it first.")
+                state.hero.io.output("Try opening it first.")
         elif isinstance(room_obj, Container):
             container = room_obj
             thing = container.GetFirstItemByName(obj)
             if thing:
                 state.hero.Pickup(thing)
             else:
-                print(f"I don't see that on the {container.name}.")
+                state.hero.io.output(f"I don't see that on the {container.name}.")
         else:
-            print("How could I do that?")
+            state.hero.io.output("How could I do that?")
     else:
-        print("I don't see that in the room.")
+        state.hero.io.output("I don't see that in the room.")
 
-    print()
+    state.hero.io.output("")
 
 
 def inventory(state: GameStateType) -> None:
     """Display the hero's current inventory."""
     objs = state.hero.contents
     if not objs:
-        emit("\nYou have no objects in your inventory")
+        state.hero.io.output("\nYou have no objects in your inventory")
+        state.hero.io.output("")
         return
 
-    print("\nYou are carrying the following:")
+    state.hero.io.output("\nYou are carrying the following:")
 
     for obj in objs:
-        print("    ", obj)
+        state.hero.io.output(f"     {obj}")
 
-    print()
+    state.hero.io.output("")
 
 
 def enter_room(state: GameStateType, room_name: str) -> None:
@@ -243,12 +237,12 @@ def enter_room(state: GameStateType, room_name: str) -> None:
     if to_room and isinstance(to_room, Room):
         from_room = state.hero.GetRoom()
         if to_room == from_room:
-            print("Already there.")
+            state.hero.io.output("Already there.")
         else:
             attempt(lambda: to_room.Enter(
-                from_room, state.hero), "I can't enter.")
+                from_room, state.hero), "I can't enter.", state.hero)
     else:
-        print("I haven't built that wing yet.")
+        state.hero.io.output("I haven't built that wing yet.")
 
 
 def nail_self_in(state: GameStateType) -> None:
@@ -256,17 +250,17 @@ def nail_self_in(state: GameStateType) -> None:
     closet = state.apartment.closet
 
     if state.hero.GetRoom() != closet:
-        print("Gotta be in the closet to start nailing!")
+        state.hero.io.output("Gotta be in the closet to start nailing!")
         return
 
     if closet.state == Closet.CLOSET_NAILED:
-        print("\nWasn't once enough?")
+        state.hero.io.output("\nWasn't once enough?")
         return
 
     hero = state.hero
 
     if not hero.contents:
-        print("\nYou have no objects with which to do that")
+        state.hero.io.output("\nYou have no objects with which to do that")
         return
 
     hammer = hero.GetFirstItemByName('hammer')
@@ -282,15 +276,15 @@ def nail_self_in(state: GameStateType) -> None:
         elif not nails:
             s = 'Perhaps some nails?'
 
-        print(f"\nYou are missing something.  {s}")
+        state.hero.io.output(f"\nYou are missing something.  {s}")
         return
 
     hero.Destroy([plywood])
 
-    print("\nYou have successfully nailed yourself into a rather small closet.")
+    state.hero.io.output("\nYou have successfully nailed yourself into a rather small closet.")
 
     closet.state = Closet.CLOSET_NAILED
 
     num_hours = 2
-    state.watch.currTime += timedelta(hours=num_hours)
+    state.watch.curr_time += timedelta(hours=num_hours)
     hero.feel -= 10 * num_hours
