@@ -143,12 +143,6 @@ class Container(Object):
                 hero.io.output(f"    {item}")
             hero.io.output("")
 
-    def GenFields(self) -> None:
-        """
-        Dynamically add each contained item as an attribute of the container.
-        """
-        for item in self.contents:
-            setattr(self, item.name, item)
 
 
 class PhoneNumber:
@@ -683,6 +677,31 @@ class Room(Container):
             hero.io.output(f"You are now in the {self.name}")
 
 
+class MainRoom(Room):
+    """
+    Represents the main room of the apartment with specific objects.
+    """
+    phone: 'Phone'
+    toolbox: 'Openable'
+    fridge: 'Openable'
+    cabinet: 'Openable'
+    table: 'Container'
+    tv: 'TV'
+
+    def __init__(self, name: str, parent: Optional['Container'], gamestate: 'GameState') -> None:
+        """
+        Initialize the main room with its objects.
+        """
+        super(MainRoom, self).__init__(name, parent)
+        
+        self.phone = Phone(gamestate, self)
+        self.toolbox = Openable("toolbox", self)
+        self.fridge = Openable("fridge", self)
+        self.cabinet = Openable("cabinet", self)
+        self.table = Container("table", self)
+        self.tv = TV(self)
+
+
 class Closet(Room):
     """
     Represents a closet, which may be nailed shut.
@@ -716,7 +735,7 @@ class Apartment(Container):
     Represents the player's apartment, containing all rooms and main objects.
     """
     gamestate: 'GameState'
-    main: 'Room'
+    main: 'MainRoom'
     bedroom: 'Room'
     bathroom: 'Room'
     closet: 'Closet'
@@ -728,20 +747,10 @@ class Apartment(Container):
         super(Apartment, self).__init__("apartment", None)
         self.gamestate = gamestate
 
-        self.main = Room("main", self)
+        self.main = MainRoom("main", self, gamestate)
         self.bedroom = Room("bedroom", self)
         self.bathroom = Room("bathroom", self)
         self.closet = Closet("closet", self)
-        self.GenFields()
-
-        phone = Phone(gamestate, self.main)
-        toolbox = Openable("toolbox", self.main)
-        fridge = Openable("fridge", self.main)
-        cabinet = Openable("cabinet", self.main)
-        table = Container("table", self.main)
-        tv = TV(self.main)
-
-        self.main.GenFields()
 
 
 class GameState:
