@@ -11,7 +11,7 @@ the clock forward.
 
 from datetime import timedelta
 from typing import Callable, Any
-from .gamestate import Container, Object, Openable, Closet, GameState, Food
+from .gamestate import Container, Object, Openable, Closet, GameState, Food, Room, Phone, Watch
 
 # Type alias for game state
 GameStateType = GameState
@@ -63,19 +63,20 @@ def debug_items(state: GameStateType) -> None:
 
 def call_phone(state: GameStateType) -> None:
     """Make a phone call using the main room phone."""
-    state.apartment.main.phone.Interact(state.hero)
+    phone: Phone = state.apartment.main.phone
+    phone.Interact(state.hero)
 
 
 def rolodex(state: GameStateType) -> None:
     """Show the phone's rolodex of available numbers."""
-    phone = state.apartment.main.phone
+    phone: Phone = state.apartment.main.phone
     phone.Rolodex(state.hero)
 
 
 def look_at_watch(state: GameStateType) -> None:
     """Check the current time on the hero's watch."""
     watch = state.hero.GetFirstItemByName("watch")
-    if watch:
+    if watch and isinstance(watch, Watch):
         watch.Interact(state.hero)
     else:
         print("Not carrying a watch!")
@@ -88,11 +89,10 @@ def ponder(state: GameStateType) -> None:
         length = prompt("How many hours?: ")
         if length.isdigit():
             num_hours = int(length)
-            if num_hours > 1000:  # TODO: make this shorter.
+            if num_hours > 1000:
                 emit("\nThat's too long to sit and do nothing.")
                 continue
-            else:
-                break
+            break
         else:
             emit("\nWhat? Give me a number.")
 
@@ -122,7 +122,7 @@ def mail_check(state: GameStateType) -> None:
     if check:
         tomorrow = state.watch.currTime + timedelta(days=1)
 
-        def mail(a: Any, b: Any) -> None:
+        def mail(_a: Any, _b: Any) -> None:
             print("new bank deposit!")
             state.hero.currBalance += 100
         state.eventQueue.AddEvent(mail, tomorrow)
@@ -240,7 +240,7 @@ def inventory(state: GameStateType) -> None:
 def enter_room(state: GameStateType, room_name: str) -> None:
     """Move the hero to a different room."""
     to_room = state.apartment.GetFirstItemByName(room_name)
-    if to_room:
+    if to_room and isinstance(to_room, Room):
         from_room = state.hero.GetRoom()
         if to_room == from_room:
             print("Already there.")
