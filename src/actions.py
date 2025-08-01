@@ -11,14 +11,14 @@ the clock forward.
 
 from datetime import timedelta
 import datetime
-from typing import Callable, Any
-from .gamestate import Container, Object, Openable, Closet, GameState, Food, Room, Phone, Watch
+from typing import Callable, Union, Optional
+from .gamestate import Container, Object, Openable, Closet, GameState, Food, Room, Phone, Watch, Hero
 
 # Type alias for game state
 GameStateType = GameState
 
 
-def attempt(thunk: Callable[[], None], error_msg: str, hero: Any) -> None:
+def attempt(thunk: Callable[[], None], error_msg: str, hero: Hero) -> None:
     """Attempt to execute a function, catching AttributeError."""
     try:
         thunk()
@@ -26,7 +26,7 @@ def attempt(thunk: Callable[[], None], error_msg: str, hero: Any) -> None:
         hero.io.output(f"{error_msg} {e}")
 
 
-def thingify(func: Callable[[GameStateType, Any], None]) -> Callable[[GameStateType, str], None]:
+def thingify(func: Callable[[GameStateType, Object], None]) -> Callable[[GameStateType, str], None]:
     """Decorator to convert a function that takes an object to one that takes a string name."""
     def inner(state: GameStateType, arg: str) -> None:
         room_object = state.hero.GetRoom().GetFirstItemByName(arg)
@@ -161,14 +161,14 @@ def eat_thing(state: GameStateType, food_name: str) -> None:
 
 
 @thingify
-def examine_thing(state: GameStateType, room_object: Any) -> None:
+def examine_thing(state: GameStateType, room_object: Object) -> None:
     """Examine an object in the current room."""
     attempt(lambda: room_object.Examine(state.hero),
             "I don't know how to examine that.", state.hero)
 
 
 @thingify
-def watch_tv(state: GameStateType, tv: Any) -> None:
+def watch_tv(state: GameStateType, tv: Object) -> None:
     """Watch the TV to see the news."""
     if tv.name != 'tv':
         state.hero.io.output("I don't know how to watch that!  Not for very long, at least.")
@@ -177,18 +177,18 @@ def watch_tv(state: GameStateType, tv: Any) -> None:
 
 
 @thingify
-def open_thing(state: GameStateType, room_object: Any) -> None:
+def open_thing(state: GameStateType, room_object: Object) -> None:
     """Open a container in the current room."""
     attempt(lambda: room_object.Open(state.hero), "I can't open that.", state.hero)
 
 
 @thingify
-def close_thing(state: GameStateType, room_object: Any) -> None:
+def close_thing(state: GameStateType, room_object: Object) -> None:
     """Close a container in the current room."""
     attempt(lambda: room_object.Close(state.hero), "I can't close that.", state.hero)
 
 
-def get_object(state: GameStateType, obj: str, room_object: Any) -> None:
+def get_object(state: GameStateType, obj: str, room_object: str) -> None:
     """Get an object from a container in the current room."""
     room_obj = state.hero.GetRoom().GetFirstItemByName(room_object)
     if room_obj:
