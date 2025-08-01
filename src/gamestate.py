@@ -7,11 +7,14 @@ various interactable items such as phones, food, and tools. The game logic for m
 between rooms, interacting with objects, and managing time and events is implemented here.
 """
 
-from typing import Callable, Any, Optional, List, Dict, Union
+from typing import Callable, Optional, List, Dict, Union, TYPE_CHECKING
 import datetime
 from datetime import timedelta
 from . import alterego
 from .io_interface import IOInterface, ConsoleIO
+
+if TYPE_CHECKING:
+    from .delivery import EventQueue
 
 # decorator for Interact()
 
@@ -22,7 +25,7 @@ def sameroom(func: Callable[..., None]) -> Callable[..., None]:
     allowing interaction.
     """
 
-    def check(self: Any, hero: 'Hero') -> None:
+    def check(self: 'Object', hero: 'Hero') -> None:
         if hero.GetRoom() == self.GetRoom():
             func(self, hero)
         else:
@@ -80,7 +83,7 @@ class Food(Object):
     """
     Represents a food item that can be eaten to boost the hero's feel.
     """
-    feelBoost: int
+    feel_boost: int
 
     def __init__(self, name: str, parent: Optional['Container'], feelBoost: int) -> None:
         """
@@ -88,6 +91,12 @@ class Food(Object):
         """
         super().__init__(name, parent)
         self.feel_boost = feelBoost
+
+    def Interact(self) -> None:
+        """
+        Food items cannot be directly interacted with - they must be eaten.
+        """
+        pass
 
     def Eat(self, hero: 'Hero') -> None:
         """
@@ -130,6 +139,12 @@ class Container(Object):
             return items[0]
         return None
 
+    def Interact(self) -> None:
+        """
+        Containers are examined rather than directly interacted with.
+        """
+        pass
+
     @sameroom
     def Examine(self, hero: 'Hero') -> None:
         """
@@ -168,7 +183,7 @@ class PhoneNumber:
         """
         return f"{self.name}: {self.number}"
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         """
         Compare the phone number to another value.
         """
@@ -202,7 +217,6 @@ class StoreNumber(PhoneNumber):
             if self.gamestate.hero.curr_balance < items[choice]:
                 emit("Insufficient funds.")
                 break
-            
             self.gamestate.hero.curr_balance -= items[choice]
             self.ScheduleOrder(choice)
             break
@@ -294,11 +308,12 @@ class GroceryNumber(StoreNumber):
         emit("Thanks! We'll get that out to you tomorrow.")
         tomorrow = self.gamestate.watch.curr_time + timedelta(days=1)
 
-        def purchase(_a: Any, _b: Any) -> None:
+        def purchase(_curr_time: datetime.datetime, _event_time: datetime.datetime) -> None:
             Food(choice, self.gamestate.apartment.main.fridge,
                  self.FoodFeel()[choice])
             self.gamestate.io.output("Food truck order has arrived!")
-        self.gamestate.eventQueue.AddEvent(purchase, tomorrow)
+        if self.gamestate.event_queue is not None:
+            self.gamestate.event_queue.AddEvent(purchase, tomorrow)
 
 
 class HardwareNumber(StoreNumber):
@@ -325,7 +340,7 @@ class HardwareNumber(StoreNumber):
         emit = self.gamestate.emit
         emit("Hello this is the hardware store.  Hope we got what you're looking for!")
 
-    def TimeWaste(self, _choice: str) -> None:
+    def TimeWaste(self, choice: str) -> None:
         """
         Advance time by 2 minutes for hardware orders.
         """
@@ -345,14 +360,15 @@ class HardwareNumber(StoreNumber):
         emit("Thanks! We'll get that out to you in a couple days.")
         two_days = self.gamestate.watch.curr_time + timedelta(days=2)
 
-        def purchase(_a: Any, _b: Any) -> None:
+        def purchase(_curr_time: datetime.datetime, _event_time: datetime.datetime) -> None:
             if choice == 'plywood-sheet':
                 location = self.gamestate.apartment.main.table
             else:
                 location = self.gamestate.apartment.main.toolbox
 
             Object(choice, location)
-        self.gamestate.eventQueue.AddEvent(purchase, two_days)
+        if self.gamestate.event_queue is not None:
+            self.gamestate.event_queue.AddEvent(purchase, two_days)
 
 
 class SuperNumber(PhoneNumber):
@@ -386,6 +402,12 @@ class TV(Object):
         """
         super().__init__("tv", parent)
 
+    def Interact(self) -> None:
+        """
+        Watching TV is the main interaction.
+        """
+        pass
+
     @sameroom
     def Examine(self, hero: 'Hero') -> None:
         """
@@ -403,7 +425,7 @@ class Phone(Object):
     Represents a phone object that can be used to call numbers.
     """
     gamestate: 'GameState'
-    phoneNumbers: List[PhoneNumber]
+    phone_numbers: List[PhoneNumber]
 
     def __init__(self, gamestate: 'GameState', parent: Optional['Container']) -> None:
         """
@@ -439,9 +461,9 @@ class Phone(Object):
         Prompt the user to enter a phone number and handle the call.
         """
         number = self.prompt("What number?: ")
-        for phoneNumber in self.phone_numbers:
-            if number == phoneNumber.number:
-                phoneNumber.Interact()
+        for phone_number in self.phone_numbers:
+            if number == phone_number.number:
+                phone_number.Interact()
                 return
 
         self.gamestate.io.output("Who's number is that?")
@@ -452,7 +474,7 @@ class Watch(Object):
     """
     Represents a watch object that tracks the current game time.
     """
-    currTime: datetime.datetime
+    curr_time: datetime.datetime
 
     def __init__(self, parent: Optional['Container']) -> None:
         """
@@ -489,7 +511,7 @@ class Hero(Container):
     """
     INITIAL_FEEL: int = 50
     feel: int
-    currBalance: int
+    curr_balance: int
     state: int
     io: IOInterface
 
@@ -503,6 +525,12 @@ class Hero(Container):
         self.state = Openable.State.OPEN
         self.io = io
 
+    def Interact(self) -> None:
+        """
+        Heroes don't interact with themselves.
+        """
+        pass
+
     def ClearPath(self, thing: Object) -> bool:
         """
         Check if there is a clear path to pick up an object
@@ -515,7 +543,9 @@ class Hero(Container):
             if thing.parent.state == Openable.State.CLOSED:
                 return False
 
-        return self.ClearPath(thing.parent)
+        if thing.parent is not None:
+            return self.ClearPath(thing.parent)
+        return False
 
     def Pickup(self, thing: Object) -> None:
         """
@@ -579,6 +609,12 @@ class Openable(Container):
         """
         super().__init__(name, parent)
         self.state = Openable.State.CLOSED
+
+    def Interact(self) -> None:
+        """
+        Openable containers are opened/closed rather than directly interacted with.
+        """
+        pass
 
     @sameroom
     def Examine(self, hero: 'Hero') -> None:
@@ -647,10 +683,9 @@ class Openable(Container):
                 descr = f"an open {self.name} with nothing in it"
 
             return descr.strip()
-        elif self.state == Openable.State.CLOSED:
+        if self.state == Openable.State.CLOSED:
             return f"a {self.name}, it is closed"
-        else:
-            assert False, 'unknown state!'
+        assert False, 'unknown state!'
 
 
 class Room(Container):
@@ -663,6 +698,12 @@ class Room(Container):
         Initialize a room.
         """
         super().__init__(name, parent)
+
+    def Interact(self) -> None:
+        """
+        Rooms are entered rather than directly interacted with.
+        """
+        pass
 
     def Leave(self, _hero: 'Hero') -> bool:
         """
@@ -703,6 +744,12 @@ class MainRoom(Room):
         self.table = Container("table", self)
         self.tv = TV(self)
 
+    def Interact(self) -> None:
+        """
+        Main room doesn't have special interactions.
+        """
+        pass
+
 
 class Closet(Room):
     """
@@ -719,6 +766,12 @@ class Closet(Room):
         super().__init__(name, parent)
         self.state = Closet.CLOSET_READY
 
+    def Interact(self) -> None:
+        """
+        Closet doesn't have special interactions.
+        """
+        pass
+
     def Leave(self, hero: 'Hero') -> bool:
         """
         Determine if the hero can leave the closet.
@@ -728,7 +781,6 @@ class Closet(Room):
             return False
         if self.state == Closet.CLOSET_READY:
             return True
-        
         raise ValueError('unknown closet state!')
 
 
@@ -754,6 +806,12 @@ class Apartment(Container):
         self.bathroom = Room("bathroom", self)
         self.closet = Closet("closet", self)
 
+    def Interact(self) -> None:
+        """
+        Apartment doesn't have special interactions.
+        """
+        pass
+
 
 class GameState:
     """
@@ -763,10 +821,10 @@ class GameState:
     APARTMENT_READY: int = 1
     apartment: Apartment
     hero: Hero
-    alterEgo: Any
+    alter_ego: alterego.AlterEgo
     watch: Watch
     io: IOInterface
-    eventQueue: Any
+    event_queue: Optional['EventQueue']
 
     def __init__(self, io: Optional[IOInterface] = None) -> None:
         """
@@ -775,15 +833,16 @@ class GameState:
         self.io = io or ConsoleIO()
         self.apartment = Apartment(self)
         self.hero = Hero(self.apartment.main, self.io)
-        self.alterEgo = alterego.AlterEgo()
+        self.alter_ego = alterego.AlterEgo()
+        self.event_queue: Optional['EventQueue'] = None
 
         self.watch = Watch(self.hero)
 
-    def SetEventQueue(self, queue: Any) -> None:
+    def SetEventQueue(self, queue: 'EventQueue') -> None:
         """
         Set the event queue for scheduled events.
         """
-        self.eventQueue = queue
+        self.event_queue = queue
 
     def emit(self, s: str) -> None:
         """
@@ -812,7 +871,7 @@ class GameState:
                 self.emit(".")
                 self.io.sleep(1)
             # Now run the alterego during his sleep
-            self.alterEgo.run(self)
+            self.alter_ego.run(self)
             # Now that he is finished, reset
             self.hero.feel = self.hero.INITIAL_FEEL
             self.IntroPrompt()

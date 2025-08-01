@@ -10,6 +10,7 @@ the clock forward.
 """
 
 from datetime import timedelta
+import datetime
 from typing import Callable, Any
 from .gamestate import Container, Object, Openable, Closet, GameState, Food, Room, Phone, Watch
 
@@ -115,10 +116,11 @@ def mail_check(state: GameStateType) -> None:
     if check:
         tomorrow = state.watch.curr_time + timedelta(days=1)
 
-        def mail(_a: Any, _b: Any) -> None:
+        def mail(_curr_time: datetime.datetime, _event_time: datetime.datetime) -> None:
             state.hero.io.output("new bank deposit!")
             state.hero.curr_balance += 100
-        state.eventQueue.AddEvent(mail, tomorrow)
+        if state.event_queue is not None:
+            state.event_queue.AddEvent(mail, tomorrow)
         state.hero.Destroy([check])
         state.hero.io.output("Check is out.  Big money tomorrow!")
     else:
