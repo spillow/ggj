@@ -1,8 +1,8 @@
-from typing import Dict, Callable, Tuple, List, Union
+from typing import Dict, Callable, Tuple, List, Union, Any
 from . import actions
 from .gamestate import GameState
 
-COMMANDS: Dict[str, Callable] = {
+COMMANDS: Dict[str, Callable[..., Any]] = {
     "debug items": actions.debug_items,
     "call phone": actions.call_phone,
     "rolodex": actions.rolodex,
@@ -71,7 +71,7 @@ def expand(command: str, userInput: str) -> Tuple[bool, List[str]]:
 # errorMessage on fail or action on success
 
 
-def parse(userInput: str) -> Tuple[bool, Union[Callable, str], List[str]]:
+def parse(userInput: str) -> Tuple[bool, Union[Callable[..., Any], str], List[str]]:
     for command, action in COMMANDS.items():
         ok, args = expand(command, userInput)
         if ok:
