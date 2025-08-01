@@ -113,7 +113,7 @@ The game uses a centralized `GameState` object that contains:
 - `apartment`: The apartment container with all rooms and objects
 - `hero`: Player character with stats and inventory
 - `watch`: Time tracking object (Watch class)
-- `eventQueue`: Scheduled events system (EventQueue class)
+- `event_queue`: Scheduled events system (EventQueue class)
 - `alterEgo`: AlterEgo system (currently unused)
 - `io`: IOInterface for all input/output operations
 
@@ -196,6 +196,7 @@ def some_method(self):
 - `tests/test_actions.py`: Action functions and game mechanics
 - `tests/test_apartment.py`: Room and apartment structure
 - `tests/test_io_interface.py`: I/O interface implementations
+- `tests/test_inputparser.py`: Command parsing system
 
 **Test Fixtures**: Each test gets fresh instances to prevent test pollution:
 ```python
@@ -308,7 +309,8 @@ ggj/
     ├── test_gamestate.py   # Game state tests
     ├── test_actions.py     # Action function tests
     ├── test_apartment.py   # Room and apartment tests
-    └── test_io_interface.py # I/O interface tests
+    ├── test_io_interface.py # I/O interface tests
+    └── test_inputparser.py # Command parsing tests
 ```
 
 ## Coding Style

@@ -13,6 +13,7 @@ A text-based adventure game created for Global Game Jam 2015. This is a psycholo
 - **Phone System**: Call three numbers - grocery store, hardware store, and building super
 - **Event Queue**: Scheduled deliveries and government checks every 2 weeks
 - **Special Mechanics**: Nail yourself into the closet using hammer, nails, and plywood
+- **Comprehensive Testing**: 125+ tests covering all game mechanics using mock I/O
 
 ## Installation
 
@@ -38,14 +39,52 @@ python main.py
 ```
 
 ### Game Commands
-- **Movement**: `go to [room]`, `enter [room]`
-- **Inventory**: `inventory`, `get [item] from [container]`
-- **Interaction**: `examine [object]`, `open/close [container]`
-- **Phone**: `call phone`, `rolodex` (to see numbers)
-- **Food**: `eat [food]` (from opened fridge)
-- **Time**: `look at watch`, `ponder` (waste time)
-- **Status**: `balance` (money), `feel` (energy)
-- **Special**: `nail self in` (in closet with required items)
+
+The game supports the following commands (case-sensitive):
+
+#### Debug and Development
+- `debug items` - Give player hammer, nails, and plywood for testing
+
+#### Phone System
+- `call phone` - Make a phone call using the main room phone
+- `rolodex` - Show available phone numbers
+
+#### Time and Status
+- `look at watch` - Check current game time
+- `ponder` - Waste time pondering (prompts for hours)
+- `balance` - Check current money balance
+- `feel` - Check current energy level
+
+#### Food and Eating
+- `eat {food}` - Eat food from the opened fridge
+
+#### Object Interaction
+- `examine {object}` - Examine an object in the room
+- `watch {object}` - Watch something (specifically TV)
+- `look in {object}` - Look inside a container
+- `open {object}` - Open a container
+- `close {object}` - Close a container
+
+#### Inventory Management
+- `pick up {item} from {container}` - Get item from container
+- `get {item} from {container}` - Alternative get command
+- `inventory` - Show current inventory
+
+#### Movement
+- `go in {room}` - Enter a room
+- `go to {room}` - Go to a room
+- `enter {room}` - Enter a room
+- `enter the {room}` - Enter a room (with article)
+
+#### Special Actions
+- `nail wood to exit` - Nail yourself into closet
+- `nail wood to door` - Alternative nailing command
+- `nail self in` - Alternative nailing command
+- `nail self in closet` - Alternative nailing command
+- `inspect room` - Look around current room
+- `view room` - Alternative room inspection
+- `look around room` - Alternative room inspection
+- `mail check` - Mail a government check for money
 
 ### Game World
 The apartment contains:
@@ -59,8 +98,10 @@ The apartment contains:
 ### Architecture
 - **Modular Design**: Separated game logic, I/O, actions, and state management
 - **Object Hierarchy**: Base `Object` class with specialized containers, rooms, and items
-- **I/O Abstraction**: `IOInterface` allows both console and mock implementations
+- **I/O Abstraction**: `IOInterface` allows both console and mock implementations for testing
 - **Event System**: Time-based delivery and event scheduling
+- **Command Parser**: Pattern-based command parsing with variable substitution
+- **Type Safety**: Comprehensive type hints throughout the codebase
 
 ### Testing
 ```bash
@@ -77,16 +118,21 @@ python -m pytest tests/test_gamestate.py
 python -m pytest tests/test_gamestate.py::TestHero::test_pickup_success
 ```
 
-The test suite covers:
-- Game object functionality (Hero, Container, Food, etc.)
-- Game mechanics (pickup, inventory, room navigation)
-- I/O operations using mock interfaces
-- State management and time progression
+The codebase has **125 tests** covering:
+- **Game Object Functionality**: Hero, Container, Food, Watch, Phone, etc.
+- **Game Mechanics**: Pickup, inventory, room navigation, eating, time progression
+- **I/O Operations**: Mock interfaces for deterministic testing
+- **State Management**: Game state initialization and progression
+- **Command Parsing**: All 31 supported commands and edge cases
+- **Action Functions**: All game actions with success and error conditions
+- **Apartment Structure**: Room layout and object placement
 
 ### Code Style
-- Follows PEP-8 guidelines
-- Type hints throughout codebase
+- Follows PEP-8 guidelines with comprehensive type hints
+- Uses dependency injection for testability
+- Separates business logic from I/O operations
 - Comprehensive docstrings for all classes and methods
+- Test-driven development with MockIO for fast, deterministic tests
 
 ## Game Mechanics
 
@@ -95,24 +141,40 @@ The test suite covers:
 - **Balance (Money)**: Starts at $100. Spend on phone orders, earn from government checks.
 
 ### Shopping
-- **Grocery Store (288-7955)**: Food items ($2-$10)
-- **Hardware Store (592-2874)**: Tools ($5-$30)
+- **Grocery Store (288-7955)**: Food items with different feel boosts
+  - spicy-food: +30 feel ($10)
+  - caffeine: +20 feel ($5)
+  - bananas: +5 feel ($2)
+  - ice-cubes: +2 feel ($2)
+- **Hardware Store (592-2874)**: Tools for special actions
+  - hammer: $20
+  - box-of-nails: $5
+  - plywood-sheet: $30
 - **Building Super (198-2888)**: Never answers, wastes time and energy
 
 ### Time System
 Actions consume different amounts of time:
-- Most actions: Minimal time
+- Most actions: Minimal time advancement
 - Pondering: Variable hours (user choice)
-- Phone calls: 2-30 minutes depending on store
+- Phone calls: 2-30 minutes depending on store interaction
 - Eating: 20 minutes
+- Nailing self in closet: 2 hours
+
+### Object System
+- **Weight-based inventory**: Hero can carry up to 100 weight units
+- **Parent-child relationships**: All objects track their containers
+- **Room-based interactions**: `@sameroom` decorator ensures actions only work when player is in same room
+- **Openable containers**: Some containers must be opened before accessing contents
 
 ## Contributing
 
 This is a preserved Global Game Jam 2015 project. The codebase demonstrates clean architecture patterns for text adventure games and serves as an educational example of:
-- Test-driven development
+- Test-driven development with comprehensive mock testing
 - I/O abstraction for testability
-- Object-oriented game design
-- Event-driven programming
+- Object-oriented game design with clear inheritance hierarchies
+- Event-driven programming with time-based events
+- Command parsing with pattern matching
+- Dependency injection for loose coupling
 
 ## License
 
