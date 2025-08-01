@@ -1,0 +1,27 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python -c \"import sys, json; data = json.load(sys.stdin); exit(0 if data.get('success', False) and any(f.endswith(('.py', '.md')) for f in data.get('files_modified', [])) else 1)\""
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "slash_command",
+            "command": "/update-docs",
+            "condition": "successful_code_changes"
+          }
+        ]
+      }
+    ]
+  }
+}
