@@ -39,67 +39,110 @@ This is a text-based adventure game written in Python for Global Game Jam 2015. 
 
 ### Core Architecture
 
+**Main Entry Point (`main.py`)**
+- Simple entry point that imports and runs the game loop
+- No command-line arguments or configuration
+
 **Game Loop (`src/gameloop.py`)**
 - Main game loop that initializes the game state and processes user input
 - Handles the event queue for scheduled deliveries (government checks every 2 weeks)
 - Coordinates between input parsing, action execution, and state examination
+- Supports dependency injection with optional `IOInterface` parameter for testing
 
 **Game State (`src/gamestate.py`)**
 - Contains the complete object model with inheritance hierarchy:
-  - `Object` (base class for all game items)
-  - `Container` (objects that hold other objects)
-  - `Openable` (containers that can be opened/closed)
-  - `Room` (game locations)
-  - `Hero` (player character with inventory and feel/balance stats)
+  - `Object` (base class for all game items with name, weight, parent container)
+  - `Container` (objects that hold other objects with contents list)
+  - `Openable` (containers that can be opened/closed with state tracking)
+  - `Room` (game locations with Enter/Leave logic)
+  - `Hero` (player character with inventory, feel/balance stats, and pickup logic)
 - Manages the apartment layout with rooms: main, bedroom, bathroom, closet
 - Implements time system using Python's datetime (starting March 15, 1982 at 3:14 AM)
-- Tracks player stats: feel (energy), balance (money)
+- Tracks player stats: feel (energy starting at 50), balance (money starting at $100)
 
 **Input System (`src/inputparser.py`)**
 - Pattern-based command parser using string templates with variables like `{a}` and `{b}`
-- Maps natural language commands to action functions
+- Maps natural language commands to action functions via COMMANDS dictionary
 - Supports commands like "get {item} from {container}", "go to {room}", etc.
+- Returns tuple of (success, action/error_message, args)
 
 **Actions (`src/actions.py`)**
 - Individual action functions that modify game state
 - Each action handles time advancement and validation
 - Key mechanics: inventory management, room navigation, phone calls, eating food
+- Uses decorators like `@thingify` to convert string names to objects
+- Uses `@sameroom` decorator to ensure hero and object are in same room
 
 **Event System (`src/delivery.py`)**
-- Time-based event queue for scheduled events
+- Time-based event queue for scheduled events (`EventQueue` class)
 - Handles deliveries from stores (grocery, hardware)
 - Government check deliveries every 2 weeks
+- Events fire when current time >= scheduled time
 
 **I/O Interface (`src/io_interface.py`)**
 - Abstraction layer for input/output operations
+- `IOInterface` abstract base class with output(), get_input(), sleep() methods
 - `ConsoleIO` for real gameplay, `MockIO` for testing
 - Enables deterministic, fast testing without blocking I/O
 
+**AlterEgo System (`src/alterego.py`)**
+- Placeholder system that activates when player passes out (currently empty)
+- Contains `AlterEgo` class with empty `run()` method for future implementation
+
 ### Key Game Mechanics
 
-- **Feel System**: Player energy that decreases over time, causes passing out at 0
-- **Money System**: Player has $100 starting balance, can order items by phone
+- **Feel System**: Player energy that decreases over time, causes passing out at 0, restored by eating
+- **Money System**: Player has $100 starting balance, can order items by phone with costs deducted
 - **Time System**: All actions advance time, some significantly (pondering, phone calls)
 - **Inventory**: Weight-based system, hero can carry up to 100 weight units
 - **Room Navigation**: Movement between apartment rooms with special closet mechanics
 - **Store Orders**: Phone-based ordering system with delivery scheduling
+- **Object Interaction**: `@sameroom` decorator ensures actions only work when player is in same room
 
 ### Special Features
 
 - **Closet Nailing**: Player can nail themselves into the closet using hammer, nails, and plywood
-- **AlterEgo System**: Placeholder system that activates when player passes out (currently empty)
-- **Phone System**: Three numbers - grocery store, hardware store, and building super
+- **Phone System**: Three numbers - grocery store (288-7955), hardware store (592-2874), and building super (198-2888)
 - **TV News**: Shows astrophysics anomaly news when examined
+- **Food System**: Different foods provide different feel boosts (spicy-food: 30, caffeine: 20, bananas: 5, ice-cubes: 2)
+- **Hardware Items**: Hammer ($20), box-of-nails ($5), plywood-sheet ($30)
 
 ### State Management
 
 The game uses a centralized `GameState` object that contains:
 - `apartment`: The apartment container with all rooms and objects
 - `hero`: Player character with stats and inventory
-- `watch`: Time tracking object
-- `eventQueue`: Scheduled events system
+- `watch`: Time tracking object (Watch class)
+- `eventQueue`: Scheduled events system (EventQueue class)
+- `alterEgo`: AlterEgo system (currently unused)
+- `io`: IOInterface for all input/output operations
 
 All game objects maintain parent-child relationships for location tracking, and the `@sameroom` decorator ensures actions only work when the player is in the same room as objects.
+
+### Object Hierarchy Details
+
+**Object Classes:**
+- `Object`: Base class with name, weight, parent
+- `Food`: Extends Object, has feelBoost property and Eat() method
+- `Container`: Extends Object, has contents list and item lookup methods
+- `Openable`: Extends Container, adds open/closed state with Open()/Close() methods
+- `Room`: Extends Container, base class for game locations with Enter()/Leave() methods
+- `Hero`: Extends Container, player character with feel, curr_balance, and Pickup() logic
+- `Watch`: Extends Object, tracks current game time with GetDateAsString() method
+- `Phone`: Extends Object, handles phone calls with list of PhoneNumber objects
+- `TV`: Extends Object, displays news when examined
+
+**Specialized Rooms:**
+- `MainRoom`: Contains phone, toolbox, fridge, cabinet, table, tv
+- `Closet`: Can be nailed shut, prevents leaving when CLOSET_NAILED state
+- `Apartment`: Top-level container holding all rooms
+
+**Phone System:**
+- `PhoneNumber`: Base class for callable numbers
+- `StoreNumber`: Abstract base for stores with ordering logic
+- `GroceryNumber`: Grocery store with food items and next-day delivery
+- `HardwareNumber`: Hardware store with tools and 2-day delivery
+- `SuperNumber`: Building super who never answers
 
 ## Testing Architecture & Design Principles
 
@@ -130,7 +173,7 @@ def some_method(self):
 ```
 
 **Implementation**:
-- `GameState(io: IOInterface = None)` - accepts optional IO interface
+- `GameState(io: IOInterface = None)` - accepts optional IO interface, defaults to ConsoleIO
 - `Hero(startRoom: Room, io: IOInterface)` - requires IO for interactions
 - All game objects use `hero.io` for output instead of direct `print()`
 
@@ -147,6 +190,12 @@ def some_method(self):
 - **Unit Tests**: Individual object behavior (`TestHero`, `TestContainer`)
 - **Integration Tests**: Object interactions and game mechanics
 - **Mock Tests**: User interaction scenarios with scripted inputs
+
+**Test Files**:
+- `tests/test_gamestate.py`: Core game objects and state management
+- `tests/test_actions.py`: Action functions and game mechanics
+- `tests/test_apartment.py`: Room and apartment structure
+- `tests/test_io_interface.py`: I/O interface implementations
 
 **Test Fixtures**: Each test gets fresh instances to prevent test pollution:
 ```python
@@ -188,5 +237,93 @@ def test_new_feature():
 
 This architecture ensures all new code is testable, maintainable, and follows separation of concerns.
 
-## Coding style
+## Available Game Commands
+
+The game supports the following commands (defined in `src/inputparser.py`):
+
+### Debug and Development
+- `debug items` - Give player hammer, nails, and plywood for testing
+
+### Phone System
+- `call phone` - Make a phone call using the main room phone
+- `rolodex` - Show available phone numbers
+
+### Time and Status
+- `look at watch` - Check current game time
+- `ponder` - Waste time pondering (prompts for hours)
+- `balance` - Check current money balance
+- `feel` - Check current energy level
+
+### Food and Eating
+- `eat {food}` - Eat food from the opened fridge
+
+### Object Interaction
+- `examine {object}` - Examine an object in the room
+- `watch {object}` - Watch something (specifically TV)
+- `look in {object}` - Look inside a container
+- `open {object}` - Open a container
+- `close {object}` - Close a container
+
+### Inventory Management
+- `pick up {item} from {container}` - Get item from container
+- `get {item} from {container}` - Alternative get command
+- `inventory` - Show current inventory
+
+### Movement
+- `go in {room}` - Enter a room
+- `go to {room}` - Go to a room
+- `enter {room}` - Enter a room
+- `enter the {room}` - Enter a room (with article)
+
+### Special Actions
+- `nail wood to exit` - Nail yourself into closet
+- `nail wood to door` - Alternative nailing command
+- `nail self in` - Alternative nailing command
+- `nail self in closet` - Alternative nailing command
+- `inspect room` - Look around current room
+- `view room` - Alternative room inspection
+- `look around room` - Alternative room inspection
+- `mail check` - Mail a government check for money
+
+## File Structure
+
+```
+ggj/
+├── main.py                 # Entry point
+├── requirements.txt        # Python dependencies
+├── pytest.ini            # Pytest configuration
+├── README.md              # User documentation
+├── CLAUDE.md              # This file
+├── src/
+│   ├── __init__.py
+│   ├── gameloop.py        # Main game loop
+│   ├── gamestate.py       # Core game objects and state
+│   ├── actions.py         # Action functions
+│   ├── inputparser.py     # Command parsing
+│   ├── io_interface.py    # I/O abstraction
+│   ├── delivery.py        # Event queue system
+│   └── alterego.py        # Placeholder system
+└── tests/
+    ├── __init__.py
+    ├── test_gamestate.py   # Game state tests
+    ├── test_actions.py     # Action function tests
+    ├── test_apartment.py   # Room and apartment tests
+    └── test_io_interface.py # I/O interface tests
+```
+
+## Coding Style
+
 This project adheres to PEP-8 guidelines and requires type hints.
+
+### Style Guidelines
+- Use type hints for all function parameters and return values
+- Include comprehensive docstrings for all classes and methods
+- Follow PEP-8 naming conventions (snake_case for functions/variables, PascalCase for classes)
+- Keep line length under 100 characters
+- Use descriptive variable and function names
+
+### Code Quality
+- All new code must have corresponding tests
+- Use the MockIO interface for testing interactive features
+- Separate business logic from I/O operations
+- Follow the existing object hierarchy patterns
