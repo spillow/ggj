@@ -10,11 +10,13 @@ python main.py
 ```
 
 ### Testing
+
+#### Unit Testing
 ```bash
 # Install test dependencies
 pip install -r requirements.txt
 
-# Run all tests
+# Run all unit tests
 python -m pytest
 
 # Run tests with verbose output
@@ -32,6 +34,24 @@ The codebase uses pytest for automated testing with a comprehensive test suite c
 - Game mechanics (pickup, inventory, room navigation)
 - I/O operations using mock interfaces
 - State management and time progression
+
+#### End-to-End Testing
+```bash
+# Run all end-to-end tests
+python tools/run_e2e_tests.py
+
+# Run specific FileCheck test
+python tools/filecheck.py tools/test_basic.txt --verbose
+```
+
+The project includes a **FileCheck-like tool** (`tools/filecheck.py`) for end-to-end testing:
+- **Test Format**: Similar to LLVM's FileCheck tool
+- **Directives**: 
+  - `# CHECK: pattern` - Find pattern anywhere in remaining output
+  - `# CHECK-NEXT: pattern` - Find pattern in the very next output line
+- **Input Simulation**: Lines starting with `>` represent player input
+- **Output Validation**: Whitespace-insensitive pattern matching
+- **Test Files**: Located in `tools/` directory with `.txt` extension
 
 ## Code Architecture
 
@@ -304,13 +324,19 @@ ggj/
 │   ├── io_interface.py    # I/O abstraction
 │   ├── delivery.py        # Event queue system
 │   └── alterego.py        # Placeholder system
-└── tests/
+├── tests/
+│   ├── __init__.py
+│   ├── test_gamestate.py   # Game state tests
+│   ├── test_actions.py     # Action function tests
+│   ├── test_apartment.py   # Room and apartment tests
+│   ├── test_io_interface.py # I/O interface tests
+│   └── test_inputparser.py # Command parsing tests
+└── tools/
     ├── __init__.py
-    ├── test_gamestate.py   # Game state tests
-    ├── test_actions.py     # Action function tests
-    ├── test_apartment.py   # Room and apartment tests
-    ├── test_io_interface.py # I/O interface tests
-    └── test_inputparser.py # Command parsing tests
+    ├── filecheck.py        # FileCheck-like testing tool
+    ├── run_e2e_tests.py    # End-to-end test runner
+    ├── test_basic.txt      # Basic functionality test
+    └── test_phone_call.txt # Phone system test
 ```
 
 ## Coding Style

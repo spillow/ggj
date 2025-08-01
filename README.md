@@ -104,8 +104,10 @@ The apartment contains:
 - **Type Safety**: Comprehensive type hints throughout the codebase
 
 ### Testing
+
+#### Unit Tests
 ```bash
-# Run all tests
+# Run all unit tests
 python -m pytest
 
 # Run with verbose output
@@ -118,7 +120,7 @@ python -m pytest tests/test_gamestate.py
 python -m pytest tests/test_gamestate.py::TestHero::test_pickup_success
 ```
 
-The codebase has **125 tests** covering:
+The codebase has **125 unit tests** covering:
 - **Game Object Functionality**: Hero, Container, Food, Watch, Phone, etc.
 - **Game Mechanics**: Pickup, inventory, room navigation, eating, time progression
 - **I/O Operations**: Mock interfaces for deterministic testing
@@ -126,6 +128,33 @@ The codebase has **125 tests** covering:
 - **Command Parsing**: All 31 supported commands and edge cases
 - **Action Functions**: All game actions with success and error conditions
 - **Apartment Structure**: Room layout and object placement
+
+#### End-to-End Tests
+```bash
+# Run all end-to-end tests
+python tools/run_e2e_tests.py
+
+# Run a specific test file
+python tools/filecheck.py tools/test_basic.txt
+
+# Run with verbose output to see game output
+python tools/filecheck.py tools/test_basic.txt --verbose
+```
+
+The project includes a **FileCheck-like testing tool** for end-to-end game testing:
+- **Test File Format**: Similar to LLVM's FileCheck with `# CHECK:` and `# CHECK-NEXT:` directives
+- **Input Simulation**: Lines starting with `>` represent player input
+- **Output Validation**: Whitespace-insensitive pattern matching against game output
+- **Example Tests**: Basic functionality and phone system interaction tests
+
+**Test File Example:**
+```
+# CHECK: What do we do next?:
+> call phone
+# CHECK: What number?:
+> 288-7955
+# CHECK: Hello this is the grocery store
+```
 
 ### Code Style
 - Follows PEP-8 guidelines with comprehensive type hints

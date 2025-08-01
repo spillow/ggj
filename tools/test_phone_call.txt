@@ -1,0 +1,24 @@
+# End-to-end test for calling the grocery store
+# This test verifies that the phone system works correctly
+
+# CHECK: What do we do next?:
+
+> call phone
+
+# CHECK: What number?:
+
+> 288-7955
+
+# CHECK: Hello this is the grocery store.  What would you like to order?
+
+# CHECK: spicy-food.........$10.00
+# CHECK-NEXT: caffeine...........$5.00
+# CHECK-NEXT: bananas............$2.00
+# CHECK-NEXT: ice-cubes..........$6.00
+
+# Let's order something
+> spicy-food
+
+# CHECK: Thanks! We'll get that out to you tomorrow.
+
+# CHECK: What do we do next?:

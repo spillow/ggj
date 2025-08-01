@@ -1,0 +1,9 @@
+# Basic test to check if the game starts properly
+
+# CHECK: You wake up in your apartment.
+
+# CHECK: What do we do next?:
+
+> balance
+
+# CHECK: Current Balance: $100
