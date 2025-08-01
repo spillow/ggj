@@ -1,0 +1,60 @@
+# Test time-related commands and pondering
+
+# CHECK: You wake up in your apartment.
+
+# CHECK: What do we do next?:
+
+> look at watch
+
+# CHECK: The current time is Monday March 15, 1982 at 03:14 AM
+
+# CHECK: What do we do next?:
+
+# Check our initial feel level
+> feel
+
+# CHECK: Feeling good
+
+# CHECK: What do we do next?:
+
+> ponder
+
+# CHECK: How many hours?:
+
+> 1
+
+# CHECK: What do we do next?:
+
+# Check time after pondering 1 hour
+> look at watch
+
+# CHECK: The current time is Monday March 15, 1982 at 04:14 AM
+
+# CHECK: What do we do next?:
+
+# Check feel after pondering 1 hour (50-10=40, still good)
+> feel
+
+# CHECK: Feeling good
+
+# CHECK: What do we do next?:
+
+# Try pondering with invalid input first
+> ponder
+
+# CHECK: How many hours?:
+
+> abc
+
+# CHECK: What? Give me a number.
+
+# CHECK: How many hours?:
+
+> 2
+
+# CHECK: What do we do next?:
+
+# Check feel after pondering 2 more hours (40-20=20, now okay)
+> feel
+
+# CHECK: Feeling okay

@@ -1,0 +1,53 @@
+# Test opening fridge and eating food
+
+# CHECK: You wake up in your apartment.
+
+# CHECK: What do we do next?:
+
+> examine fridge
+
+# CHECK: The fridge must be opened first.
+
+# CHECK: What do we do next?:
+
+> open fridge
+
+# CHECK: The fridge is now open.
+
+# CHECK: What do we do next?:
+
+> examine fridge
+
+# CHECK: nothing in the fridge.
+
+# CHECK: What do we do next?:
+
+# Order some food first
+> call phone
+
+# CHECK: What number?:
+
+> 288-7955
+
+# CHECK: Hello this is the grocery store.  What would you like to order?
+
+# CHECK: spicy-food.........$10.00
+
+# Order bananas (cheapest option)
+> bananas
+
+# CHECK: Thanks! We'll get that out to you tomorrow.
+
+# CHECK: What do we do next?:
+
+# Check our balance after purchase
+> balance
+
+# CHECK: Current Balance: $98
+
+# CHECK: What do we do next?:
+
+# Check our feel level (50-2 from phone call = 48, still good)
+> feel
+
+# CHECK: Feeling good

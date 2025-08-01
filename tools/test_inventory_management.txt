@@ -1,0 +1,72 @@
+# Test inventory management and container interactions
+
+# CHECK: You wake up in your apartment.
+
+# CHECK: What do we do next?:
+
+# Check initial inventory (starts with watch)
+> inventory
+
+# CHECK: You are carrying the following:
+# CHECK:      watch
+
+# CHECK: What do we do next?:
+
+# Give ourselves debug items
+> debug items
+
+# CHECK: What do we do next?:
+
+# Check inventory after debug items
+> inventory
+
+# CHECK: You are carrying the following:
+# CHECK:      watch
+# CHECK:      hammer
+# CHECK:      box-of-nails
+# CHECK:      plywood-sheet
+
+# CHECK: What do we do next?:
+
+# Look at cabinet
+> examine cabinet
+
+# CHECK: The cabinet must be opened first.
+
+# CHECK: What do we do next?:
+
+> open cabinet
+
+# CHECK: The cabinet is now open.
+
+# CHECK: What do we do next?:
+
+> examine cabinet
+
+# CHECK: nothing in the cabinet.
+
+# CHECK: What do we do next?:
+
+# Try to get something that's not there
+> get screwdriver from toolbox
+
+# CHECK: Try opening it first.
+
+# CHECK: What do we do next?:
+
+> open toolbox
+
+# CHECK: The toolbox is now open.
+
+# CHECK: What do we do next?:
+
+> get screwdriver from toolbox
+
+# CHECK: I don't see that in the toolbox.
+
+# CHECK: What do we do next?:
+
+# Try to get something from a container that doesn't exist
+> get hammer from shelf
+
+# CHECK: I don't see that in the room.

@@ -1,0 +1,22 @@
+# Test watching TV to see the news
+
+# CHECK: You wake up in your apartment.
+
+# CHECK: What do we do next?:
+
+> examine tv
+
+# CHECK: You turn on the tv.
+
+# CHECK: Breaking news: prominent astrophysicists have recently
+
+# CHECK: What do we do next?:
+
+# Try the watch command too
+> watch tv
+
+# CHECK: You turn on the tv.
+
+# CHECK: Breaking news: prominent astrophysicists have recently
+
+# CHECK: What do we do next?:

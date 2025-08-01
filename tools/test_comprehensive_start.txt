@@ -1,0 +1,72 @@
+# Comprehensive test of typical starting sequence
+
+# CHECK: You wake up in your apartment.
+
+# CHECK: What do we do next?:
+
+# Check starting stats
+> balance
+
+# CHECK: Current Balance: $100
+
+# CHECK: What do we do next?:
+
+> feel
+
+# CHECK: Feeling good
+
+# CHECK: What do we do next?:
+
+> look at watch
+
+# CHECK: The current time is Monday March 15, 1982 at 03:14 AM
+
+# CHECK: What do we do next?:
+
+# Look around the room
+> inspect room
+
+# CHECK: You look around the room.  You see:
+
+# CHECK: phone
+# CHECK: toolbox
+# CHECK: fridge
+# CHECK: cabinet
+# CHECK: table
+# CHECK: tv
+
+# CHECK: What do we do next?:
+
+# Check what we start with
+> inventory
+
+# CHECK: You are carrying the following:
+# CHECK:      watch
+
+# CHECK: What do we do next?:
+
+# Get some tools
+> debug items
+
+# CHECK: What do we do next?:
+
+# Go to different room
+> go to bedroom
+
+# CHECK: You are now in the bedroom
+
+# CHECK: What do we do next?:
+
+# Come back to main room
+> enter main
+
+# CHECK: You are now in the main
+
+# CHECK: What do we do next?:
+
+# Check phone numbers
+> rolodex
+
+# CHECK: Grocery: 288-7955
+# CHECK-NEXT: Hardware Store: 592-2874
+# CHECK-NEXT: The Super: 198-2888

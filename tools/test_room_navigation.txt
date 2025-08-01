@@ -1,0 +1,48 @@
+# Test moving between rooms in the apartment
+
+# CHECK: You wake up in your apartment.
+
+# CHECK: What do we do next?:
+
+> go to bedroom
+
+# CHECK: You are now in the bedroom
+
+# CHECK: What do we do next?:
+
+> inspect room
+
+# CHECK: You look around the room.  You see:
+
+# CHECK: Nothing!
+
+# CHECK: What do we do next?:
+
+> enter bathroom
+
+# CHECK: You are now in the bathroom
+
+# CHECK: What do we do next?:
+
+> go in closet
+
+# CHECK: You are now in the closet
+
+# CHECK: What do we do next?:
+
+> enter the main
+
+# CHECK: You are now in the main
+
+# CHECK: What do we do next?:
+
+> go to main
+
+# CHECK: Already there.
+
+# CHECK: What do we do next?:
+
+# Try going to a room that doesn't exist
+> go to kitchen
+
+# CHECK: I haven't built that wing yet.

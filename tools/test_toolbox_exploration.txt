@@ -1,0 +1,42 @@
+# Test examining and getting items from the toolbox
+
+# CHECK: You wake up in your apartment.
+
+# CHECK: What do we do next?:
+
+> examine toolbox
+
+# CHECK: The toolbox must be opened first.
+
+# CHECK: What do we do next?:
+
+> open toolbox
+
+# CHECK: The toolbox is now open.
+
+# CHECK: What do we do next?:
+
+> examine toolbox
+
+# CHECK: nothing in the toolbox.
+
+# CHECK: What do we do next?:
+
+> debug items
+
+# CHECK: What do we do next?:
+
+> examine toolbox
+
+# CHECK: nothing in the toolbox.
+
+# CHECK: What do we do next?:
+
+# Debug items go to inventory, not toolbox
+> inventory
+
+# CHECK: You are carrying the following:
+# CHECK:      watch
+# CHECK:      hammer
+# CHECK:      box-of-nails
+# CHECK:      plywood-sheet
