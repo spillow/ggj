@@ -53,6 +53,36 @@ The project includes a **FileCheck-like tool** (`tools/filecheck.py`) for end-to
 - **Output Validation**: Whitespace-insensitive pattern matching
 - **Test Files**: Located in `tools/` directory with `.txt` extension
 
+#### Code Coverage
+
+The project uses `pytest-cov` (a wrapper around coverage.py) for test coverage analysis. **Run coverage analysis on every code change to determine if new tests are needed.**
+
+```bash
+# Basic coverage report (terminal output with missing lines)
+python -m pytest --cov=src --cov-report=term-missing
+
+# Coverage with branch analysis (recommended)
+python -m pytest --cov=src --cov-report=term-missing --cov-branch
+
+# Generate HTML coverage report for detailed analysis
+python -m pytest --cov=src --cov-report=html --cov-branch
+
+# Set coverage threshold (fail if below 80%)
+python -m pytest --cov=src --cov-fail-under=80 --cov-branch
+```
+
+**Coverage Analysis:**
+- **Overall Coverage**: 73% statement coverage with 19 branch coverage gaps
+- **Well-Tested Modules**: 
+  - `inputparser.py`: 100% coverage (command parsing system)
+  - `actions.py`: 93% coverage (game action functions)
+- **Needs Testing**:
+  - `gameloop.py`: 0% coverage (main game loop)
+  - `delivery.py`: 59% coverage (event queue system)
+  - `gamestate.py`: 66% coverage (core game objects)
+
+**HTML Report**: After running with `--cov-report=html`, view detailed coverage at `htmlcov/index.html`
+
 ## Code Architecture
 
 This is a text-based adventure game written in Python for Global Game Jam 2015. The game simulates a psychological scenario where the player controls a character who believes he has mobility issues confining him to his apartment.
