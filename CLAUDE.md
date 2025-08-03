@@ -69,17 +69,35 @@ python -m pytest --cov=src --cov-report=html --cov-branch
 
 # Set coverage threshold (fail if below 80%)
 python -m pytest --cov=src --cov-fail-under=80 --cov-branch
+
+# Coverage from end-to-end tests only
+coverage run tools/run_e2e_tests.py
+coverage report --show-missing
+
+# Combined coverage: unit tests + e2e tests
+coverage run -m pytest
+coverage run -a tools/run_e2e_tests.py
+coverage report --show-missing
+coverage html
+
+# Run all tests with combined coverage (recommended)
+coverage erase && coverage run -m pytest && coverage run -a tools/run_e2e_tests.py && coverage report --show-missing
 ```
 
 **Coverage Analysis:**
-- **Overall Coverage**: 73% statement coverage with 19 branch coverage gaps
-- **Well-Tested Modules**: 
-  - `inputparser.py`: 100% coverage (command parsing system)
-  - `actions.py`: 93% coverage (game action functions)
-- **Needs Testing**:
-  - `gameloop.py`: 0% coverage (main game loop)
-  - `delivery.py`: 59% coverage (event queue system)
-  - `gamestate.py`: 66% coverage (core game objects)
+- **Unit Tests Only**: 73% statement coverage 
+- **Combined (Unit + E2E)**: 91% statement coverage ⭐
+
+**Module Breakdown (Combined Coverage):**
+- **🟢 Excellent (100%)**: `inputparser.py` - command parsing fully tested
+- **🟢 Excellent (95%)**: `actions.py` - game actions comprehensively covered
+- **🟢 Good (93%)**: `delivery.py` - event system well tested by e2e
+- **🟢 Good (87%)**: `io_interface.py` - I/O abstractions mostly covered  
+- **🟢 Good (80%)**: `gamestate.py` - core game objects well exercised
+- **🟢 Good (77%)**: `gameloop.py` - main game loop tested via e2e
+- **🟠 Fair (80%)**: `alterego.py` - placeholder system (1 line missing)
+
+**Key Insight**: E2E tests dramatically improve coverage by exercising the full game loop and real user interactions that unit tests miss.
 
 **HTML Report**: After running with `--cov-report=html`, view detailed coverage at `htmlcov/index.html`
 
