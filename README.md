@@ -13,13 +13,14 @@ A text-based adventure game created for Global Game Jam 2015. This is a psycholo
 - **Phone System**: Call three numbers - grocery store, hardware store, and building super
 - **Event Queue**: Scheduled deliveries and government checks every 2 weeks
 - **Special Mechanics**: Nail yourself into the closet using hammer, nails, and plywood
-- **Comprehensive Testing**: 125+ tests covering all game mechanics using mock I/O
+- **Comprehensive Testing**: 152 unit tests + 11 end-to-end tests covering all game mechanics using mock I/O
 
 ## Installation
 
 ### Requirements
 - Python 3.7+
 - pytest (for running tests)
+- pytest-cov (for coverage analysis)
 
 ### Setup
 ```bash
@@ -120,12 +121,12 @@ python -m pytest tests/test_gamestate.py
 python -m pytest tests/test_gamestate.py::TestHero::test_pickup_success
 ```
 
-The codebase has **125 unit tests** covering:
+The codebase has **152 unit tests** covering:
 - **Game Object Functionality**: Hero, Container, Food, Watch, Phone, etc.
 - **Game Mechanics**: Pickup, inventory, room navigation, eating, time progression
 - **I/O Operations**: Mock interfaces for deterministic testing
 - **State Management**: Game state initialization and progression
-- **Command Parsing**: All 31 supported commands and edge cases
+- **Command Parsing**: All supported commands and edge cases
 - **Action Functions**: All game actions with success and error conditions
 - **Apartment Structure**: Room layout and object placement
 
@@ -141,11 +142,11 @@ python tools/filecheck.py tools/test_basic.txt
 python tools/filecheck.py tools/test_basic.txt --verbose
 ```
 
-The project includes a **FileCheck-like testing tool** for end-to-end game testing:
+The project includes **11 end-to-end tests** using a FileCheck-like testing tool:
 - **Test File Format**: Similar to LLVM's FileCheck with `# CHECK:` and `# CHECK-NEXT:` directives
 - **Input Simulation**: Lines starting with `>` represent player input
 - **Output Validation**: Whitespace-insensitive pattern matching against game output
-- **Example Tests**: Basic functionality and phone system interaction tests
+- **Comprehensive Coverage**: Tests for basic functionality, phone system, room navigation, inventory management, time system, TV news, toolbox exploration, fridge/food system, government checks, and special mechanics
 
 **Test File Example:**
 ```
@@ -155,6 +156,23 @@ The project includes a **FileCheck-like testing tool** for end-to-end game testi
 > 288-7955
 # CHECK: Hello this is the grocery store
 ```
+
+#### Code Coverage
+```bash
+# Basic coverage report
+python -m pytest --cov=src --cov-report=term-missing
+
+# Coverage with branch analysis (recommended)
+python -m pytest --cov=src --cov-report=term-missing --cov-branch
+
+# Generate HTML coverage report
+python -m pytest --cov=src --cov-report=html --cov-branch
+
+# Combined coverage: unit tests + e2e tests (recommended)
+coverage erase && coverage run -m pytest && coverage run -a tools/run_e2e_tests.py && coverage report --show-missing
+```
+
+**Current Coverage**: 91% statement coverage with combined unit and e2e tests
 
 ### Code Style
 - Follows PEP-8 guidelines with comprehensive type hints
@@ -174,7 +192,7 @@ The project includes a **FileCheck-like testing tool** for end-to-end game testi
   - spicy-food: +30 feel ($10)
   - caffeine: +20 feel ($5)
   - bananas: +5 feel ($2)
-  - ice-cubes: +2 feel ($2)
+  - ice-cubes: +2 feel ($6)
 - **Hardware Store (592-2874)**: Tools for special actions
   - hammer: $20
   - box-of-nails: $5
@@ -194,6 +212,17 @@ Actions consume different amounts of time:
 - **Parent-child relationships**: All objects track their containers
 - **Room-based interactions**: `@sameroom` decorator ensures actions only work when player is in same room
 - **Openable containers**: Some containers must be opened before accessing contents
+
+### Special Mechanics
+- **Closet Nailing**: When nailing yourself into the closet, both plywood and nails are consumed (realistic resource usage)
+- **Room Restriction**: Most object interactions require being in the same room
+- **Feel Management**: Player must manage energy by eating food or they will pass out
+- **Scheduled Events**: Government checks arrive every 2 weeks, store deliveries arrive on schedule
+
+## Recent Updates
+
+### Bug Fixes
+- **Nail Consumption Fix**: Fixed unrealistic behavior where nailing yourself into the closet only consumed plywood but not the box-of-nails. Now both materials are properly consumed when nailing.
 
 ## Contributing
 

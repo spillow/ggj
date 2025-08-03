@@ -35,6 +35,8 @@ The codebase uses pytest for automated testing with a comprehensive test suite c
 - I/O operations using mock interfaces
 - State management and time progression
 
+**Current Test Count**: 152 unit tests covering all aspects of the game
+
 #### End-to-End Testing
 ```bash
 # Run all end-to-end tests
@@ -52,6 +54,19 @@ The project includes a **FileCheck-like tool** (`tools/filecheck.py`) for end-to
 - **Input Simulation**: Lines starting with `>` represent player input
 - **Output Validation**: Whitespace-insensitive pattern matching
 - **Test Files**: Located in `tools/` directory with `.txt` extension
+
+**Current E2E Tests**: 11 comprehensive test files covering:
+- `test_basic.txt` - Basic game functionality
+- `test_comprehensive_start.txt` - Game startup and initial state
+- `test_fridge_food.txt` - Food system and eating mechanics
+- `test_government_check.txt` - Government check mailing system
+- `test_inventory_management.txt` - Inventory and pickup mechanics
+- `test_nail_consumption_fixed.txt` - Nail consumption bug fix verification
+- `test_phone_call.txt` - Phone system interactions
+- `test_room_navigation.txt` - Room movement and navigation
+- `test_time_pondering.txt` - Time progression system
+- `test_toolbox_exploration.txt` - Container exploration mechanics
+- `test_tv_news.txt` - TV interaction and news display
 
 #### Code Coverage
 
@@ -140,6 +155,7 @@ This is a text-based adventure game written in Python for Global Game Jam 2015. 
 - Key mechanics: inventory management, room navigation, phone calls, eating food
 - Uses decorators like `@thingify` to convert string names to objects
 - Uses `@sameroom` decorator to ensure hero and object are in same room
+- **Recent Fix**: `nail_self_in` now properly consumes both plywood and nails (line 284)
 
 **Event System (`src/delivery.py`)**
 - Time-based event queue for scheduled events (`EventQueue` class)
@@ -169,7 +185,7 @@ This is a text-based adventure game written in Python for Global Game Jam 2015. 
 
 ### Special Features
 
-- **Closet Nailing**: Player can nail themselves into the closet using hammer, nails, and plywood
+- **Closet Nailing**: Player can nail themselves into the closet using hammer, nails, and plywood (both nails and plywood are consumed)
 - **Phone System**: Three numbers - grocery store (288-7955), hardware store (592-2874), and building super (198-2888)
 - **TV News**: Shows astrophysics anomaly news when examined
 - **Food System**: Different foods provide different feel boosts (spicy-food: 30, caffeine: 20, bananas: 5, ice-cubes: 2)
@@ -258,6 +274,7 @@ def some_method(self):
 - **Unit Tests**: Individual object behavior (`TestHero`, `TestContainer`)
 - **Integration Tests**: Object interactions and game mechanics
 - **Mock Tests**: User interaction scenarios with scripted inputs
+- **End-to-End Tests**: Full game flow testing with FileCheck-like tool
 
 **Test Files**:
 - `tests/test_gamestate.py`: Core game objects and state management
@@ -265,6 +282,9 @@ def some_method(self):
 - `tests/test_apartment.py`: Room and apartment structure
 - `tests/test_io_interface.py`: I/O interface implementations
 - `tests/test_inputparser.py`: Command parsing system
+- `tests/test_delivery.py`: Event queue system
+- `tests/test_gameloop.py`: Main game loop functionality
+- `tests/test_alterego.py`: AlterEgo system (placeholder)
 
 **Test Fixtures**: Each test gets fresh instances to prevent test pollution:
 ```python
@@ -283,6 +303,7 @@ When adding new features, follow these patterns:
 3. **Separate Logic from I/O**: Keep business logic pure, delegate I/O to interface
 4. **Write Tests First**: Use `MockIO` to script interactions and verify outputs
 5. **Test Edge Cases**: Cover error conditions, boundary values, and state transitions
+6. **Add E2E Tests**: Create FileCheck tests for new gameplay features
 
 **Example**:
 ```python
@@ -378,13 +399,25 @@ ggj/
 │   ├── test_actions.py     # Action function tests
 │   ├── test_apartment.py   # Room and apartment tests
 │   ├── test_io_interface.py # I/O interface tests
-│   └── test_inputparser.py # Command parsing tests
+│   ├── test_inputparser.py # Command parsing tests
+│   ├── test_delivery.py    # Event queue tests
+│   ├── test_gameloop.py    # Game loop tests
+│   └── test_alterego.py    # AlterEgo tests
 └── tools/
     ├── __init__.py
     ├── filecheck.py        # FileCheck-like testing tool
     ├── run_e2e_tests.py    # End-to-end test runner
     ├── test_basic.txt      # Basic functionality test
-    └── test_phone_call.txt # Phone system test
+    ├── test_comprehensive_start.txt # Game startup test
+    ├── test_fridge_food.txt # Food system test
+    ├── test_government_check.txt # Government check test
+    ├── test_inventory_management.txt # Inventory test
+    ├── test_nail_consumption_fixed.txt # Nail bug fix test
+    ├── test_phone_call.txt # Phone system test
+    ├── test_room_navigation.txt # Room movement test
+    ├── test_time_pondering.txt # Time system test
+    ├── test_toolbox_exploration.txt # Container test
+    └── test_tv_news.txt    # TV interaction test
 ```
 
 ## Coding Style
@@ -403,3 +436,11 @@ This project adheres to PEP-8 guidelines and requires type hints.
 - Use the MockIO interface for testing interactive features
 - Separate business logic from I/O operations
 - Follow the existing object hierarchy patterns
+
+## Recent Updates and Bug Fixes
+
+### Nail Consumption Bug Fix
+- **Issue**: When nailing yourself into the closet, only plywood was consumed but box-of-nails remained in inventory
+- **Fix**: Modified `nail_self_in` function in `src/actions.py:284` to consume both plywood and nails: `hero.Destroy([plywood, nails])`
+- **Test Coverage**: Added `test_nail_consumption_fixed.txt` e2e test to verify the fix
+- **Impact**: More realistic resource consumption mechanics
