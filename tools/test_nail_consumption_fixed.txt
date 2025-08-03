@@ -1,0 +1,26 @@
+# Test to verify that nailing consumes both plywood and nails
+# This test verifies the fix for the nail consumption bug
+
+> debug items
+# CHECK: Got it.
+# CHECK: Got it.
+# CHECK: Got it.
+
+> inventory
+# CHECK: You are carrying the following:
+# CHECK: hammer
+# CHECK: box-of-nails
+# CHECK: plywood-sheet
+
+> go to closet
+# CHECK: You are now in the closet
+
+> nail self in
+# CHECK: You have successfully nailed yourself into a rather small closet.
+
+> inventory
+# CHECK: You are carrying the following:
+# CHECK: hammer
+
+# Verify that both plywood-sheet and box-of-nails were consumed
+# Only hammer should remain in inventory

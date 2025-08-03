@@ -281,7 +281,7 @@ def nail_self_in(state: GameStateType) -> None:
         state.hero.io.output(f"\nYou are missing something.  {s}")
         return
 
-    hero.Destroy([plywood])
+    hero.Destroy([plywood, nails])
 
     state.hero.io.output("\nYou have successfully nailed yourself into a rather small closet.")
 
