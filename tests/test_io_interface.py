@@ -84,5 +84,28 @@ class TestIOInterface:
             IOInterface()
 
 
+class TestConsoleIO:
+    def test_console_io_creation(self):
+        """Test ConsoleIO can be created."""
+        from src.io_interface import ConsoleIO
+        console_io = ConsoleIO()
+        assert console_io is not None
+
+    def test_console_io_has_required_methods(self):
+        """Test ConsoleIO implements required interface methods."""
+        from src.io_interface import ConsoleIO
+        console_io = ConsoleIO()
+        
+        # Check methods exist
+        assert hasattr(console_io, 'output')
+        assert hasattr(console_io, 'get_input')
+        assert hasattr(console_io, 'sleep')
+        
+        # Check they are callable
+        assert callable(console_io.output)
+        assert callable(console_io.get_input)
+        assert callable(console_io.sleep)
+
+
 if __name__ == "__main__":
     pytest.main([__file__])

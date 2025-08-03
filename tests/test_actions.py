@@ -168,6 +168,32 @@ class TestActions:
         outputs = self.mock_io.get_all_outputs()
         assert "You're not holding a check.  How's the cabinet looking?" in " ".join(outputs)
 
+    def test_mail_check_event_execution(self):
+        """Test that mailing a check creates and executes an event."""
+        from datetime import timedelta
+        
+        # Add a check to hero's inventory
+        check = Object("check", self.state.apartment.main)
+        self.hero.Pickup(check)
+        
+        initial_balance = self.hero.curr_balance
+        actions.mail_check(self.state)
+        
+        # Advance time to trigger the event
+        self.state.watch.curr_time += timedelta(days=2)
+        
+        # Clear previous outputs
+        self.mock_io.clear()
+        
+        # Execute pending events
+        if self.state.event_queue:
+            self.state.event_queue.Examine()
+        
+        # Check that the bank deposit happened
+        outputs = self.mock_io.get_all_outputs()
+        assert "new bank deposit!" in " ".join(outputs)
+        assert self.hero.curr_balance == initial_balance + 100
+
     def test_inspect_room_with_items(self):
         """Test inspecting room with items present."""
         # Add an item to the room
@@ -303,6 +329,31 @@ class TestActions:
         actions.get_object(self.state, "test-item", "nonexistent")
         outputs = self.mock_io.get_all_outputs()
         assert "I don't see that in the room." in " ".join(outputs)
+
+    def test_get_object_from_container(self):
+        """Test getting object from a regular Container (not Openable)."""
+        # Add item to table (which is a Container, not Openable)
+        table = self.state.apartment.main.table
+        test_item = Object("test-item", table)
+        
+        actions.get_object(self.state, "test-item", "table")
+        # Item should be picked up by hero
+        assert self.hero.GetFirstItemByName("test-item") is not None
+
+    def test_get_object_not_in_container(self):
+        """Test getting non-existent object from regular Container."""
+        actions.get_object(self.state, "nonexistent", "table")
+        outputs = self.mock_io.get_all_outputs()
+        assert "I don't see that on the table." in " ".join(outputs)
+
+    def test_get_object_from_non_container(self):
+        """Test getting object from object that's not a container."""
+        # Add a non-container object to the room
+        regular_obj = Object("regular-obj", self.state.apartment.main)
+        
+        actions.get_object(self.state, "something", "regular-obj")
+        outputs = self.mock_io.get_all_outputs()
+        assert "How could I do that?" in " ".join(outputs)
 
     def test_inventory_with_items(self):
         """Test inventory display with items."""

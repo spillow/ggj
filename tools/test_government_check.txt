@@ -1,0 +1,18 @@
+# Test government check delivery system
+# This test advances time to trigger the government check delivery
+
+# Advance time by pondering for enough hours to trigger the 2-week check
+> ponder
+# CHECK: hours?
+> 336
+# CHECK: I'm feeling very tired
+
+# Check if we received the government check (should see output when it's delivered)
+# CHECK: Government check in the mail!
+
+# Try to open cabinet and examine it
+> open cabinet
+# CHECK: The cabinet is now open
+
+> examine cabinet
+# CHECK: check
