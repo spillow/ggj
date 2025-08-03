@@ -2,3 +2,9 @@
 *.swp
 .venv
 .claude/settings.local.json
+
+# Coverage files and reports
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
