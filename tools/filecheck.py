@@ -36,7 +36,7 @@ class TestMockIO(MockIO):
 class CheckDirective(NamedTuple):
     """Represents a CHECK directive from the test file."""
     line_number: int
-    directive_type: str  # "CHECK" or "CHECK-NEXT"
+    directive_type: str  # "CHECK", "CHECK-NEXT", or "CHECK-NOT"
     pattern: str
     original_line: str
 
@@ -79,7 +79,10 @@ def parse_test_file(filename: str) -> TestCase:
         
         # Parse CHECK directives
         if line.startswith('# CHECK'):
-            if line.startswith('# CHECK-NEXT:'):
+            if line.startswith('# CHECK-NOT:'):
+                pattern = line[12:].strip()
+                checks.append(CheckDirective(line_num, "CHECK-NOT", pattern, line))
+            elif line.startswith('# CHECK-NEXT:'):
                 pattern = line[13:].strip()
                 checks.append(CheckDirective(line_num, "CHECK-NEXT", pattern, line))
             elif line.startswith('# CHECK:'):
@@ -153,6 +156,28 @@ def check_output(outputs: List[str], checks: List[CheckDirective]) -> Tuple[bool
             
             output_index += 1
         
+        elif check.directive_type == "CHECK-NOT":
+            # Find the next non-CHECK-NOT directive to determine the search range
+            search_end = len(outputs)
+            for next_check_idx in range(check_index + 1, len(checks)):
+                next_check = checks[next_check_idx]
+                if next_check.directive_type != "CHECK-NOT":
+                    # Find where this next check matches to limit our search
+                    for i in range(output_index, len(outputs)):
+                        if normalize_whitespace(next_check.pattern) in normalize_whitespace(outputs[i]):
+                            search_end = i
+                            break
+                    break
+            
+            # Check that the pattern does NOT appear in the range
+            for i in range(output_index, search_end):
+                if normalize_whitespace(check.pattern) in normalize_whitespace(outputs[i]):
+                    return False, f"CHECK-NOT at line {check.line_number} failed:\n" \
+                                 f"  Pattern should not appear: {check.pattern}\n" \
+                                 f"  But found in output line {i}: {outputs[i]}"
+            
+            # CHECK-NOT doesn't advance the output index
+        
         check_index += 1
     
     return True, None
@@ -218,6 +243,7 @@ def main():
         print("\nTest file format:")
         print("  # CHECK: <pattern>     - Find pattern anywhere in remaining output")
         print("  # CHECK-NEXT: <pattern> - Find pattern in the very next output line")
+        print("  # CHECK-NOT: <pattern>  - Verify pattern does NOT appear until next CHECK")
         print("  > <input>              - Input to send to the game")
         print("\nExample:")
         print("  # CHECK: What do we do next?:")

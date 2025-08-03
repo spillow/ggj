@@ -21,6 +21,8 @@
 > inventory
 # CHECK: You are carrying the following:
 # CHECK: hammer
+# CHECK-NOT: box-of-nails
+# CHECK-NOT: plywood-sheet
 
 # Verify that both plywood-sheet and box-of-nails were consumed
 # Only hammer should remain in inventory
