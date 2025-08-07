@@ -9,9 +9,10 @@ Actions do take time so each should implement how they move
 the clock forward.
 """
 
-from datetime import timedelta
-import datetime
-from typing import Callable, Union, Optional
+from __future__ import annotations
+
+from collections.abc import Callable
+from datetime import datetime, timedelta
 from .gamestate import Container, Object, Openable, Closet, GameState, Food, Room, Phone, Watch, Hero
 
 # Type alias for game state
@@ -116,7 +117,7 @@ def mail_check(state: GameStateType) -> None:
     if check:
         tomorrow = state.watch.curr_time + timedelta(days=1)
 
-        def mail(_curr_time: datetime.datetime, _event_time: datetime.datetime) -> None:
+        def mail(_curr_time: datetime, _event_time: datetime) -> None:
             state.hero.io.output("new bank deposit!")
             state.hero.curr_balance += 100
         if state.event_queue is not None:
@@ -255,7 +256,7 @@ def nail_self_in(state: GameStateType) -> None:
         state.hero.io.output("Gotta be in the closet to start nailing!")
         return
 
-    if closet.state == Closet.CLOSET_NAILED:
+    if closet.state == Closet.State.NAILED:
         state.hero.io.output("\nWasn't once enough?")
         return
 
@@ -285,7 +286,7 @@ def nail_self_in(state: GameStateType) -> None:
 
     state.hero.io.output("\nYou have successfully nailed yourself into a rather small closet.")
 
-    closet.state = Closet.CLOSET_NAILED
+    closet.state = Closet.State.NAILED
 
     num_hours = 2
     state.watch.curr_time += timedelta(hours=num_hours)

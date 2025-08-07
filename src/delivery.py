@@ -1,5 +1,7 @@
-from typing import List, Tuple, Callable
-import datetime
+from __future__ import annotations
+
+from collections.abc import Callable
+from datetime import datetime
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -7,11 +9,11 @@ if TYPE_CHECKING:
 
 
 class EventQueue:
-    def __init__(self, state: 'GameState') -> None:
-        self.queue: List[Tuple[Callable[[datetime.datetime, datetime.datetime], None], datetime.datetime]] = []
+    def __init__(self, state: GameState) -> None:
+        self.queue: list[tuple[Callable[[datetime, datetime], None], datetime]] = []
         self.state = state
 
-    def AddEvent(self, action: Callable[[datetime.datetime, datetime.datetime], None], timeToFire: datetime.datetime) -> None:
+    def AddEvent(self, action: Callable[[datetime, datetime], None], timeToFire: datetime) -> None:
         self.queue.append((action, timeToFire))
 
     def Examine(self) -> None:

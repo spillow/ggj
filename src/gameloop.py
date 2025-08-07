@@ -1,15 +1,16 @@
-from .gamestate import GameState, Object
-from .io_interface import IOInterface, ConsoleIO
+from __future__ import annotations
+
+from datetime import datetime, timedelta
+
 from . import inputparser
 from . import delivery
-from datetime import timedelta
-import datetime
-from typing import Optional
+from .gamestate import GameState, Object
+from .io_interface import IOInterface, ConsoleIO
 
 from .delivery import EventQueue
 
 
-def run(io: Optional[IOInterface] = None) -> None:
+def run(io: IOInterface | None = None) -> None:
     if io is None:
         io = ConsoleIO()
     
@@ -17,7 +18,7 @@ def run(io: Optional[IOInterface] = None) -> None:
     queue = EventQueue(state)
     state.SetEventQueue(queue)
 
-    def DeliverCheck(currTime: datetime.datetime, eventTime: datetime.datetime) -> None:
+    def DeliverCheck(currTime: datetime, eventTime: datetime) -> None:
         io.output("Government check in the mail!")
         Object("check", state.apartment.main.cabinet)
         queue.AddEvent(DeliverCheck, eventTime + timedelta(weeks=2))

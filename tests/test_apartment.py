@@ -127,7 +127,7 @@ class TestApartment:
     
     def test_closet_initial_state(self):
         """Test that closet starts in ready state."""
-        assert self.apartment.closet.state == Closet.CLOSET_READY
+        assert self.apartment.closet.state == Closet.State.READY
     
     def test_phone_configuration(self):
         """Test that phone is properly configured."""

@@ -1,8 +1,11 @@
-from typing import Dict, Callable, Tuple, List, Union, Any
+from __future__ import annotations
+
+from collections.abc import Callable
+from typing import Any
 from . import actions
 from .gamestate import GameState
 
-COMMANDS: Dict[str, Callable[..., Any]] = {
+COMMANDS: dict[str, Callable[..., Any]] = {
     "debug items": actions.debug_items,
     "call phone": actions.call_phone,
     "rolodex": actions.rolodex,
@@ -43,8 +46,8 @@ class PatVar:
         return bool(self.s and self.s[0] == '{' and self.s[-1] == '}')
 
 
-def unify(commandTokens: List[str], inputTokens: List[str]) -> Tuple[bool, List[str]]:
-    bindings: List[str] = []
+def unify(commandTokens: list[str], inputTokens: list[str]) -> tuple[bool, list[str]]:
+    bindings: list[str] = []
     for ct, it in zip(commandTokens, inputTokens):
         if PatVar(ct):
             bindings.append(it)
@@ -54,7 +57,7 @@ def unify(commandTokens: List[str], inputTokens: List[str]) -> Tuple[bool, List[
     return (True, bindings)
 
 
-def expand(command: str, userInput: str) -> Tuple[bool, List[str]]:
+def expand(command: str, userInput: str) -> tuple[bool, list[str]]:
     commandTokens = command.split()
     inputTokens = userInput.split()
 
@@ -71,7 +74,7 @@ def expand(command: str, userInput: str) -> Tuple[bool, List[str]]:
 # errorMessage on fail or action on success
 
 
-def parse(userInput: str) -> Tuple[bool, Union[Callable[..., Any], str], List[str]]:
+def parse(userInput: str) -> tuple[bool, Callable[..., Any] | str, list[str]]:
     for command, action in COMMANDS.items():
         ok, args = expand(command, userInput)
         if ok:

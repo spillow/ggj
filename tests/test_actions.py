@@ -407,7 +407,7 @@ class TestActions:
         assert "You have successfully nailed yourself into a rather small closet." in " ".join(outputs)
         
         # Check state changes
-        assert self.state.apartment.closet.state == Closet.CLOSET_NAILED
+        assert self.state.apartment.closet.state == Closet.State.NAILED
         assert self.state.watch.curr_time == initial_time + timedelta(hours=2)
         assert self.hero.feel == initial_feel - 20
         
@@ -424,7 +424,7 @@ class TestActions:
         """Test nailing self in when already nailed."""
         # Move to closet and set as already nailed
         self.state.apartment.closet.Enter(self.state.apartment.main, self.hero)
-        self.state.apartment.closet.state = Closet.CLOSET_NAILED
+        self.state.apartment.closet.state = Closet.State.NAILED
         
         actions.nail_self_in(self.state)
         outputs = self.mock_io.get_all_outputs()

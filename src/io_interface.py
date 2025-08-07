@@ -5,9 +5,10 @@ Interface abstraction for input/output operations to make the game testable.
 Provides both console and mock implementations.
 """
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 import time
-from typing import List
 
 
 class IOInterface(ABC):
@@ -49,10 +50,10 @@ class MockIO(IOInterface):
     """Mock implementation for testing."""
     
     def __init__(self):
-        self.outputs: List[str] = []
-        self.inputs: List[str] = []
+        self.outputs: list[str] = []
+        self.inputs: list[str] = []
         self.input_index = 0
-        self.sleep_calls: List[float] = []
+        self.sleep_calls: list[float] = []
     
     def output(self, message: str) -> None:
         """Store output message for verification."""
@@ -71,12 +72,12 @@ class MockIO(IOInterface):
         """Record sleep calls without actually sleeping."""
         self.sleep_calls.append(seconds)
     
-    def set_inputs(self, inputs: List[str]) -> None:
+    def set_inputs(self, inputs: list[str]) -> None:
         """Configure input responses for testing."""
         self.inputs = inputs
         self.input_index = 0
     
-    def get_all_outputs(self) -> List[str]:
+    def get_all_outputs(self) -> list[str]:
         """Get all output messages for verification."""
         return self.outputs.copy()
     
