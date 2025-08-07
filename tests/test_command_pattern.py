@@ -277,9 +277,9 @@ class TestCommandInvoker(unittest.TestCase):
     def test_command_sequence(self):
         """Test executing a sequence of commands."""
         commands = [
-            EnterRoomCommand("bedroom"),
-            ExamineThingCommand("bed"),
-            EnterRoomCommand("main")
+            EnterRoomCommand("main"),
+            ExamineThingCommand("phone"),
+            EnterRoomCommand("bedroom")
         ]
         
         results = self.invoker.execute_command_sequence(commands, self.game_state)
@@ -289,7 +289,7 @@ class TestCommandInvoker(unittest.TestCase):
             self.assertTrue(result.success)
         
         # Check final room
-        self.assertEqual(self.game_state.hero.GetRoom().name, "main")
+        self.assertEqual(self.game_state.hero.GetRoom().name, "bedroom")
     
     def test_sequence_fails_early(self):
         """Test sequence execution stops on first failure."""
@@ -482,22 +482,22 @@ class TestMacroCommands(unittest.TestCase):
     
     def test_explore_room_macro(self):
         """Test ExploreRoomMacro execution."""
-        macro = ExploreRoomMacro("bedroom", ["bed"])
+        macro = ExploreRoomMacro("main", ["phone", "toolbox"])
         
         result = macro.execute(self.game_state)
         self.assertTrue(result.success)
         
-        # Check hero is in bedroom
-        self.assertEqual(self.game_state.hero.GetRoom().name, "bedroom")
+        # Check hero is in main room
+        self.assertEqual(self.game_state.hero.GetRoom().name, "main")
     
     def test_macro_builder(self):
         """Test MacroBuilder fluent interface."""
         builder = MacroBuilder("Test macro")
         
         macro = (builder
-                .enter_room("bedroom")
-                .examine("bed")
                 .enter_room("main")
+                .examine("phone")
+                .enter_room("bedroom")
                 .show_inventory()
                 .build())
         
@@ -505,7 +505,7 @@ class TestMacroCommands(unittest.TestCase):
         self.assertTrue(result.success)
         
         # Check final state
-        self.assertEqual(self.game_state.hero.GetRoom().name, "main")
+        self.assertEqual(self.game_state.hero.GetRoom().name, "bedroom")
     
     def test_macro_builder_clear(self):
         """Test MacroBuilder clear functionality."""
@@ -539,8 +539,8 @@ class TestCommandIntegration(unittest.TestCase):
         commands = [
             DebugItemsCommand(),
             PonderCommand(hours=1),
-            EnterRoomCommand("bedroom"),
-            ExamineThingCommand("bed")
+            EnterRoomCommand("main"),
+            ExamineThingCommand("phone")
         ]
         
         # Execute commands through invoker
@@ -549,7 +549,7 @@ class TestCommandIntegration(unittest.TestCase):
             self.assertTrue(result.success)
         
         # Check final state
-        self.assertEqual(self.game_state.hero.GetRoom().name, "bedroom")
+        self.assertEqual(self.game_state.hero.GetRoom().name, "main")
         self.assertGreater(len(self.game_state.hero.contents), 0)
         
         # Should be able to undo some commands (undoable ones)

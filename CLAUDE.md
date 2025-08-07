@@ -62,13 +62,14 @@ The project includes a **FileCheck-like tool** (`tools/filecheck.py`) for end-to
 - **Output Validation**: Whitespace-insensitive pattern matching
 - **Test Files**: Located in `tools/` directory with `.txt` extension
 
-**Current E2E Tests**: 11 comprehensive test files covering:
+**Current E2E Tests**: 12 comprehensive test files covering:
 - `test_basic.txt` - Basic game functionality
 - `test_comprehensive_start.txt` - Game startup and initial state
 - `test_fridge_food.txt` - Food system and eating mechanics
 - `test_government_check.txt` - Government check mailing system
 - `test_inventory_management.txt` - Inventory and pickup mechanics
 - `test_nail_consumption_fixed.txt` - Nail consumption bug fix verification
+- `test_object_examine.txt` - Base Object.Examine() method functionality
 - `test_phone_call.txt` - Phone system interactions
 - `test_room_navigation.txt` - Room movement and navigation
 - `test_time_pondering.txt` - Time progression system

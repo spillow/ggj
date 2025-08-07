@@ -1,0 +1,36 @@
+# Test Object.Examine() method for objects that inherit from base Object class
+# This test verifies the new Examine() method added to the base Object class works correctly
+# for objects like Phone that don't override the method
+
+# Player starts in main room, examine phone (uses base Object.Examine)
+> examine phone
+# CHECK: You look at the phone. It looks like a phone.
+
+# TV has its own Examine method that overrides the base one, showing news
+> examine tv
+# CHECK: You turn on the tv.
+# CHECK: Breaking news: prominent astrophysicists have recently
+
+# Test examining objects in different rooms - should fail since object not in room
+> go to bedroom
+# CHECK: You are now in the bedroom
+
+> examine phone
+# CHECK: I don't see that in the room.
+
+# Return to main and test the phone again to verify base Object.Examine works
+> go to main
+# CHECK: You are now in the main
+
+> examine phone
+# CHECK: You look at the phone. It looks like a phone.
+
+# Also test examining an Openable container (toolbox is closed initially)  
+> examine toolbox
+# CHECK: The toolbox must be opened first.
+
+> open toolbox
+# CHECK: The toolbox is now open.
+
+> examine toolbox
+# CHECK: nothing in the toolbox.

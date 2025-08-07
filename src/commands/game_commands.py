@@ -47,6 +47,9 @@ class EnterRoomCommand(BaseCommand):
         
         from_room = game_state.hero.GetRoom()
         if to_room == from_room:
+            # Store undo data even when already there (no-op undo)
+            self.store_undo_data({"previous_room": from_room.name if from_room else None})
+            self.mark_executed()
             return CommandResult(
                 success=True,
                 message="Already there."
@@ -76,15 +79,20 @@ class EnterRoomCommand(BaseCommand):
     def undo(self, game_state: "GameState") -> CommandResult:
         """Return to the previous room."""
         undo_data = self.get_undo_data()
-        if not undo_data or not undo_data.get("previous_room"):
+        if not undo_data or "previous_room" not in undo_data:
             return CommandResult(success=False, message="Cannot undo room transition")
         
         previous_room_name = undo_data["previous_room"]
+        current_room = game_state.hero.GetRoom()
+        
+        # If we're already in the "previous" room (no-op case), undo is successful
+        if current_room.name == previous_room_name:
+            return CommandResult(success=True, message="Already in previous room")
+        
         previous_room = game_state.apartment.GetFirstItemByName(previous_room_name)
         
         if previous_room:
             try:
-                current_room = game_state.hero.GetRoom()
                 previous_room.Enter(current_room, game_state.hero)
                 return CommandResult(success=True, message="Returned to previous room")
             except Exception:

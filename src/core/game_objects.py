@@ -56,6 +56,14 @@ class Object:
         """
         raise NotImplementedError('Implement your own Interact()!')
 
+    @sameroom
+    def Examine(self, hero: 'Hero') -> None:
+        """
+        Default examine behavior for objects.
+        """
+        hero.io.output(f"You look at the {self.name}. It looks like a {self.name}.")
+        hero.io.output("")
+
     def __str__(self) -> str:
         """
         Return the string representation of the object.
