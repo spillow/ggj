@@ -7,18 +7,20 @@ A text-based adventure game created for Global Game Jam 2015. This is a psycholo
 ## Features
 
 - **Rich Text Adventure Mechanics**: Navigate rooms, interact with objects, manage inventory
+- **Command Pattern Architecture**: Undo/redo functionality, action replay, macro commands, and AI agent support
 - **Time System**: All actions advance the in-game clock (starting March 15, 1982 at 3:14 AM)
 - **Feel/Energy System**: Player energy decreases over time; eating food restores it
 - **Money Management**: Start with $100, order items by phone with delivery scheduling
 - **Phone System**: Call three numbers - grocery store, hardware store, and building super
 - **Event Queue**: Scheduled deliveries and government checks every 2 weeks
 - **Special Mechanics**: Nail yourself into the closet using hammer, nails, and plywood
-- **Comprehensive Testing**: 152 unit tests + 11 end-to-end tests covering all game mechanics using mock I/O
+- **Comprehensive Testing**: 177+ unit tests + 11 end-to-end tests covering all game mechanics
+- **Modern Architecture**: Modular design with clean separation of concerns and dependency injection
 
 ## Installation
 
 ### Requirements
-- Python 3.7+
+- Python 3.13+ (supports latest Python features)
 - pytest (for running tests)
 - pytest-cov (for coverage analysis)
 
@@ -94,15 +96,57 @@ The apartment contains:
 - **Bathroom**: Standard bathroom
 - **Closet**: Can be nailed shut for special gameplay
 
-## Development
+## Architecture
 
-### Architecture
-- **Modular Design**: Separated game logic, I/O, actions, and state management
-- **Object Hierarchy**: Base `Object` class with specialized containers, rooms, and items
-- **I/O Abstraction**: `IOInterface` allows both console and mock implementations for testing
-- **Event System**: Time-based delivery and event scheduling
-- **Command Parser**: Pattern-based command parsing with variable substitution
-- **Type Safety**: Comprehensive type hints throughout the codebase
+### Modern Python 3.13 Design
+The codebase leverages modern Python 3.13+ features and follows contemporary best practices:
+
+- **Command Pattern Implementation**: Full undo/redo support with command queuing and macro functionality
+- **Modular Architecture**: Clean separation between core game logic, actions, commands, and presentation
+- **Type Safety**: Comprehensive type hints using latest Python typing features
+- **Dependency Injection**: Testable design with IOInterface abstraction
+- **Modern Python Syntax**: Uses Python 3.13+ syntax including enhanced type unions and pattern matching
+
+### Core Components
+
+#### Command System (`src/commands/`)
+- **BaseCommand**: Abstract command interface with execute/undo capabilities
+- **CommandInvoker**: Manages command execution, queuing, and batch operations
+- **CommandHistory**: Full undo/redo functionality with history management
+- **MacroCommands**: Pre-built and custom macro sequences
+- **Game Commands**: 15+ concrete command implementations for all game actions
+
+#### Core Game Logic (`src/core/`)
+- **GameWorld**: Central game state management
+- **Characters**: Hero class with inventory and stats
+- **Rooms**: Apartment layout and room hierarchy
+- **Items**: Specialized objects (Food, Phone, TV, Watch)
+- **Game Objects**: Base object and container classes
+- **Time System**: Game time tracking and advancement
+
+#### Business Logic (`src/logic/`)
+- **Inventory Logic**: Item pickup rules and weight limits
+- **Movement Logic**: Room transition validation
+- **Interaction Logic**: Object interaction rules
+- **Stats Logic**: Feel/balance calculations
+- **Time Logic**: Time advancement mechanics
+
+#### Actions (`src/game_actions/`)
+- **Movement Actions**: Room navigation and special room mechanics
+- **Inventory Actions**: Object pickup, examination, container operations
+- **Interaction Actions**: Phone calls, eating, TV watching
+- **Utility Actions**: Debug commands, status checks
+- **Action Decorators**: Reusable decorators for validation
+
+### Object Hierarchy
+- **Object**: Base class with name, weight, parent relationships
+- **Container**: Objects that hold other objects
+- **Openable**: Containers with open/closed state
+- **Room**: Game locations with special behavior
+- **Hero**: Player character with inventory and stats
+- **Specialized Items**: Food, Phone, TV, Watch with unique interactions
+
+## Development
 
 ### Testing
 
@@ -119,10 +163,14 @@ python -m pytest tests/test_gamestate.py
 
 # Run specific test
 python -m pytest tests/test_gamestate.py::TestHero::test_pickup_success
+
+# Run command pattern tests
+python -m pytest tests/test_command_pattern.py
 ```
 
-The codebase has **152 unit tests** covering:
+The codebase has **177+ unit tests** covering:
 - **Game Object Functionality**: Hero, Container, Food, Watch, Phone, etc.
+- **Command Pattern**: All command implementations, invokers, history, and macros
 - **Game Mechanics**: Pickup, inventory, room navigation, eating, time progression
 - **I/O Operations**: Mock interfaces for deterministic testing
 - **State Management**: Game state initialization and progression
@@ -146,7 +194,7 @@ The project includes **11 end-to-end tests** using a FileCheck-like testing tool
 - **Test File Format**: Similar to LLVM's FileCheck with `# CHECK:` and `# CHECK-NEXT:` directives
 - **Input Simulation**: Lines starting with `>` represent player input
 - **Output Validation**: Whitespace-insensitive pattern matching against game output
-- **Comprehensive Coverage**: Tests for basic functionality, phone system, room navigation, inventory management, time system, TV news, toolbox exploration, fridge/food system, government checks, and special mechanics
+- **Comprehensive Coverage**: Tests for all major game mechanics and interactions
 
 **Test File Example:**
 ```
@@ -175,11 +223,21 @@ coverage erase && coverage run -m pytest && coverage run -a tools/run_e2e_tests.
 **Current Coverage**: 91% statement coverage with combined unit and e2e tests
 
 ### Code Style
-- Follows PEP-8 guidelines with comprehensive type hints
-- Uses dependency injection for testability
-- Separates business logic from I/O operations
-- Comprehensive docstrings for all classes and methods
-- Test-driven development with MockIO for fast, deterministic tests
+
+#### Modern Python 3.13 Guidelines
+- **Type Hints**: Comprehensive type annotations using latest Python typing features
+- **PEP-8 Compliance**: Clean, readable code following Python style guidelines
+- **Modern Syntax**: Leverages Python 3.13+ features like enhanced type unions
+- **Dependency Injection**: Testable design with interface abstractions
+- **Comprehensive Documentation**: Detailed docstrings for all classes and methods
+- **Test-Driven Development**: MockIO interfaces for fast, deterministic testing
+
+#### Architecture Patterns
+- **Command Pattern**: Undo/redo, action replay, macro support, AI compatibility
+- **Observer Pattern**: Event-driven architecture (in progress)
+- **Factory Pattern**: Planned for data-driven object creation
+- **Strategy Pattern**: Planned for pluggable behaviors
+- **Clean Architecture**: Clear separation between business logic and presentation
 
 ## Game Mechanics
 
@@ -207,32 +265,93 @@ Actions consume different amounts of time:
 - Eating: 20 minutes
 - Nailing self in closet: 2 hours
 
-### Object System
-- **Weight-based inventory**: Hero can carry up to 100 weight units
-- **Parent-child relationships**: All objects track their containers
-- **Room-based interactions**: `@sameroom` decorator ensures actions only work when player is in same room
-- **Openable containers**: Some containers must be opened before accessing contents
-
-### Special Mechanics
-- **Closet Nailing**: When nailing yourself into the closet, both plywood and nails are consumed (realistic resource usage)
-- **Room Restriction**: Most object interactions require being in the same room
-- **Feel Management**: Player must manage energy by eating food or they will pass out
-- **Scheduled Events**: Government checks arrive every 2 weeks, store deliveries arrive on schedule
+### Command System Features
+- **Undo/Redo**: Most actions can be undone (where logically possible)
+- **Action Replay**: Commands can be recorded and replayed for debugging
+- **Macro Commands**: Complex action sequences can be combined into single commands
+- **Command Queuing**: Commands can be queued and executed in batches
+- **AI Compatibility**: AI agents can use the same command objects as human players
 
 ## Recent Updates
+
+### Major Features Added
+- **Command Pattern Architecture**: Complete implementation with undo/redo, macros, and AI support
+- **Enhanced Testing**: Added 29 comprehensive command pattern tests
+- **Modular Refactoring**: Separated concerns into logical modules (core, logic, actions, commands)
+- **Python 3.13 Compatibility**: Updated for latest Python features and best practices
 
 ### Bug Fixes
 - **Nail Consumption Fix**: Fixed unrealistic behavior where nailing yourself into the closet only consumed plywood but not the box-of-nails. Now both materials are properly consumed when nailing.
 
 ## Contributing
 
-This is a preserved Global Game Jam 2015 project. The codebase demonstrates clean architecture patterns for text adventure games and serves as an educational example of:
-- Test-driven development with comprehensive mock testing
-- I/O abstraction for testability
-- Object-oriented game design with clear inheritance hierarchies
-- Event-driven programming with time-based events
-- Command parsing with pattern matching
-- Dependency injection for loose coupling
+This is a preserved Global Game Jam 2015 project that has been modernized and refactored. The codebase demonstrates clean architecture patterns for text adventure games and serves as an educational example of:
+
+- **Modern Python 3.13 Development**: Latest language features and best practices
+- **Command Pattern Implementation**: Full-featured command system with undo/redo
+- **Test-Driven Development**: Comprehensive testing with mock interfaces
+- **Clean Architecture**: Modular design with clear separation of concerns
+- **Design Pattern Usage**: Real-world examples of common software patterns
+- **Game Engine Architecture**: Text adventure game engine design principles
+
+## File Structure
+
+```
+ggj/
+├── main.py                     # Entry point
+├── requirements.txt            # Python 3.13+ dependencies
+├── pytest.ini                # Pytest configuration
+├── README.md                  # This file
+├── CLAUDE.md                  # Developer documentation
+├── REFACTOR.md               # Architectural refactoring plan
+├── src/
+│   ├── commands/             # Command Pattern implementation
+│   │   ├── base_command.py   # Abstract command interface
+│   │   ├── game_commands.py  # Concrete command implementations
+│   │   ├── command_invoker.py # Command execution management
+│   │   ├── command_history.py # Undo/redo functionality
+│   │   └── macro_commands.py # Macro and batch commands
+│   ├── core/                 # Core game logic
+│   │   ├── game_world.py     # Central game state
+│   │   ├── characters.py     # Hero and character classes
+│   │   ├── rooms.py          # Room hierarchy and apartment
+│   │   ├── items.py          # Specialized items and objects
+│   │   ├── game_objects.py   # Base object and container classes
+│   │   └── time_system.py    # Time tracking and advancement
+│   ├── logic/                # Business logic
+│   │   ├── inventory_logic.py # Item management rules
+│   │   ├── movement_logic.py  # Room transition logic
+│   │   ├── interaction_logic.py # Object interaction rules
+│   │   ├── stats_logic.py     # Feel/balance calculations
+│   │   └── time_logic.py      # Time advancement mechanics
+│   ├── game_actions/         # Action implementations
+│   │   ├── movement_actions.py    # Room navigation
+│   │   ├── inventory_actions.py   # Item management
+│   │   ├── interaction_actions.py # Object interactions
+│   │   ├── utility_actions.py     # Debug and utility commands
+│   │   └── action_decorators.py   # Reusable decorators
+│   ├── gamestate.py          # Legacy game state (compatibility)
+│   ├── actions.py            # Legacy actions (compatibility)
+│   ├── gameloop.py           # Main game loop
+│   ├── inputparser.py        # Command parsing
+│   ├── io_interface.py       # I/O abstraction
+│   ├── delivery.py           # Event system
+│   └── alterego.py           # AlterEgo system (placeholder)
+├── tests/
+│   ├── test_command_pattern.py # Command pattern tests (29 tests)
+│   ├── test_gamestate.py       # Game state tests
+│   ├── test_actions.py         # Action function tests
+│   ├── test_apartment.py       # Room and apartment tests
+│   ├── test_io_interface.py    # I/O interface tests
+│   ├── test_inputparser.py     # Command parsing tests
+│   ├── test_delivery.py        # Event system tests
+│   ├── test_gameloop.py        # Game loop tests
+│   └── test_alterego.py        # AlterEgo tests
+└── tools/
+    ├── filecheck.py            # FileCheck-like testing tool
+    ├── run_e2e_tests.py        # End-to-end test runner
+    └── test_*.txt              # 11 end-to-end test files
+```
 
 ## License
 
