@@ -1,0 +1,35 @@
+# Test room inspection and navigation
+
+# CHECK: You wake up in your apartment.
+
+# CHECK: What do we do next?:
+
+# Inspect starting room
+> inspect room
+
+# CHECK: You look around the room.  You see:
+
+# CHECK: phone
+# CHECK: toolbox  
+# CHECK: fridge
+# CHECK: cabinet
+# CHECK: table
+# CHECK: tv
+
+# CHECK: What do we do next?:
+
+# Go to bedroom
+> go to bedroom  
+
+# CHECK: You are now in the bedroom
+
+# CHECK: What do we do next?:
+
+# Inspect bedroom
+> inspect room
+
+# CHECK: You look around the room.  You see:
+
+# CHECK: Nothing!
+
+# CHECK: What do we do next?:

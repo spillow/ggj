@@ -1,0 +1,27 @@
+# Test debug command and inventory
+
+# CHECK: You wake up in your apartment.
+
+# CHECK: What do we do next?:
+
+# Use debug command
+> debug items
+
+# CHECK: Got it.
+
+# CHECK: Got it.
+
+# CHECK: Got it.
+
+# CHECK: What do we do next?:
+
+# Check inventory after debug
+> inventory
+
+# CHECK: You are carrying the following:
+# CHECK:      watch
+# CHECK:      hammer
+# CHECK:      box-of-nails
+# CHECK:      plywood-sheet
+
+# CHECK: What do we do next?:

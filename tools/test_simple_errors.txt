@@ -1,0 +1,19 @@
+# Simple error handling test
+
+# CHECK: You wake up in your apartment.
+
+# CHECK: What do we do next?:
+
+# Test invalid room
+> go to kitchen
+
+# CHECK: I haven't built that wing yet.
+
+# CHECK: What do we do next?:
+
+# Test invalid command
+> dance
+
+# CHECK: Don't understand command.
+
+# CHECK: What do we do next?:

@@ -1,0 +1,53 @@
+# Test item pickup mechanics
+
+# CHECK: You wake up in your apartment.
+
+# CHECK: What do we do next?:
+
+# Order food first since fridge starts empty
+> call phone
+> 288-7955
+> spicy-food
+> 
+
+# CHECK: Thanks! We'll get that out to you tomorrow.
+
+# CHECK: What do we do next?:
+
+# Advance time for delivery
+> ponder
+> 25
+
+# CHECK: Food truck order has arrived!
+
+# CHECK: What do we do next?:
+
+# Open fridge
+> open fridge
+
+# CHECK: The fridge is now open.
+
+# CHECK: What do we do next?:
+
+# Get food item
+> get spicy-food from fridge
+
+# CHECK: Got it.
+
+# CHECK: What do we do next?:
+
+# Check inventory
+> inventory
+
+# CHECK: You are carrying the following:
+# CHECK:      watch
+# CHECK:      spicy-food
+
+# CHECK: What do we do next?:
+
+# Try to get same item again (should fail)
+> get spicy-food from fridge  
+
+# CHECK: I don't see that in the fridge.
+
+# CHECK: What do we do next?:

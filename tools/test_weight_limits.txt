@@ -1,0 +1,36 @@
+# Test weight limits and inventory constraints
+
+# CHECK: You wake up in your apartment.
+
+# CHECK: What do we do next?:
+
+# Get debug items first
+> debug items
+
+# CHECK: What do we do next?:
+
+# Check inventory after debug
+> inventory
+
+# CHECK: hammer
+# CHECK: box-of-nails  
+# CHECK: plywood-sheet
+
+# Open toolbox to see it's empty
+> open toolbox
+
+# CHECK: The toolbox is now open.
+
+# CHECK: What do we do next?:
+
+# Check toolbox contents
+> examine toolbox
+
+# CHECK: nothing in the toolbox.
+
+# Check weight status - debug items are in inventory
+> inventory
+
+# CHECK: hammer
+# CHECK: box-of-nails
+# CHECK: plywood-sheet

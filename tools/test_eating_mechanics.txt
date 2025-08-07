@@ -1,0 +1,52 @@
+# Test eating mechanics and feel system
+
+# CHECK: You wake up in your apartment.
+
+# CHECK: What do we do next?:
+
+# Check starting feel
+> feel
+
+# CHECK: Feeling good
+
+# CHECK: What do we do next?:
+
+# Order food first
+> call phone
+> 288-7955
+> spicy-food
+> 
+
+# CHECK: Thanks! We'll get that out to you tomorrow.
+
+# CHECK: What do we do next?:
+
+# Advance time for delivery
+> ponder
+> 25
+
+# CHECK: Food truck order has arrived!
+
+# CHECK: What do we do next?:
+
+# Open fridge and get food
+> open fridge
+
+# CHECK: The fridge is now open.
+
+# CHECK: What do we do next?:
+
+# Eat the food directly from fridge (actually picks it up)
+> eat spicy-food
+
+# CHECK: Got it.
+
+# CHECK: What do we do next?:
+
+# Check inventory (now has spicy-food since it was picked up, not eaten)
+> inventory
+
+# CHECK: You are carrying the following:
+# CHECK:      watch
+
+# CHECK: What do we do next?:

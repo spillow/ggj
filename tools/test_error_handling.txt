@@ -1,0 +1,47 @@
+# Test error handling and invalid commands
+
+# CHECK: You wake up in your apartment.
+
+# CHECK: What do we do next?:
+
+# Test invalid room
+> go to kitchen
+
+# CHECK: I haven't built that wing yet.
+
+# CHECK: What do we do next?:
+
+# Test invalid object
+> examine unicorn
+
+# CHECK: I don't see that in the room.
+
+# CHECK: What do we do next?:
+
+# Test invalid container operation
+> open wall
+
+# CHECK: I don't see that in the room.
+
+# CHECK: What do we do next?:
+
+# Test pick up non-existent item (this will be "Don't understand command.")
+> get sword
+
+# CHECK: Don't understand command.
+
+# CHECK: What do we do next?:
+
+# Test close something that's not openable
+> close tv
+
+# CHECK: I can't close that.
+
+# CHECK: What do we do next?:
+
+# Test eating non-food (TV doesn't exist in fridge context)
+> eat tv
+
+# CHECK: Right, I have to open the fridge first.
+
+# CHECK: What do we do next?:

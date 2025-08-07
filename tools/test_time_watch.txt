@@ -1,0 +1,26 @@
+# Test time system and watch
+
+# CHECK: You wake up in your apartment.
+
+# CHECK: What do we do next?:
+
+# Check current time
+> look at watch
+
+# CHECK: The current time is Monday March 15, 1982 at 03:14 AM
+
+# CHECK: What do we do next?:
+
+# Ponder to advance time
+> ponder
+
+> 1
+
+# CHECK: What do we do next?:
+
+# Check time again
+> look at watch
+
+# CHECK: The current time is Monday March 15, 1982 at 04:14 AM
+
+# CHECK: What do we do next?:

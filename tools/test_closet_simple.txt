@@ -1,0 +1,37 @@
+# Test closet room and nailing
+
+# CHECK: You wake up in your apartment.
+
+# CHECK: What do we do next?:
+
+# Get debug items first (must be in main room)
+> debug items
+
+# CHECK: Got it.
+
+# CHECK: Got it.
+
+# CHECK: Got it.
+
+# CHECK: What do we do next?:
+
+# Go to closet  
+> go to closet
+
+# CHECK: You are now in the closet
+
+# CHECK: What do we do next?:
+
+# Try to nail self in
+> nail self in
+
+# CHECK: You have successfully nailed yourself into a rather small closet.
+
+# CHECK: What do we do next?:
+
+# Try to leave (should be blocked)
+> go to main
+
+# CHECK: Perhaps you should ponder exactly how you'll do that?
+
+# CHECK: What do we do next?:

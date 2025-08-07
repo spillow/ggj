@@ -1,0 +1,35 @@
+# Simple closet nailing test with error handling
+
+# CHECK: You wake up in your apartment.
+
+# CHECK: What do we do next?:
+
+# Try to nail without items first
+> go to closet
+
+# CHECK: You are now in the closet
+
+# CHECK: What do we do next?:
+
+> nail self in
+
+# CHECK: You are missing something.  Perhaps some wood?
+
+# CHECK: What do we do next?:
+
+# Go back and get items
+> go to main
+
+# CHECK: You are now in the main
+
+# CHECK: What do we do next?:
+
+> debug items
+
+# CHECK: Got it.
+
+# CHECK: Got it.
+
+# CHECK: Got it.
+
+# CHECK: What do we do next?:

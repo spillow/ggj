@@ -1,0 +1,33 @@
+# Test basic container operations
+
+# CHECK: You wake up in your apartment.
+
+# CHECK: What do we do next?:
+
+# Test opening fridge
+> open fridge
+
+# CHECK: The fridge is now open.
+
+# CHECK: What do we do next?:
+
+# Look in fridge (starts empty)
+> look in fridge
+
+# CHECK: nothing in the fridge.
+
+# CHECK: What do we do next?:
+
+# Close fridge  
+> close fridge
+
+# CHECK: The fridge is now closed.
+
+# CHECK: What do we do next?:
+
+# Try to look in closed fridge
+> look in fridge
+
+# CHECK: The fridge must be opened first.
+
+# CHECK: What do we do next?:

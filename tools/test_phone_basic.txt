@@ -1,0 +1,32 @@
+# Test basic phone system
+
+# CHECK: You wake up in your apartment.
+
+# CHECK: What do we do next?:
+
+# Check phone numbers
+> rolodex
+
+# CHECK: Grocery: 288-7955
+# CHECK-NEXT: Hardware Store: 592-2874
+# CHECK-NEXT: The Super: 198-2888
+
+# CHECK: What do we do next?:
+
+# Try calling the super (nobody answers)
+> call phone
+
+> 198-2888
+
+# CHECK: Okay, doesn't look like anybody is answering.
+
+# CHECK: What do we do next?:
+
+# Try invalid number
+> call phone
+
+> 999-9999
+
+# CHECK: Who's number is that?
+
+# CHECK: What do we do next?:
