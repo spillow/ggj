@@ -157,7 +157,7 @@ class TestGameCommands(unittest.TestCase):
             self.game_state.watch.curr_time,
             original_time + timedelta(hours=2)
         )
-        self.assertEqual(self.game_state.hero.feel, original_feel - 2)
+        self.assertEqual(self.game_state.hero.feel, original_feel - 20)  # 10 * 2 hours
         
         # Test undo
         self.assertTrue(command.can_undo())
