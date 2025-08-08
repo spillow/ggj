@@ -12,6 +12,8 @@ from typing import TYPE_CHECKING
 
 from .. import alterego
 from ..io_interface import IOInterface, ConsoleIO
+from ..commands.command_invoker import CommandInvoker
+from ..commands.command_history import CommandHistory
 from .characters import Hero
 from .rooms import Apartment
 from .items import Watch
@@ -38,6 +40,8 @@ class GameState:
     watch: Watch
     io: IOInterface
     event_queue: 'EventQueue' | None
+    command_invoker: CommandInvoker
+    command_history: CommandHistory
 
     def __init__(self, io: IOInterface | None = None) -> None:
         """
@@ -50,6 +54,10 @@ class GameState:
         self.event_queue: 'EventQueue' | None = None
 
         self.watch = Watch(self.hero)
+        
+        # Initialize command pattern facilities
+        self.command_invoker = CommandInvoker()
+        self.command_history = CommandHistory()
 
     def SetEventQueue(self, queue: 'EventQueue') -> None:
         """

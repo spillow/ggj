@@ -48,15 +48,8 @@ class CommandInvoker:
             
         Returns:
             CommandResult indicating success/failure and any output
-        """
-        # Check if command can be executed
-        if not command.can_execute(game_state):
-            return CommandResult(
-                success=False,
-                message=f"Cannot execute command: {command}"
-            )
-        
-        # Execute the command
+        """        
+        # Execute the command (let it handle its own error checking and messaging)
         try:
             result = command.execute(game_state)
             

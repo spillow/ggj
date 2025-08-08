@@ -210,21 +210,23 @@ class InspectRoomCommand(BaseCommand):
     def execute(self, game_state: "GameState") -> CommandResult:
         """List all objects in the current room."""
         room = game_state.hero.GetRoom()
-        messages = ["", "You look around the room. You see:", ""]
+        hero = game_state.hero
         
+        # Use the original output format by calling io.output directly
+        hero.io.output("")
+        hero.io.output("You look around the room.  You see:")
+        hero.io.output("")
+
         if not room.contents:
-            messages.append("Nothing!")
+            hero.io.output("Nothing!")
         else:
             for item in room.contents:
-                messages.append(str(item))
+                hero.io.output(str(item))
         
-        messages.append("")
+        hero.io.output("")
         
         self.mark_executed()
-        return CommandResult(
-            success=True,
-            message="\n".join(messages)
-        )
+        return CommandResult(success=True)  # Output handled directly
 
 
 # Inventory Commands
@@ -248,7 +250,7 @@ class ExamineThingCommand(BaseCommand):
         if not room_object:
             return CommandResult(
                 success=False,
-                message="I don't see that here."
+                message="I don't see that in the room."
             )
         
         try:
@@ -285,7 +287,7 @@ class OpenThingCommand(BaseCommand):
         if not room_object:
             return CommandResult(
                 success=False,
-                message="I don't see that here."
+                message="I don't see that in the room."
             )
         
         if not isinstance(room_object, Openable):
@@ -355,7 +357,7 @@ class CloseThingCommand(BaseCommand):
         if not room_object:
             return CommandResult(
                 success=False,
-                message="I don't see that here."
+                message="I don't see that in the room."
             )
         
         if not isinstance(room_object, Openable):
@@ -435,14 +437,14 @@ class GetObjectCommand(BaseCommand):
         if not room_obj:
             return CommandResult(
                 success=False,
-                message="I don't see that here."
+                message="I don't see that in the room."
             )
         
         if isinstance(room_obj, Openable):
             if room_obj.state != Openable.State.OPEN:
                 return CommandResult(
                     success=False,
-                    message=f"{room_obj.name} is closed."
+                    message="Try opening it first."
                 )
             
             thing = room_obj.GetFirstItemByName(self.obj_name)
@@ -456,10 +458,7 @@ class GetObjectCommand(BaseCommand):
                 try:
                     game_state.hero.Pickup(thing)
                     self.mark_executed()
-                    return CommandResult(
-                        success=True,
-                        message=f"Picked up {thing.name}"
-                    )
+                    return CommandResult(success=True)  # Hero.Pickup handles output directly
                 except Exception as e:
                     return CommandResult(
                         success=False,
@@ -468,7 +467,7 @@ class GetObjectCommand(BaseCommand):
             else:
                 return CommandResult(
                     success=False,
-                    message=f"I don't see {self.obj_name} in {room_obj.name}."
+                    message=f"I don't see that in the {room_obj.name}."
                 )
         
         elif isinstance(room_obj, Container):
@@ -483,10 +482,7 @@ class GetObjectCommand(BaseCommand):
                 try:
                     game_state.hero.Pickup(thing)
                     self.mark_executed()
-                    return CommandResult(
-                        success=True,
-                        message=f"Picked up {thing.name}"
-                    )
+                    return CommandResult(success=True)  # Hero.Pickup handles output directly
                 except Exception as e:
                     return CommandResult(
                         success=False,
@@ -495,7 +491,7 @@ class GetObjectCommand(BaseCommand):
             else:
                 return CommandResult(
                     success=False,
-                    message=f"I don't see {self.obj_name} in {room_obj.name}."
+                    message=f"I don't see that in the {room_obj.name}."
                 )
         
         return CommandResult(
@@ -558,23 +554,17 @@ class InventoryCommand(BaseCommand):
     def execute(self, game_state: "GameState") -> CommandResult:
         """Display the hero's inventory."""
         hero = game_state.hero
-        messages = [f"You are currently carrying {len(hero.contents)} objects:"]
         
         if not hero.contents:
-            messages.append("Nothing!")
+            hero.io.output("\nYou have no objects in your inventory")
         else:
-            total_weight = sum(item.weight for item in hero.contents)
-            messages.append(f"Total weight: {total_weight}")
-            messages.append("")
-            
-            for item in hero.contents:
-                messages.append(f"  {item.name} (weight: {item.weight})")
+            hero.io.output("\nYou are carrying the following:")
+            for obj in hero.contents:
+                hero.io.output(f"     {obj}")
         
+        hero.io.output("")
         self.mark_executed()
-        return CommandResult(
-            success=True,
-            message="\n".join(messages)
-        )
+        return CommandResult(success=True)  # Output handled directly
 
 
 # Utility Commands
@@ -590,7 +580,7 @@ class CheckBalanceCommand(BaseCommand):
         self.mark_executed()
         return CommandResult(
             success=True,
-            message=f"You have ${balance} in your account."
+            message=f"Current Balance: ${balance}"
         )
 
 
@@ -604,9 +594,17 @@ class CheckFeelCommand(BaseCommand):
         """Display the hero's current feel level."""
         feel = game_state.hero.feel
         self.mark_executed()
+        
+        if feel >= 40:
+            message = "Feeling good"
+        elif feel >= 20:
+            message = "Feeling okay"
+        else:
+            message = "I'm about to hit the sheets!"
+            
         return CommandResult(
             success=True,
-            message=f"You feel at level {feel}."
+            message=message
         )
 
 
@@ -622,7 +620,7 @@ class LookAtWatchCommand(BaseCommand):
         self.mark_executed()
         return CommandResult(
             success=True,
-            message=f"The time is {time_str}"
+            message=f"The current time is {time_str}"
         )
 
 
@@ -645,7 +643,7 @@ class PonderCommand(BaseCommand):
         
         # Advance time and affect stats
         game_state.watch.curr_time += timedelta(hours=self.hours)
-        game_state.hero.feel -= self.hours
+        game_state.hero.feel -= 10 * self.hours
         
         self.mark_executed()
         return CommandResult(
@@ -691,19 +689,22 @@ class DebugItemsCommand(BaseCommand):
         plywood = Object("plywood-sheet", None)
         plywood.weight = 25
         
-        # Add to hero inventory directly (bypass pickup restrictions for debug)
+        # Use pickup so we get the proper "Got it." messages
         try:
-            hammer.parent = game_state.hero
-            nails.parent = game_state.hero  
-            plywood.parent = game_state.hero
+            # Place items in main room first
+            hammer.parent = game_state.apartment.main
+            nails.parent = game_state.apartment.main
+            plywood.parent = game_state.apartment.main
             
-            game_state.hero.contents.extend([hammer, nails, plywood])
+            game_state.apartment.main.contents.extend([hammer, nails, plywood])
+            
+            # Now pick them up using the normal pickup method
+            game_state.hero.Pickup(hammer)
+            game_state.hero.Pickup(nails)
+            game_state.hero.Pickup(plywood)
             
             self.mark_executed()
-            return CommandResult(
-                success=True,
-                message="Debug items added to inventory: hammer, box-of-nails, plywood-sheet"
-            )
+            return CommandResult(success=True)  # Hero.Pickup handles output
         except Exception as e:
             return CommandResult(
                 success=False,
@@ -772,36 +773,37 @@ class EatThingCommand(BaseCommand):
         from ..core.items import Food
         from ..game_actions.action_decorators import attempt
         
-        # Look for food in inventory first, then fridge
-        food_item = game_state.hero.GetFirstItemByName(self.food_name)
-        if not food_item:
-            fridge = game_state.apartment.main.fridge
-            if hasattr(fridge, 'state') and fridge.state == fridge.State.OPEN:
-                food_item = fridge.GetFirstItemByName(self.food_name)
-        
-        if not food_item:
+        fridge = game_state.apartment.main.fridge
+        if game_state.hero.GetRoom() != fridge.GetRoom():
             return CommandResult(
                 success=False,
-                message="I don't see that food item."
+                message="Step a little closer to the fridge."
             )
-        
-        if not isinstance(food_item, Food):
+
+        if fridge.isClosed():
             return CommandResult(
                 success=False,
-                message="That's not edible."
+                message="Right, I have to open the fridge first."
             )
-        
-        # Store undo data
-        self.store_undo_data({"previous_feel": game_state.hero.feel})
-        
-        try:
-            food_item.Eat(game_state.hero)
-            self.mark_executed()
-            return CommandResult(success=True)
-        except Exception as e:
+
+        food_item = fridge.GetFirstItemByName(self.food_name)
+        if isinstance(food_item, Food):
+            # Store undo data
+            self.store_undo_data({"previous_feel": game_state.hero.feel})
+            
+            try:
+                food_item.Eat(game_state.hero)
+                self.mark_executed()
+                return CommandResult(success=True)
+            except Exception as e:
+                return CommandResult(
+                    success=False,
+                    message=str(e) if str(e) else "I can't eat that."
+                )
+        else:
             return CommandResult(
                 success=False,
-                message=str(e) if str(e) else "I can't eat that."
+                message="I don't see that food in there."
             )
     
     def can_undo(self) -> bool:
@@ -845,22 +847,39 @@ class MailCheckCommand(BaseCommand):
     
     def __init__(self):
         super().__init__("Mail government check")
-        self.previous_balance = None
+        self.check = None
     
     def execute(self, game_state: "GameState") -> CommandResult:
         """Execute mailing a check for money."""
-        # Store undo data
-        self.store_undo_data({"previous_balance": game_state.hero.curr_balance})
+        from datetime import timedelta
         
-        # Add money to balance (government check amount)
-        check_amount = 200  # Default government check amount
-        game_state.hero.curr_balance += check_amount
-        
-        self.mark_executed()
-        return CommandResult(
-            success=True,
-            message=f"Mailed government check. Received ${check_amount}."
-        )
+        check = game_state.hero.GetFirstItemByName("check")
+        if check:
+            # Store undo data
+            self.check = check
+            self.store_undo_data({"check": check})
+            
+            tomorrow = game_state.watch.curr_time + timedelta(days=1)
+
+            def mail(_curr_time, _event_time) -> None:
+                game_state.hero.io.output("new bank deposit!")
+                game_state.hero.curr_balance += 100
+                
+            if game_state.event_queue is not None:
+                game_state.event_queue.AddEvent(mail, tomorrow)
+            
+            game_state.hero.Destroy([check])
+            
+            self.mark_executed()
+            return CommandResult(
+                success=True,
+                message="Check is out.  Big money tomorrow!"
+            )
+        else:
+            return CommandResult(
+                success=False,
+                message="You're not holding a check.  How's the cabinet looking?"
+            )
     
     def can_undo(self) -> bool:
         """Mailing check can be undone by removing the money."""
@@ -885,16 +904,23 @@ class RolodexCommand(BaseCommand):
     def execute(self, game_state: "GameState") -> CommandResult:
         """Display available phone numbers."""
         phone = game_state.apartment.main.phone
+        hero = game_state.hero
         
-        messages = ["Available phone numbers:"]
-        for phone_number in phone.phoneNumbers:
-            messages.append(f"  {phone_number.name}: {phone_number.number}")
+        if hero.GetRoom() != phone.GetRoom():
+            return CommandResult(
+                success=False,
+                message="I need to get close to the phone first."
+            )
         
-        self.mark_executed()
-        return CommandResult(
-            success=True,
-            message="\n".join(messages)
-        )
+        try:
+            phone.Rolodex(hero)
+            self.mark_executed()
+            return CommandResult(success=True)  # Phone.Rolodex handles output directly
+        except Exception:
+            return CommandResult(
+                success=False,
+                message="No numbers."
+            )
 
 
 # Command factory functions for easy creation

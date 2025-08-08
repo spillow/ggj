@@ -128,8 +128,10 @@ class TestGameCommands(unittest.TestCase):
         
         result = command.execute(self.game_state)
         self.assertTrue(result.success)
-        self.assertIn("carrying", result.message)
-        self.assertIn("objects", result.message)
+        # InventoryCommand now outputs directly, so check the mock outputs instead
+        outputs = self.mock_io.get_all_outputs()
+        carrying_found = any("carrying" in output for output in outputs)
+        self.assertTrue(carrying_found, "Expected 'carrying' in inventory output")
     
     def test_check_balance_command(self):
         """Test CheckBalanceCommand execution."""

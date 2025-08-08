@@ -28,12 +28,23 @@ def run(io: IOInterface | None = None) -> None:
     while True:
         queue.Examine()
         userInput = state.prompt()
-        ok, action, args = inputparser.parse(userInput)
+        ok, command_or_error = inputparser.parse(userInput, io)
         if ok:
-            action(state, *args)
+            command = command_or_error
+            # Execute command through the command invoker and add to history
+            result = state.command_invoker.execute_command(command, state)
+            
+            # Add successful commands to history for undo/redo
+            if result.success:
+                state.command_history.add_command(command)
+            
+            # Display command result message if provided
+            if result.message:
+                io.output(result.message)
+                
             io.output("")
             state.Examine()
         else:
-            errMsg = action
+            errMsg = command_or_error
             io.output(errMsg)
             io.output("")

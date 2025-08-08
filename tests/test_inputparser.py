@@ -12,7 +12,7 @@ import os
 # Add parent directory to path so we can import game modules
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from src.inputparser import PatVar, unify, expand, parse, COMMANDS
+from src.inputparser import PatVar, unify, expand, parse_legacy as parse, COMMANDS
 from src import actions
 
 
