@@ -22,15 +22,18 @@ def debug_items(state: 'GameState') -> None:
     """Give the player some debug items to play with."""
     # Import here to avoid circular imports
     from ..core.game_objects import Object
+    from ..core.items import Food
     
     # Give me a few things to play with
     hammer = Object("hammer", state.apartment.main)
     nails = Object("box-of-nails", state.apartment.main)
     plywood = Object("plywood-sheet", state.apartment.main)
+    ice_cubes = Food("ice-cubes", state.apartment.main, 2)  # 2 feel boost like normal ice cubes
 
     state.hero.Pickup(hammer)
     state.hero.Pickup(nails)
     state.hero.Pickup(plywood)
+    state.hero.Pickup(ice_cubes)
 
 
 def look_at_watch(state: 'GameState') -> None:

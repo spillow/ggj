@@ -479,7 +479,7 @@ This architecture ensures all new code is testable, maintainable, follows separa
 The game supports the following commands (defined in `src/inputparser.py`):
 
 ### Debug and Development
-- `debug items` - Give player hammer, nails, and plywood for testing
+- `debug items` - Give player hammer, nails, plywood, and ice cubes for testing
 
 ### Phone System
 - `call phone` - Make a phone call using the main room phone

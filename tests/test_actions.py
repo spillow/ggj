@@ -39,18 +39,24 @@ class TestActions:
         hammer = self.hero.GetFirstItemByName("hammer")
         nails = self.hero.GetFirstItemByName("box-of-nails")
         plywood = self.hero.GetFirstItemByName("plywood-sheet")
+        ice_cubes = self.hero.GetFirstItemByName("ice-cubes")
         
         assert hammer is not None
         assert nails is not None
         assert plywood is not None
-        # Items should be in hero's inventory even though parent property doesn't change
+        assert ice_cubes is not None
+        
+        # Items should be in hero's inventory
         assert hammer in self.hero.contents
         assert nails in self.hero.contents
         assert plywood in self.hero.contents
+        assert ice_cubes in self.hero.contents
+        
         # Items should not be in main room contents anymore
         assert hammer not in self.state.apartment.main.contents
         assert nails not in self.state.apartment.main.contents
         assert plywood not in self.state.apartment.main.contents
+        assert ice_cubes not in self.state.apartment.main.contents
 
     def test_call_phone(self):
         """Test phone calling action."""

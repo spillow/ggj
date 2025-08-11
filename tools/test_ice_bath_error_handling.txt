@@ -1,0 +1,57 @@
+# Test ice bath error cases and command parsing
+# This test covers error handling and command variants
+
+# CHECK: You wake up in your apartment.
+
+# CHECK: What do we do next?:
+
+# Test ice bath command variants without being in bathroom
+> ice bath
+
+# CHECK: I need to be in the bathroom to take an ice bath.
+
+# CHECK: What do we do next?:
+
+> take ice bath
+
+# CHECK: I need to be in the bathroom to take an ice bath.
+
+# CHECK: What do we do next?:
+
+> take an ice bath
+
+# CHECK: I need to be in the bathroom to take an ice bath.
+
+# CHECK: What do we do next?:
+
+# Go to bathroom
+> enter bathroom
+
+# CHECK: You are now in the bathroom
+
+# CHECK: What do we do next?:
+
+# Test ice bath commands without ice cubes
+> ice bath
+
+# CHECK: I need ice cubes to take an ice bath.
+
+# CHECK: What do we do next?:
+
+> take ice bath
+
+# CHECK: I need ice cubes to take an ice bath.
+
+# CHECK: What do we do next?:
+
+> take an ice bath
+
+# CHECK: I need ice cubes to take an ice bath.
+
+# CHECK: What do we do next?:
+
+# This test verifies:
+# 1. All command parsing variants work correctly
+# 2. Location validation (must be in bathroom)
+# 3. Item validation (must have ice cubes)
+# 4. Proper error messages for each failure case

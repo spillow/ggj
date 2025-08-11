@@ -1,5 +1,5 @@
-# Test successful ice bath functionality
-# This test covers the complete ice bath workflow including success case
+# Complete ice bath functionality test - success case
+# This test covers the full ice bath workflow including successful execution
 
 # CHECK: You wake up in your apartment.
 
@@ -18,7 +18,28 @@
 
 # CHECK: What do we do next?:
 
-# Try ice bath without being in bathroom first
+# Get debug items which now includes ice cubes
+> debug items
+
+# CHECK: Got it.
+# CHECK: Got it.
+# CHECK: Got it.
+# CHECK: Got it.
+
+# CHECK: What do we do next?:
+
+# Verify we have ice cubes
+> inventory
+
+# CHECK: You are carrying the following:
+# CHECK: hammer
+# CHECK: box-of-nails  
+# CHECK: plywood-sheet
+# CHECK: ice-cubes
+
+# CHECK: What do we do next?:
+
+# Try ice bath in wrong room first
 > ice bath
 
 # CHECK: I need to be in the bathroom to take an ice bath.
@@ -32,74 +53,85 @@
 
 # CHECK: What do we do next?:
 
-# Try ice bath without ice cubes
+# Check feel before ice bath (should be around 50-2 = 48 from debug items pickup)
+> feel
+
+# CHECK: Feeling good
+
+# CHECK: What do we do next?:
+
+# Take the ice bath - this is the main test!
 > take ice bath
+
+# CHECK: You fill the tub with cold water and add the ice cubes.
+
+# CHECK: What do we do next?:
+
+# Check feel after ice bath (should be much higher now - 48 + 40 = 88)
+> feel
+
+# CHECK: Feeling good
+
+# CHECK: What do we do next?:
+
+# Check that time advanced by 1 hour
+> look at watch
+
+# CHECK: The current time is Monday March 15, 1982 at 04:14 AM
+
+# CHECK: What do we do next?:
+
+# Verify ice cubes were consumed
+> inventory
+
+# CHECK: You are carrying the following:
+# CHECK: hammer
+# CHECK: box-of-nails
+# CHECK: plywood-sheet
+
+# CHECK: What do we do next?:
+
+# Try ice bath again without ice cubes - should fail
+> ice bath
 
 # CHECK: I need ice cubes to take an ice bath.
 
 # CHECK: What do we do next?:
 
-# Go back to main room to order ice cubes
+# Go back to main room for debug items
 > enter main
 
 # CHECK: You are now in the main
 
 # CHECK: What do we do next?:
 
-# Call grocery store to order ice cubes
-> call phone
+# Test alternate command forms work too
+> debug items
 
-# CHECK: What number?:
-
-> 288-7955
-
-# CHECK: Hello this is the grocery store.  What would you like to order?
-
-# CHECK: ice-cubes..........$6.00
-
-# Order ice cubes
-> ice-cubes
-
-# CHECK: Thanks! We'll get that out to you tomorrow.
+# CHECK: Got it.
+# CHECK: Got it. 
+# CHECK: Got it.
+# CHECK: Got it.
 
 # CHECK: What do we do next?:
 
-# For testing, we need to simulate having ice cubes immediately
-# The game's event system delivers tomorrow, but we can manually place them
-# Since the e2e test doesn't have a way to advance time easily,
-# we'll test the error cases and command parsing
-
-# Test the alternate command forms
+# Go back to bathroom
 > enter bathroom
 
 # CHECK: You are now in the bathroom
 
 # CHECK: What do we do next?:
 
+# Use different command syntax
 > take an ice bath
 
-# CHECK: I need ice cubes to take an ice bath.
+# CHECK: You fill the tub with cold water and add the ice cubes.
 
 # CHECK: What do we do next?:
 
-# Test the main error cases are working
-> enter main
+# Time should now be 05:14 AM (advanced another hour)
+> look at watch
 
-# CHECK: You are now in the main
-
-# CHECK: What do we do next?:
-
-> ice bath
-
-# CHECK: I need to be in the bathroom to take an ice bath.
+# CHECK: The current time is Monday March 15, 1982 at 05:14 AM
 
 # CHECK: What do we do next?:
-
-# This test verifies:
-# 1. Command parsing works for all ice bath command variants
-# 2. Location validation (must be in bathroom)
-# 3. Item validation (must have ice cubes)
-# 4. Integration with phone ordering system
-
-# The success case with actual feel boost and time advancement
-# would require a more complex test setup with manual item placement

@@ -672,14 +672,15 @@ class PonderCommand(BaseCommand):
 
 
 class DebugItemsCommand(BaseCommand):
-    """Debug command to give player hammer, nails, and plywood."""
+    """Debug command to give player hammer, nails, plywood, and ice cubes."""
     
     def __init__(self):
-        super().__init__("Debug: Give hammer, nails, and plywood")
+        super().__init__("Debug: Give hammer, nails, plywood, and ice cubes")
     
     def execute(self, game_state: "GameState") -> CommandResult:
         """Give debug items to the player."""
         from ..core.game_objects import Object
+        from ..core.items import Food
         
         # Create debug items
         hammer = Object("hammer", None)
@@ -688,6 +689,8 @@ class DebugItemsCommand(BaseCommand):
         nails.weight = 10
         plywood = Object("plywood-sheet", None)
         plywood.weight = 25
+        ice_cubes = Food("ice-cubes", None, 2)  # 2 feel boost like normal ice cubes
+        ice_cubes.weight = 5  # Set appropriate weight
         
         # Use pickup so we get the proper "Got it." messages
         try:
@@ -695,13 +698,15 @@ class DebugItemsCommand(BaseCommand):
             hammer.parent = game_state.apartment.main
             nails.parent = game_state.apartment.main
             plywood.parent = game_state.apartment.main
+            ice_cubes.parent = game_state.apartment.main
             
-            game_state.apartment.main.contents.extend([hammer, nails, plywood])
+            game_state.apartment.main.contents.extend([hammer, nails, plywood, ice_cubes])
             
             # Now pick them up using the normal pickup method
             game_state.hero.Pickup(hammer)
             game_state.hero.Pickup(nails)
             game_state.hero.Pickup(plywood)
+            game_state.hero.Pickup(ice_cubes)
             
             self.mark_executed()
             return CommandResult(success=True)  # Hero.Pickup handles output

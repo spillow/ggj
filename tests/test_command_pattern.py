@@ -180,16 +180,18 @@ class TestGameCommands(unittest.TestCase):
         self.assertTrue(result.success)
         
         # Check items were added
-        self.assertEqual(len(self.game_state.hero.contents), original_count + 3)
+        self.assertEqual(len(self.game_state.hero.contents), original_count + 4)  # Now includes ice cubes
         
         # Check specific items
         hammer = self.game_state.hero.GetFirstItemByName('hammer')
         nails = self.game_state.hero.GetFirstItemByName('box-of-nails')
         plywood = self.game_state.hero.GetFirstItemByName('plywood-sheet')
+        ice_cubes = self.game_state.hero.GetFirstItemByName('ice-cubes')
         
         self.assertIsNotNone(hammer)
         self.assertIsNotNone(nails)
         self.assertIsNotNone(plywood)
+        self.assertIsNotNone(ice_cubes)
     
     def test_examine_command(self):
         """Test ExamineThingCommand execution."""
