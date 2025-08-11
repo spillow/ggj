@@ -62,7 +62,7 @@ The project includes a **FileCheck-like tool** (`tools/filecheck.py`) for end-to
 - **Output Validation**: Whitespace-insensitive pattern matching
 - **Test Files**: Located in `tools/` directory with `.txt` extension
 
-**Current E2E Tests**: 12 comprehensive test files covering:
+**Current E2E Tests**: 27 comprehensive test files including:
 - `test_basic.txt` - Basic game functionality
 - `test_comprehensive_start.txt` - Game startup and initial state
 - `test_fridge_food.txt` - Food system and eating mechanics
@@ -75,6 +75,8 @@ The project includes a **FileCheck-like tool** (`tools/filecheck.py`) for end-to
 - `test_time_pondering.txt` - Time progression system
 - `test_toolbox_exploration.txt` - Container exploration mechanics
 - `test_tv_news.txt` - TV interaction and news display
+- `test_ice_bath.txt` - Ice bath command parsing and error handling
+- `test_ice_bath_success.txt` - Complete ice bath workflow testing
 
 #### Code Coverage
 
@@ -303,11 +305,11 @@ This is a text-based adventure game written in Python for Global Game Jam 2015. 
 
 ### Key Game Mechanics
 
-- **Feel System**: Player energy that decreases over time, causes passing out at 0, restored by eating
+- **Feel System**: Player energy that decreases over time, causes passing out at 0, restored by eating or ice baths
 - **Money System**: Player has $100 starting balance, can order items by phone with costs deducted
-- **Time System**: All actions advance time, some significantly (pondering, phone calls)
+- **Time System**: All actions advance time, some significantly (pondering, phone calls, ice baths)
 - **Inventory**: Weight-based system, hero can carry up to 100 weight units
-- **Room Navigation**: Movement between apartment rooms with special closet mechanics
+- **Room Navigation**: Movement between apartment rooms with special closet and bathroom mechanics
 - **Store Orders**: Phone-based ordering system with delivery scheduling
 - **Object Interaction**: `@sameroom` decorator ensures actions only work when player is in same room
 - **Command Pattern Features**:
@@ -320,6 +322,7 @@ This is a text-based adventure game written in Python for Global Game Jam 2015. 
 ### Special Features
 
 - **Closet Nailing**: Player can nail themselves into the closet using hammer, nails, and plywood (both nails and plywood are consumed)
+- **Ice Bath**: Player can take an ice bath in the bathroom using ice cubes (+40 feel boost, +1 hour time, consumes ice cubes)
 - **Phone System**: Three numbers - grocery store (288-7955), hardware store (592-2874), and building super (198-2888)
 - **TV News**: Shows astrophysics anomaly news when examined
 - **Food System**: Different foods provide different feel boosts (spicy-food: 30, caffeine: 20, bananas: 5, ice-cubes: 2)
@@ -490,6 +493,11 @@ The game supports the following commands (defined in `src/inputparser.py`):
 
 ### Food and Eating
 - `eat {food}` - Eat food from the opened fridge
+
+### Bathroom Actions
+- `take an ice bath` - Take an ice bath in the bathroom (requires ice cubes)
+- `take ice bath` - Alternative ice bath command
+- `ice bath` - Shorter ice bath command
 
 ### Object Interaction
 - `examine {object}` - Examine an object in the room

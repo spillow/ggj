@@ -473,6 +473,64 @@ class TestActions:
         outputs = self.mock_io.get_all_outputs()
         assert "Perhaps some wood?" in " ".join(outputs)
 
+    def test_take_ice_bath_success(self):
+        """Test taking ice bath in bathroom with ice cubes."""
+        # Move hero to bathroom
+        self.state.apartment.bathroom.Enter(self.state.apartment.main, self.hero)
+        
+        # Give hero ice cubes
+        from src.gamestate import Food
+        ice_cubes = Food("ice-cubes", self.hero, 2)
+        
+        initial_feel = self.hero.feel
+        initial_time = self.state.watch.curr_time
+        
+        actions.take_ice_bath(self.state)
+        
+        # Check effects
+        assert self.hero.feel == initial_feel + 40  # +40 feel boost
+        assert self.state.watch.curr_time == initial_time + timedelta(hours=1)  # +1 hour
+        assert self.hero.GetFirstItemByName("ice-cubes") is None  # Ice cubes consumed
+        
+        outputs = self.mock_io.get_all_outputs()
+        assert "You fill the tub with cold water and add the ice cubes." in " ".join(outputs)
+        assert "The shock of the cold water makes you incredibly alert!" in " ".join(outputs)
+        assert "Time passes as you endure the ice bath..." in " ".join(outputs)
+
+    def test_take_ice_bath_not_in_bathroom(self):
+        """Test taking ice bath when not in bathroom."""
+        # Hero starts in main room, give them ice cubes
+        from src.gamestate import Food
+        ice_cubes = Food("ice-cubes", self.hero, 2)
+        
+        actions.take_ice_bath(self.state)
+        outputs = self.mock_io.get_all_outputs()
+        assert "I need to be in the bathroom to take an ice bath." in " ".join(outputs)
+
+    def test_take_ice_bath_no_ice_cubes(self):
+        """Test taking ice bath without ice cubes."""
+        # Move hero to bathroom but don't give ice cubes
+        self.state.apartment.bathroom.Enter(self.state.apartment.main, self.hero)
+        
+        actions.take_ice_bath(self.state)
+        outputs = self.mock_io.get_all_outputs()
+        assert "I need ice cubes to take an ice bath." in " ".join(outputs)
+
+    def test_take_ice_bath_feel_display(self):
+        """Test ice bath displays new feel level."""
+        # Move hero to bathroom and give ice cubes
+        self.state.apartment.bathroom.Enter(self.state.apartment.main, self.hero)
+        from src.gamestate import Food
+        ice_cubes = Food("ice-cubes", self.hero, 2)
+        
+        # Set specific initial feel to test output
+        self.hero.feel = 20
+        
+        actions.take_ice_bath(self.state)
+        
+        outputs = self.mock_io.get_all_outputs()
+        assert "You feel much more alert. (Feel: 60)" in " ".join(outputs)
+
 
 class TestThingifyDecorator:
     """Test the thingify decorator specifically."""

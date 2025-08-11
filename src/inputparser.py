@@ -120,6 +120,9 @@ def create_redo_command() -> BaseCommand:
     
     return DeferredRedoCommand()
 
+def create_ice_bath_command() -> BaseCommand:
+    return TakeIceBathCommand()
+
 # Map commands to their factory functions
 COMMANDS: dict[str, Callable[..., BaseCommand]] = {
     "debug items": create_debug_items_command,
@@ -150,6 +153,9 @@ COMMANDS: dict[str, Callable[..., BaseCommand]] = {
     "view room": create_inspect_room_command,
     "look around room": create_inspect_room_command,
     "mail check": create_mail_check_command,
+    "take an ice bath": create_ice_bath_command,
+    "take ice bath": create_ice_bath_command,
+    "ice bath": create_ice_bath_command,
     "undo": create_undo_command,
     "redo": create_redo_command
 }
@@ -255,7 +261,10 @@ def parse_legacy(userInput: str) -> tuple[bool, Callable[..., Any] | str, list[s
         "inspect room": actions.inspect_room,
         "view room": actions.inspect_room,
         "look around room": actions.inspect_room,
-        "mail check": actions.mail_check
+        "mail check": actions.mail_check,
+        "take an ice bath": actions.take_ice_bath,
+        "take ice bath": actions.take_ice_bath,
+        "ice bath": actions.take_ice_bath
     }
     
     for command, action in legacy_commands.items():

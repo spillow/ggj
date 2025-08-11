@@ -947,3 +947,93 @@ def create_call_phone_command() -> BaseCommand:
 def create_eat_command(food_name: str) -> BaseCommand:
     """Create an EatThingCommand."""
     return EatThingCommand(food_name)
+
+
+class TakeIceBathCommand(BaseCommand):
+    """Command to take an ice bath in the bathroom using ice cubes."""
+    
+    def __init__(self):
+        super().__init__("Take ice bath")
+        self.previous_feel = None
+        self.previous_time = None
+        self.ice_cubes = None
+    
+    def can_execute(self, game_state: "GameState") -> bool:
+        """Check if hero is in bathroom with ice cubes."""
+        # Check if hero is in bathroom
+        if game_state.hero.GetRoom() != game_state.apartment.bathroom:
+            return False
+        
+        # Check if hero has ice cubes
+        ice_cubes = game_state.hero.GetFirstItemByName("ice-cubes")
+        return ice_cubes is not None
+    
+    def execute(self, game_state: "GameState") -> CommandResult:
+        """Execute the ice bath action."""
+        # Check if hero is in bathroom
+        if game_state.hero.GetRoom() != game_state.apartment.bathroom:
+            return CommandResult(
+                success=False,
+                message="I need to be in the bathroom to take an ice bath."
+            )
+        
+        # Check if hero has ice cubes
+        ice_cubes = game_state.hero.GetFirstItemByName("ice-cubes")
+        if not ice_cubes:
+            return CommandResult(
+                success=False,
+                message="I need ice cubes to take an ice bath."
+            )
+        
+        # Store undo data
+        self.store_undo_data({
+            "previous_feel": game_state.hero.feel,
+            "previous_time": game_state.watch.curr_time,
+            "ice_cubes": ice_cubes
+        })
+        
+        # Consume the ice cubes
+        game_state.hero.Destroy([ice_cubes])
+        
+        # Boost feel by 40
+        game_state.hero.feel += 40
+        
+        # Advance time by 1 hour
+        game_state.watch.curr_time += timedelta(hours=1)
+        
+        self.mark_executed()
+        return CommandResult(
+            success=True,
+            message="You fill the tub with cold water and add the ice cubes.\nThe shock of the cold water makes you incredibly alert!\nTime passes as you endure the ice bath...",
+            time_advanced=True
+        )
+    
+    def can_undo(self) -> bool:
+        """Ice bath can be undone by restoring previous state."""
+        return True
+    
+    def undo(self, game_state: "GameState") -> CommandResult:
+        """Restore previous feel, time, and ice cubes."""
+        undo_data = self.get_undo_data()
+        if not undo_data:
+            return CommandResult(success=False, message="Cannot undo ice bath")
+        
+        # Restore previous state
+        game_state.hero.feel = undo_data["previous_feel"]
+        game_state.watch.curr_time = undo_data["previous_time"]
+        
+        # Restore ice cubes to hero's inventory
+        ice_cubes = undo_data["ice_cubes"]
+        if ice_cubes:
+            ice_cubes.parent = game_state.hero
+            game_state.hero.contents.append(ice_cubes)
+        
+        return CommandResult(
+            success=True,
+            message="Undid ice bath - restored time, feel, and ice cubes"
+        )
+
+
+def create_ice_bath_command() -> BaseCommand:
+    """Create a TakeIceBathCommand."""
+    return TakeIceBathCommand()

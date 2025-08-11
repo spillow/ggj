@@ -84,3 +84,32 @@ def mail_check(state: 'GameState') -> None:
         state.hero.io.output("Check is out.  Big money tomorrow!")
     else:
         state.hero.io.output("You're not holding a check.  How's the cabinet looking?")
+
+
+def take_ice_bath(state: 'GameState') -> None:
+    """Take an ice bath in the bathroom to boost feel using ice cubes."""
+    # Check if hero is in bathroom
+    if state.hero.GetRoom() != state.apartment.bathroom:
+        state.hero.io.output("I need to be in the bathroom to take an ice bath.")
+        return
+    
+    # Check if hero has ice cubes
+    ice_cubes = state.hero.GetFirstItemByName("ice-cubes")
+    if not ice_cubes:
+        state.hero.io.output("I need ice cubes to take an ice bath.")
+        return
+    
+    # Consume the ice cubes
+    state.hero.Destroy([ice_cubes])
+    
+    # Boost feel by 40
+    state.hero.feel += 40
+    
+    # Advance time by 1 hour
+    state.watch.curr_time += timedelta(hours=1)
+    
+    # Output success message
+    state.hero.io.output("You fill the tub with cold water and add the ice cubes.")
+    state.hero.io.output("The shock of the cold water makes you incredibly alert!")
+    state.hero.io.output("Time passes as you endure the ice bath...")
+    state.hero.io.output(f"You feel much more alert. (Feel: {state.hero.feel})")

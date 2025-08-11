@@ -16,7 +16,7 @@ from src.commands.game_commands import (
     EnterRoomCommand, ExamineThingCommand, GetObjectCommand,
     InventoryCommand, CheckBalanceCommand, PonderCommand,
     DebugItemsCommand, OpenThingCommand, CloseThingCommand,
-    CheckFeelCommand, LookAtWatchCommand
+    CheckFeelCommand, LookAtWatchCommand, TakeIceBathCommand
 )
 from src.commands.command_invoker import CommandInvoker, BatchCommandInvoker
 from src.commands.command_history import CommandHistory, UndoCommand, RedoCommand
@@ -562,6 +562,120 @@ class TestCommandIntegration(unittest.TestCase):
         while self.history.can_undo():
             result = self.history.undo(self.game_state)
             self.assertTrue(result.success)
+
+
+class TestTakeIceBathCommand(unittest.TestCase):
+    """Test the TakeIceBathCommand implementation."""
+    
+    def setUp(self):
+        """Set up test fixtures."""
+        self.mock_io = MockIO()
+        self.game_state = GameState(self.mock_io)
+        self.hero = self.game_state.hero
+    
+    def test_can_execute_success(self):
+        """Test can_execute returns True when conditions are met."""
+        # Move hero to bathroom and give ice cubes
+        self.game_state.apartment.bathroom.Enter(self.game_state.apartment.main, self.hero)
+        from src.core.items import Food
+        ice_cubes = Food("ice-cubes", self.hero, 2)
+        
+        command = TakeIceBathCommand()
+        self.assertTrue(command.can_execute(self.game_state))
+    
+    def test_can_execute_not_in_bathroom(self):
+        """Test can_execute returns False when not in bathroom."""
+        # Hero starts in main room, give ice cubes
+        from src.core.items import Food
+        ice_cubes = Food("ice-cubes", self.hero, 2)
+        
+        command = TakeIceBathCommand()
+        self.assertFalse(command.can_execute(self.game_state))
+    
+    def test_can_execute_no_ice_cubes(self):
+        """Test can_execute returns False when no ice cubes."""
+        # Move hero to bathroom but don't give ice cubes
+        self.game_state.apartment.bathroom.Enter(self.game_state.apartment.main, self.hero)
+        
+        command = TakeIceBathCommand()
+        self.assertFalse(command.can_execute(self.game_state))
+    
+    def test_execute_success(self):
+        """Test successful execution of ice bath command."""
+        # Move hero to bathroom and give ice cubes
+        self.game_state.apartment.bathroom.Enter(self.game_state.apartment.main, self.hero)
+        from src.core.items import Food
+        ice_cubes = Food("ice-cubes", self.hero, 2)
+        
+        initial_feel = self.hero.feel
+        initial_time = self.game_state.watch.curr_time
+        
+        command = TakeIceBathCommand()
+        result = command.execute(self.game_state)
+        
+        # Check command succeeded
+        self.assertTrue(result.success)
+        self.assertTrue(result.time_advanced)
+        
+        # Check game state changes
+        self.assertEqual(self.hero.feel, initial_feel + 40)  # +40 feel boost
+        self.assertEqual(self.game_state.watch.curr_time, initial_time + timedelta(hours=1))  # +1 hour
+        self.assertIsNone(self.hero.GetFirstItemByName("ice-cubes"))  # Ice cubes consumed
+        self.assertTrue(command.executed)
+    
+    def test_execute_not_in_bathroom(self):
+        """Test execution failure when not in bathroom."""
+        from src.core.items import Food
+        ice_cubes = Food("ice-cubes", self.hero, 2)
+        
+        command = TakeIceBathCommand()
+        result = command.execute(self.game_state)
+        
+        self.assertFalse(result.success)
+        self.assertEqual(result.message, "I need to be in the bathroom to take an ice bath.")
+        self.assertFalse(command.executed)
+    
+    def test_execute_no_ice_cubes(self):
+        """Test execution failure when no ice cubes."""
+        self.game_state.apartment.bathroom.Enter(self.game_state.apartment.main, self.hero)
+        
+        command = TakeIceBathCommand()
+        result = command.execute(self.game_state)
+        
+        self.assertFalse(result.success)
+        self.assertEqual(result.message, "I need ice cubes to take an ice bath.")
+        self.assertFalse(command.executed)
+    
+    def test_undo_functionality(self):
+        """Test undo capability of ice bath command."""
+        # Setup successful execution
+        self.game_state.apartment.bathroom.Enter(self.game_state.apartment.main, self.hero)
+        from src.core.items import Food
+        ice_cubes = Food("ice-cubes", self.hero, 2)
+        
+        initial_feel = self.hero.feel
+        initial_time = self.game_state.watch.curr_time
+        
+        command = TakeIceBathCommand()
+        result = command.execute(self.game_state)
+        self.assertTrue(result.success)
+        
+        # Test undo capability
+        self.assertTrue(command.can_undo())
+        
+        # Execute undo
+        undo_result = command.undo(self.game_state)
+        self.assertTrue(undo_result.success)
+        
+        # Check state restoration
+        self.assertEqual(self.hero.feel, initial_feel)  # Feel restored
+        self.assertEqual(self.game_state.watch.curr_time, initial_time)  # Time restored
+        self.assertIsNotNone(self.hero.GetFirstItemByName("ice-cubes"))  # Ice cubes restored
+        
+        # Ice cubes should be back in hero's inventory
+        restored_ice_cubes = self.hero.GetFirstItemByName("ice-cubes")
+        self.assertEqual(restored_ice_cubes.parent, self.hero)
+        self.assertIn(restored_ice_cubes, self.hero.contents)
 
 
 if __name__ == '__main__':
