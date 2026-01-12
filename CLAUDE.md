@@ -4,8 +4,33 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Development Commands
 
+This project uses [uv](https://github.com/astral-sh/uv) for fast, reliable Python package management. Dependencies are defined in `pyproject.toml`.
+
+### Setup
+
+```bash
+# Install uv (if not already installed)
+# On Windows:
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+
+# On macOS/Linux:
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Sync dependencies (creates venv and installs packages)
+uv sync
+
+# Install optional development tools
+uv sync --extra dev
+```
+
 ### Running the Game
 ```bash
+# Using uv (recommended)
+uv run python main.py
+
+# Or activate venv and run directly
+source .venv/Scripts/activate  # Windows
+source .venv/bin/activate      # macOS/Linux
 python main.py
 ```
 
@@ -13,26 +38,23 @@ python main.py
 
 #### Unit Testing
 ```bash
-# Install test dependencies
-pip install -r requirements.txt
-
 # Run all unit tests
-python -m pytest
+uv run pytest
 
 # Run tests with verbose output
-python -m pytest -v
+uv run pytest -v
 
 # Run specific test file
-python -m pytest tests/test_gamestate.py
+uv run pytest tests/test_gamestate.py
 
 # Run specific test
-python -m pytest tests/test_gamestate.py::TestHero::test_pickup_success
+uv run pytest tests/test_gamestate.py::TestHero::test_pickup_success
 
 # Run Command Pattern tests
-python -m pytest tests/test_command_pattern.py
+uv run pytest tests/test_command_pattern.py
 
 # Run tests with pattern matching
-python -m pytest -k "command" -v
+uv run pytest -k "command" -v
 ```
 
 The codebase uses pytest for automated testing with a comprehensive test suite covering:
@@ -47,10 +69,10 @@ The codebase uses pytest for automated testing with a comprehensive test suite c
 #### End-to-End Testing
 ```bash
 # Run all end-to-end tests
-python tools/run_e2e_tests.py
+uv run python tools/run_e2e_tests.py
 
 # Run specific FileCheck test
-python tools/filecheck.py tools/test_basic.txt --verbose
+uv run python tools/filecheck.py tools/test_basic.txt --verbose
 ```
 
 The project includes a **FileCheck-like tool** (`tools/filecheck.py`) for end-to-end testing:
@@ -84,29 +106,29 @@ The project uses `pytest-cov` (a wrapper around coverage.py) for test coverage a
 
 ```bash
 # Basic coverage report (terminal output with missing lines)
-python -m pytest --cov=src --cov-report=term-missing
+uv run pytest --cov=src --cov-report=term-missing
 
 # Coverage with branch analysis (recommended)
-python -m pytest --cov=src --cov-report=term-missing --cov-branch
+uv run pytest --cov=src --cov-report=term-missing --cov-branch
 
 # Generate HTML coverage report for detailed analysis
-python -m pytest --cov=src --cov-report=html --cov-branch
+uv run pytest --cov=src --cov-report=html --cov-branch
 
 # Set coverage threshold (fail if below 80%)
-python -m pytest --cov=src --cov-fail-under=80 --cov-branch
+uv run pytest --cov=src --cov-fail-under=80 --cov-branch
 
 # Coverage from end-to-end tests only
-coverage run tools/run_e2e_tests.py
-coverage report --show-missing
+uv run coverage run tools/run_e2e_tests.py
+uv run coverage report --show-missing
 
 # Combined coverage: unit tests + e2e tests
-coverage run -m pytest
-coverage run -a tools/run_e2e_tests.py
-coverage report --show-missing
-coverage html
+uv run coverage run -m pytest
+uv run coverage run -a tools/run_e2e_tests.py
+uv run coverage report --show-missing
+uv run coverage html
 
 # Run all tests with combined coverage (recommended)
-coverage erase && coverage run -m pytest && coverage run -a tools/run_e2e_tests.py && coverage report --show-missing
+uv run coverage erase && uv run coverage run -m pytest && uv run coverage run -a tools/run_e2e_tests.py && uv run coverage report --show-missing
 ```
 
 **Coverage Analysis:**
@@ -532,11 +554,11 @@ The game supports the following commands (defined in `src/inputparser.py`):
 ```
 ggj/
 ├── main.py                 # Entry point
-├── requirements.txt        # Python 3.13+ dependencies
-├── pytest.ini            # Pytest configuration
-├── README.md              # User documentation
-├── CLAUDE.md              # This file
-├── REFACTOR.md            # Architectural refactoring plan
+├── pyproject.toml          # Project metadata and dependencies (uv)
+├── pytest.ini              # Pytest configuration
+├── README.md               # User documentation
+├── CLAUDE.md               # This file
+├── REFACTOR.md             # Architectural refactoring plan
 ├── src/
 │   ├── commands/          # Command Pattern implementation
 │   │   ├── __init__.py

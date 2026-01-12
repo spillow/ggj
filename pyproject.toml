@@ -1,0 +1,63 @@
+[project]
+name = "ggj-text-adventure"
+version = "0.5.1"
+description = "Global Game Jam 2015 text adventure game with Command Pattern implementation"
+readme = "README.md"
+requires-python = ">=3.13"
+authors = [
+    { name = "Scott" }
+]
+dependencies = [
+    "pytest>=8.0.0",
+    "pytest-cov>=6.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "black>=24.0.0",      # Code formatting
+    "ruff>=0.1.0",        # Fast Python linter and formatter
+    "mypy>=1.8.0",        # Type checking
+]
+extras = [
+    "requests>=2.32.0",
+    "python-dateutil>=2.9.0",
+    "colorama>=0.4.0",    # Colored terminal output
+    "rich>=13.0.0",       # Rich text formatting
+    "click>=8.1.0",       # CLI applications
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+addopts = "-v"
+
+[tool.coverage.run]
+source = ["src"]
+omit = ["tests/*", "tools/*"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
+
+[tool.black]
+line-length = 100
+target-version = ["py313"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.mypy]
+python_version = "3.13"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false

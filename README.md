@@ -21,8 +21,7 @@ A text-based adventure game created for Global Game Jam 2015. This is a psycholo
 
 ### Requirements
 - Python 3.13+ (supports latest Python features)
-- pytest (for running tests)
-- pytest-cov (for coverage analysis)
+- [uv](https://github.com/astral-sh/uv) - Fast Python package manager
 
 ### Setup
 ```bash
@@ -30,14 +29,27 @@ A text-based adventure game created for Global Game Jam 2015. This is a psycholo
 git clone <repository-url>
 cd ggj
 
-# Install dependencies
-pip install -r requirements.txt
+# Install uv (if not already installed)
+# On Windows:
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+
+# On macOS/Linux:
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Sync dependencies (creates venv and installs packages)
+uv sync
 ```
 
 ## Usage
 
 ### Running the Game
 ```bash
+# Using uv (recommended)
+uv run python main.py
+
+# Or activate venv and run directly
+source .venv/Scripts/activate  # Windows
+source .venv/bin/activate      # macOS/Linux
 python main.py
 ```
 
@@ -153,19 +165,19 @@ The codebase leverages modern Python 3.13+ features and follows contemporary bes
 #### Unit Tests
 ```bash
 # Run all unit tests
-python -m pytest
+uv run pytest
 
 # Run with verbose output
-python -m pytest -v
+uv run pytest -v
 
 # Run specific test file
-python -m pytest tests/test_gamestate.py
+uv run pytest tests/test_gamestate.py
 
 # Run specific test
-python -m pytest tests/test_gamestate.py::TestHero::test_pickup_success
+uv run pytest tests/test_gamestate.py::TestHero::test_pickup_success
 
 # Run command pattern tests
-python -m pytest tests/test_command_pattern.py
+uv run pytest tests/test_command_pattern.py
 ```
 
 The codebase has **177+ unit tests** covering:
@@ -181,13 +193,13 @@ The codebase has **177+ unit tests** covering:
 #### End-to-End Tests
 ```bash
 # Run all end-to-end tests
-python tools/run_e2e_tests.py
+uv run python tools/run_e2e_tests.py
 
 # Run a specific test file
-python tools/filecheck.py tools/test_basic.txt
+uv run python tools/filecheck.py tools/test_basic.txt
 
 # Run with verbose output to see game output
-python tools/filecheck.py tools/test_basic.txt --verbose
+uv run python tools/filecheck.py tools/test_basic.txt --verbose
 ```
 
 The project includes **11 end-to-end tests** using a FileCheck-like testing tool:
@@ -208,16 +220,16 @@ The project includes **11 end-to-end tests** using a FileCheck-like testing tool
 #### Code Coverage
 ```bash
 # Basic coverage report
-python -m pytest --cov=src --cov-report=term-missing
+uv run pytest --cov=src --cov-report=term-missing
 
 # Coverage with branch analysis (recommended)
-python -m pytest --cov=src --cov-report=term-missing --cov-branch
+uv run pytest --cov=src --cov-report=term-missing --cov-branch
 
 # Generate HTML coverage report
-python -m pytest --cov=src --cov-report=html --cov-branch
+uv run pytest --cov=src --cov-report=html --cov-branch
 
 # Combined coverage: unit tests + e2e tests (recommended)
-coverage erase && coverage run -m pytest && coverage run -a tools/run_e2e_tests.py && coverage report --show-missing
+uv run coverage erase && uv run coverage run -m pytest && uv run coverage run -a tools/run_e2e_tests.py && uv run coverage report --show-missing
 ```
 
 **Current Coverage**: 91% statement coverage with combined unit and e2e tests
@@ -299,11 +311,11 @@ This is a preserved Global Game Jam 2015 project that has been modernized and re
 ```
 ggj/
 ├── main.py                     # Entry point
-├── requirements.txt            # Python 3.13+ dependencies
-├── pytest.ini                # Pytest configuration
-├── README.md                  # This file
-├── CLAUDE.md                  # Developer documentation
-├── REFACTOR.md               # Architectural refactoring plan
+├── pyproject.toml              # Project metadata and dependencies (uv)
+├── pytest.ini                  # Pytest configuration
+├── README.md                   # This file
+├── CLAUDE.md                   # Developer documentation
+├── REFACTOR.md                 # Architectural refactoring plan
 ├── src/
 │   ├── commands/             # Command Pattern implementation
 │   │   ├── base_command.py   # Abstract command interface

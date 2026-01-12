@@ -16,9 +16,8 @@
         "matcher": ".*",
         "hooks": [
           {
-            "type": "slash_command",
-            "command": "/update-docs",
-            "condition": "successful_code_changes"
+            "type": "command",
+            "command": "/update-docs"
           }
         ]
       }
