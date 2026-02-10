@@ -64,7 +64,7 @@ The codebase uses pytest for automated testing with a comprehensive test suite c
 - State management and time progression
 - **Command Pattern implementation** (commands, invokers, history, macros)
 
-**Current Test Count**: 272+ unit tests covering all aspects of the game, including 29 Command Pattern tests, 22 expanded inventory tests, 22 room object tests, 12 day tracking tests, and 24 evolving world tests
+**Current Test Count**: 337+ unit tests covering all aspects of the game, including 29 Command Pattern tests, 22 expanded inventory tests, 22 room object tests, 12 day tracking tests, 24 evolving world tests, 25 device state tests, and 40 sabotage/investigation command tests
 
 #### End-to-End Testing
 ```bash
@@ -84,7 +84,7 @@ The project includes a **FileCheck-like tool** (`tools/filecheck.py`) for end-to
 - **Output Validation**: Whitespace-insensitive pattern matching
 - **Test Files**: Located in `tools/` directory with `.txt` extension
 
-**Current E2E Tests**: 34 comprehensive test files including:
+**Current E2E Tests**: 37 comprehensive test files including:
 - `test_basic.txt` - Basic game functionality
 - `test_comprehensive_start.txt` - Game startup and initial state
 - `test_fridge_food.txt` - Food system and eating mechanics
@@ -106,6 +106,9 @@ The project includes a **FileCheck-like tool** (`tools/filecheck.py`) for end-to
 - `test_tv_day1.txt` - Day 1 TV news verification (backward compat)
 - `test_day_tracking.txt` - Day tracking via ponder + watch + evolving TV news
 - `test_super_day4.txt` - Day 4 super phone response (answers with complaints)
+- `test_read_journal.txt` - Read journal command in bedroom (Phase 3)
+- `test_barricade_bedroom.txt` - Barricade bedroom with debug items (Phase 3)
+- `test_sabotage_device.txt` - Sabotage flow: journal + barricade (Phase 3)
 
 #### Code Coverage
 
@@ -191,6 +194,8 @@ This is a text-based adventure game written in Python for Global Game Jam 2015. 
 - **Movement Commands**: `EnterRoomCommand`, `NailSelfInCommand`, `InspectRoomCommand`
 - **Inventory Commands**: `ExamineThingCommand`, `OpenThingCommand`, `CloseThingCommand`, `GetObjectCommand`, `InventoryCommand`
 - **Interaction Commands**: `CallPhoneCommand`, `EatThingCommand`, `WatchTvCommand`, `MailCheckCommand`, `RolodexCommand`
+- **Sabotage Commands** (Phase 3): `DisassembleFrameCommand`, `CutWiresCommand`, `RemoveBatteryCommand`, `RemoveCrystalCommand`
+- **Investigation/Defense Commands** (Phase 3): `BarricadeBedroomCommand`, `ReadJournalCommand`
 - **Utility Commands**: `CheckBalanceCommand`, `CheckFeelCommand`, `LookAtWatchCommand`, `PonderCommand`, `DebugItemsCommand`
 
 **Command Management (`command_invoker.py`)**
@@ -237,6 +242,12 @@ This is a text-based adventure game written in Python for Global Game Jam 2015. 
 - `Phone` system with multiple callable numbers
 - `TV` class with news display functionality
 - `Watch` class for time tracking and display
+
+**Device State System (`device_state.py`) - Phase 3**
+- `DeviceState` class tracking 5 Convergence Amplifier components
+- Components: `device-frame`, `wiring-harness`, `power-core`, `focusing-array`, `convergence-device`
+- Methods: `build_component()`, `remove_component()`, `is_component_built()`, `count_built_components()`, etc.
+- Tracks `ae_phase` (0 = not started, 1-5 = current phase) for AE build progression
 
 **Object Foundation (`game_objects.py`)**
 - Base `Object` class with weight, name, and parent relationships
@@ -358,6 +369,11 @@ This is a text-based adventure game written in Python for Global Game Jam 2015. 
 - **TV News**: Shows day-appropriate astrophysics anomaly news when examined (7 unique broadcasts, Days 1-7, from STORY.md)
 - **Day Tracking**: `GameState.get_current_day()` computes current day from watch time (Day 1 = March 15, 1982)
 - **Building Super Evolution**: Days 1-3 no answer; Day 4 answers with tenant noise complaints; Day 5 power company threat; Day 6+ calmed down
+- **Mirror Flicker** (Phase 3): On Day 4+, mirror shows AE flicker text and sets `mirror_seen` flag
+- **Journal System** (Phase 3): `read journal` reveals backstory about the Alter Ego and sets `journal_read` flag
+- **Sabotage System** (Phase 3): 4 commands to dismantle device components: `disassemble frame`, `cut wires`, `remove battery`, `remove crystal`; all require being in bedroom with component BUILT
+- **Barricade System** (Phase 3): `barricade bedroom` consumes plywood + nails (keeps hammer), sets `bedroom_barricaded` flag; must NOT be inside bedroom
+- **Device State** (Phase 3): `DeviceState` tracks 5 components as BUILT/MISSING; AE builds them, player sabotages them
 - **Food System**: Different foods provide different feel boosts (spicy-food: 30, caffeine: 20, bananas: 5, ice-cubes: 2, energy-drinks: 25, canned-soup: 10, chocolate-bar: 8, protein-bar: 15)
 - **Hardware Items**: Hammer ($20), box-of-nails ($5), plywood-sheet ($30), copper-wire ($15), metal-brackets ($10), soldering-iron ($25), duct-tape ($3), wire-cutters ($12)
 - **Electronics Items**: Vacuum-tubes ($20), crystal-oscillator ($35), copper-coil ($18), battery-pack ($12), signal-amplifier ($40), insulated-cable ($8)
@@ -371,6 +387,10 @@ The game uses a centralized `GameState` object that contains:
 - `event_queue`: Scheduled events system (EventQueue class)
 - `alterEgo`: AlterEgo system (currently unused)
 - `io`: IOInterface for all input/output operations
+- `device_state`: DeviceState tracking 5 Convergence Amplifier components (Phase 3)
+- `journal_read`: Boolean flag, True after player reads the journal (Phase 3)
+- `mirror_seen`: Boolean flag, True after mirror shows AE flicker on Day 4+ (Phase 3)
+- `bedroom_barricaded`: Boolean flag, True after player barricades bedroom (Phase 3)
 
 All game objects maintain parent-child relationships for location tracking, and the `@sameroom` decorator ensures actions only work when the player is in the same room as objects.
 
@@ -387,12 +407,12 @@ All game objects maintain parent-child relationships for location tracking, and 
 - `Phone`: Extends Object, handles phone calls with list of PhoneNumber objects
 - `TV`: Extends Object, displays day-appropriate news when examined (accepts gamestate for day lookup)
 - `Journal`: Extends Object, pickable (weight 1), found in bedroom bookshelf
-- `Mirror`: Extends Object, not pickable (weight 1000), found in bathroom
+- `Mirror`: Extends Object, not pickable (weight 1000), found in bathroom; on Day 4+ shows AE flicker and sets `mirror_seen` flag
 
 **Specialized Rooms:**
 - `MainRoom`: Contains phone, toolbox, fridge, cabinet, table, tv
-- `Bedroom`: Contains bookshelf (with journal inside)
-- `Bathroom`: Contains medicine-cabinet (with aspirin), mirror
+- `Bedroom`: Contains bookshelf (with journal inside); has `barricaded` flag for Phase 3 barricade mechanic
+- `Bathroom`: Contains medicine-cabinet (with aspirin), mirror; accepts gamestate for mirror flicker
 - `Closet`: Can be nailed shut, prevents leaving when CLOSET_NAILED state
 - `Apartment`: Top-level container holding all rooms
 

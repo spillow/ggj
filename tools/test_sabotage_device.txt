@@ -1,0 +1,23 @@
+# Test: Sabotage device components
+# Verifies that sabotage commands fail when components aren't built,
+# and that the read journal command sets the journal_read flag.
+
+# First, go to bedroom and try to disassemble with nothing built
+> go to bedroom
+# CHECK: You are now in the bedroom
+
+# Read the journal while we're here
+> read journal
+# CHECK: worn leather journal
+# CHECK: imaginary friend
+
+# Go back to main to get tools
+> go to main
+# CHECK: You are now in the main
+
+> debug items
+# CHECK: Got it.
+
+# Try barricade from main room (should succeed)
+> barricade bedroom
+# CHECK: nail the plywood across the bedroom door

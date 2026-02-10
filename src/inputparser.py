@@ -123,6 +123,24 @@ def create_redo_command() -> BaseCommand:
 def create_ice_bath_command() -> BaseCommand:
     return TakeIceBathCommand()
 
+def create_disassemble_frame_command() -> BaseCommand:
+    return DisassembleFrameCommand()
+
+def create_cut_wires_command() -> BaseCommand:
+    return CutWiresCommand()
+
+def create_remove_battery_command() -> BaseCommand:
+    return RemoveBatteryCommand()
+
+def create_remove_crystal_command() -> BaseCommand:
+    return RemoveCrystalCommand()
+
+def create_barricade_bedroom_command() -> BaseCommand:
+    return BarricadeBedroomCommand()
+
+def create_read_journal_command() -> BaseCommand:
+    return ReadJournalCommand()
+
 # Map commands to their factory functions
 COMMANDS: dict[str, Callable[..., BaseCommand]] = {
     "debug items": create_debug_items_command,
@@ -156,6 +174,12 @@ COMMANDS: dict[str, Callable[..., BaseCommand]] = {
     "take an ice bath": create_ice_bath_command,
     "take ice bath": create_ice_bath_command,
     "ice bath": create_ice_bath_command,
+    "disassemble frame": create_disassemble_frame_command,
+    "cut wires": create_cut_wires_command,
+    "remove battery": create_remove_battery_command,
+    "remove crystal": create_remove_crystal_command,
+    "barricade bedroom": create_barricade_bedroom_command,
+    "read journal": create_read_journal_command,
     "undo": create_undo_command,
     "redo": create_redo_command
 }

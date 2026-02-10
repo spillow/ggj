@@ -91,6 +91,7 @@ class Bedroom(Room):
     gamestate: 'GameState'
     bookshelf: Container
     journal: 'Journal'
+    barricaded: bool
 
     def __init__(self, name: str, parent: Container | None, gamestate: 'GameState') -> None:
         """
@@ -98,6 +99,7 @@ class Bedroom(Room):
         """
         super().__init__(name, parent)
         self.gamestate = gamestate
+        self.barricaded: bool = False
 
         from .items import Journal
 
@@ -115,20 +117,22 @@ class Bathroom(Room):
     """
     Represents the bathroom with a medicine cabinet and mirror.
     """
+    gamestate: 'GameState'
     medicine_cabinet: Openable
     mirror: 'Mirror'
 
-    def __init__(self, name: str, parent: Container | None) -> None:
+    def __init__(self, name: str, parent: Container | None, gamestate: 'GameState') -> None:
         """
         Initialize the bathroom with its objects.
         """
         super().__init__(name, parent)
+        self.gamestate = gamestate
 
         from .items import Mirror
         from .game_objects import Object
 
         self.medicine_cabinet = Openable("medicine-cabinet", self)
-        self.mirror = Mirror(self)
+        self.mirror = Mirror(self, gamestate)
         Object("aspirin", self.medicine_cabinet)
 
     def Interact(self) -> None:
@@ -196,7 +200,7 @@ class Apartment(Container):
 
         self.main = MainRoom("main", self, gamestate)
         self.bedroom = Bedroom("bedroom", self, gamestate)
-        self.bathroom = Bathroom("bathroom", self)
+        self.bathroom = Bathroom("bathroom", self, gamestate)
         self.closet = Closet("closet", self)
 
     def Interact(self) -> None:

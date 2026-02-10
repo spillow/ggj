@@ -558,15 +558,17 @@ class Journal(Object):
 class Mirror(Object):
     """
     A bathroom mirror. Too heavy to pick up.
-    Phase 2 will add day-based AE flicker; Phase 3 will add mirror_seen flag.
+    On Day 4+ shows an Alter Ego flicker and sets mirror_seen flag.
     """
+    gamestate: 'GameState'
 
-    def __init__(self, parent: Container | None) -> None:
+    def __init__(self, parent: Container | None, gamestate: 'GameState') -> None:
         """
         Initialize the mirror as a heavy, non-pickable object.
         """
         super().__init__("mirror", parent)
         self.weight = 1000
+        self.gamestate = gamestate
 
     def Interact(self) -> None:
         """
@@ -578,6 +580,14 @@ class Mirror(Object):
     def Examine(self, hero: 'Hero') -> None:
         """
         Display what the hero sees in the mirror.
+        On Day 4+ shows an AE flicker and sets gamestate.mirror_seen.
         """
         hero.io.output("You look in the mirror. You see yourself. You look tired.")
+        day = self.gamestate.get_current_day()
+        if day >= 4:
+            hero.io.output(
+                "For a moment, your reflection moves on its own. "
+                "It smiles at you. Then it's gone."
+            )
+            self.gamestate.mirror_seen = True
         hero.io.output("")

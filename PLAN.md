@@ -253,56 +253,56 @@ Phase 2 is optional — the mirror's day-based flicker can use `gamestate.get_cu
 
 ### TODO
 
-- [ ] **3.1** Create `src/core/device_state.py` with `DeviceState` class
+- [x] **3.1** Create `src/core/device_state.py` with `DeviceState` class
   ```
   COMPONENTS = ["device-frame", "wiring-harness", "power-core", "focusing-array", "convergence-device"]
   ```
   Methods: `build_component(name)`, `remove_component(name)`, `is_component_built(name)`, `count_built_components()`, `count_missing_components()`, `is_device_complete()`, `get_built_components()`, `get_missing_components()`
   - Also track `ae_phase: int` (0 = not started, 1-5 = current phase)
 
-- [ ] **3.2** Add `DeviceState` to `GameState` in `src/core/game_world.py`
+- [x] **3.2** Add `DeviceState` to `GameState` in `src/core/game_world.py`
   - `self.device_state = DeviceState()` in `__init__()`
   - `self.journal_read: bool = False` — set when player reads the journal
   - `self.mirror_seen: bool = False` — set when player sees AE flicker
   - `self.bedroom_barricaded: bool = False` — set by barricade command
 
-- [ ] **3.3** Add `barricaded: bool = False` to `Bedroom` class in `src/core/rooms.py`
+- [x] **3.3** Add `barricaded: bool = False` to `Bedroom` class in `src/core/rooms.py`
 
-- [ ] **3.4** Create `DisassembleFrameCommand` in `src/commands/game_commands.py`
+- [x] **3.4** Create `DisassembleFrameCommand` in `src/commands/game_commands.py`
   - Requires: hero in bedroom + hammer in inventory + `device_state.is_component_built("device-frame")`
   - Execute: set component to MISSING, remove `device-frame` Object from bedroom, output sabotage text
   - Time: +1 hour, Feel: -15
 
-- [ ] **3.5** Create `CutWiresCommand` in `src/commands/game_commands.py`
+- [x] **3.5** Create `CutWiresCommand` in `src/commands/game_commands.py`
   - Requires: hero in bedroom + wire-cutters in inventory + `device_state.is_component_built("wiring-harness")`
   - Execute: set component to MISSING, remove Object, output sabotage text
   - Time: +30 min, Feel: -10
 
-- [ ] **3.6** Create `RemoveBatteryCommand` in `src/commands/game_commands.py`
+- [x] **3.6** Create `RemoveBatteryCommand` in `src/commands/game_commands.py`
   - Requires: hero in bedroom + `device_state.is_component_built("power-core")`
   - Execute: set component to MISSING, remove Object, output text
   - Time: +20 min, Feel: -5
 
-- [ ] **3.7** Create `RemoveCrystalCommand` in `src/commands/game_commands.py`
+- [x] **3.7** Create `RemoveCrystalCommand` in `src/commands/game_commands.py`
   - Requires: hero in bedroom + `device_state.is_component_built("focusing-array")`
   - Execute: set component to MISSING, remove Object, output text
   - Time: +20 min, Feel: -5
 
-- [ ] **3.8** Create `BarricadeBedroomCommand` in `src/commands/game_commands.py`
+- [x] **3.8** Create `BarricadeBedroomCommand` in `src/commands/game_commands.py`
   - Requires: hero NOT in bedroom + plywood + nails + hammer in inventory
   - Execute: consume plywood and nails, set `bedroom_barricaded = True`, output text
   - Time: +1 hour, Feel: -15
 
-- [ ] **3.9** Create `ReadJournalCommand` in `src/commands/game_commands.py`
+- [x] **3.9** Create `ReadJournalCommand` in `src/commands/game_commands.py`
   - Requires: journal in hero inventory OR same room
   - Execute: output journal text, set `gamestate.journal_read = True`
   - No time/feel cost
 
-- [ ] **3.10** Update `Mirror.Examine()` in `src/core/items.py`
+- [x] **3.10** Update `Mirror.Examine()` in `src/core/items.py`
   - If `gamestate.get_current_day() >= 4` (requires Phase 2, add TODO if unavailable): show AE flicker text, set `gamestate.mirror_seen = True`
   - Pass gamestate to Mirror via constructor: `Mirror(parent, gamestate)`
 
-- [ ] **3.11** Create factory functions and register all 6 commands in `src/inputparser.py`
+- [x] **3.11** Create factory functions and register all 6 commands in `src/inputparser.py`
   ```
   "disassemble frame": create_disassemble_frame_command,
   "cut wires": create_cut_wires_command,
@@ -353,14 +353,14 @@ Phase 2 is optional — the mirror's day-based flicker can use `gamestate.get_cu
 
 ### Exit Criteria
 
-- [ ] All existing tests pass (zero regressions)
-- [ ] All 25+ new unit tests pass
-- [ ] All 3+ new e2e tests pass
-- [ ] DeviceState tracks all 5 components correctly
-- [ ] All 6 new commands parse and execute with proper validation
-- [ ] Barricade consumes plywood + nails
-- [ ] ReadJournalCommand sets `journal_read` flag
-- [ ] Combined test coverage ≥ 80%
+- [x] All existing tests pass (zero regressions)
+- [x] All 65 new unit tests pass (25 DeviceState + 40 sabotage/investigation commands)
+- [x] All 3 new e2e tests pass
+- [x] DeviceState tracks all 5 components correctly
+- [x] All 6 new commands parse and execute with proper validation
+- [x] Barricade consumes plywood + nails
+- [x] ReadJournalCommand sets `journal_read` flag
+- [x] Combined test coverage ≥ 80%
 
 ---
 

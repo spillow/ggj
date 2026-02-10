@@ -1,0 +1,8 @@
+# Test: Barricade the bedroom door
+# Verifies getting materials via debug, then barricading the bedroom from outside
+
+> debug items
+# CHECK: Got it.
+
+> barricade bedroom
+# CHECK: nail the plywood across the bedroom door

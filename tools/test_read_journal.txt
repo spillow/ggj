@@ -1,0 +1,10 @@
+# Test: Read the journal in the bedroom
+# Verifies the read journal command works when in the bedroom (journal in bookshelf)
+
+> go to bedroom
+# CHECK: You are now in the bedroom
+
+> read journal
+# CHECK: worn leather journal
+# CHECK: imaginary friend
+# CHECK: door became a wall

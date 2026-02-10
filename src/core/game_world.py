@@ -18,6 +18,7 @@ from ..commands.command_history import CommandHistory
 from .characters import Hero
 from .rooms import Apartment
 from .items import Watch
+from .device_state import DeviceState
 
 if TYPE_CHECKING:
     from ..delivery import EventQueue
@@ -55,6 +56,12 @@ class GameState:
         self.event_queue: 'EventQueue' | None = None
 
         self.watch = Watch(self.hero)
+
+        # Device system (Phase 3)
+        self.device_state = DeviceState()
+        self.journal_read: bool = False
+        self.mirror_seen: bool = False
+        self.bedroom_barricaded: bool = False
         
         # Initialize command pattern facilities
         self.command_invoker = CommandInvoker()
