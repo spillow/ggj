@@ -62,6 +62,9 @@ class GameState:
         self.journal_read: bool = False
         self.mirror_seen: bool = False
         self.bedroom_barricaded: bool = False
+
+        # Phase 4: Alter Ego AI
+        self.device_activated: bool = False
         
         # Initialize command pattern facilities
         self.command_invoker = CommandInvoker()
@@ -93,9 +96,28 @@ class GameState:
     def IntroPrompt(self) -> None:
         """
         Display the introductory prompt to the player.
+        Includes phase-specific evidence text after AE activity.
         """
         self.emit(
             f"You wake up in your apartment.  It is {self.watch.GetDateAsString()}")
+
+        # Phase-specific evidence text based on AE progress
+        ae_phase = self.device_state.ae_phase
+        if ae_phase >= 5 and not self.device_activated:
+            self.emit(
+                "The device sparks and whines, then falls silent. "
+                "Something is missing."
+            )
+        elif ae_phase >= 4:
+            self.emit("The lights flicker as you open your eyes.")
+        elif ae_phase >= 3:
+            self.emit("Your fingertips are blackened. Solder burns?")
+        elif ae_phase >= 2:
+            self.emit("There's a strange smell. Sawdust?")
+        elif ae_phase >= 1:
+            self.emit(
+                "Something feels... off. The phone is sitting off the hook."
+            )
 
         self.emit("In the corner you see a toolbox.")
 

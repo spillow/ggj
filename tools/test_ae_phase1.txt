@@ -1,0 +1,17 @@
+# E2E test: AE Phase 1 evidence
+# Let feel drop by pondering until passing out, then verify AE Phase 1 evidence text
+# The hero starts with feel=50, pondering reduces it by 10/hour
+
+> ponder
+# CHECK: How many hours?
+> 5
+# CHECK: You ponder for 5 hours
+
+# Now feel is at 0, game should trigger pass out and AE runs (Phase 1)
+# CHECK: feeling very tired
+# CHECK: pass out
+
+# After waking up, check for Phase 1 evidence
+# CHECK: You wake up in your apartment
+# CHECK: phone is sitting off the hook
+# CHECK: toolbox

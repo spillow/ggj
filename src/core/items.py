@@ -359,7 +359,15 @@ class SuperNumber(PhoneNumber):
             self.gamestate.watch.curr_time += timedelta(minutes=20)
         else:
             # Day 4+: super answers
-            response = SUPER_RESPONSES.get(day, SUPER_DEFAULT_RESPONSE)
+            if day in SUPER_RESPONSES:
+                response = SUPER_RESPONSES[day]
+            elif self.gamestate.device_state.is_component_built("power-core"):
+                response = (
+                    "The power surges have stopped, at least. But if I hear "
+                    "one more complaint, I'm calling the city."
+                )
+            else:
+                response = SUPER_DEFAULT_RESPONSE
             self.gamestate.io.output(response)
             self.gamestate.hero.feel -= 10
             self.gamestate.watch.curr_time += timedelta(minutes=5)

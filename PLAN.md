@@ -376,12 +376,12 @@ Implement the full 5-phase Alter Ego construction logic. When Arthur sleeps, the
 
 ### TODO
 
-- [ ] **4.1** Rewrite `AlterEgo` class in `src/alterego.py` with state tracking:
+- [x] **4.1** Rewrite `AlterEgo` class in `src/alterego.py` with state tracking:
   - `current_phase: int = 0` (0 = not started, 1-5)
   - `orders_placed: list[str]` — tracks pending orders
   - `run(gamestate)` — main entry point, called during sleep
 
-- [ ] **4.2** Implement `run()` control flow:
+- [x] **4.2** Implement `run()` control flow:
   ```
   1. Check closet trap → if trapped, waste turn, reset closet, return
   2. Check bedroom barricade → if barricaded, clear it, waste turn, return
@@ -390,63 +390,63 @@ Implement the full 5-phase Alter Ego construction logic. When Arthur sleeps, the
   5. Advance time by ~6 hours (sleep duration)
   ```
 
-- [ ] **4.3** Implement `_phase_surveying()` (Phase 1):
+- [x] **4.3** Implement `_phase_surveying()` (Phase 1):
   - Check hero.curr_balance for each order
   - Order from hardware: copper-wire ($15), metal-brackets ($10) if affordable
   - Order from electronics: vacuum-tubes ($20), battery-pack ($12) if affordable
   - Deduct costs from hero.curr_balance
   - Schedule deliveries via event_queue.AddEvent()
 
-- [ ] **4.4** Implement `_phase_frame()` (Phase 2):
+- [x] **4.4** Implement `_phase_frame()` (Phase 2):
   - Search apartment for: plywood-sheet, metal-brackets, box-of-nails, hammer
   - If all found: consume plywood/brackets/nails, create `Object("device-frame", bedroom)`, set `device_state.build_component("device-frame")`, leave hammer in bedroom
   - If not all found: skip building (phase still advances)
   - Order: soldering-iron ($25), insulated-cable ($8), copper-coil ($18) if affordable
 
-- [ ] **4.5** Implement `_phase_wiring()` (Phase 3):
+- [x] **4.5** Implement `_phase_wiring()` (Phase 3):
   - Search for: copper-wire, insulated-cable, soldering-iron
   - If frame exists AND materials found: build wiring-harness, consume copper-wire + insulated-cable
   - Order: crystal-oscillator ($35), signal-amplifier ($40), ice-cubes ($6) if affordable
 
-- [ ] **4.6** Implement `_phase_power_core()` (Phase 4):
+- [x] **4.6** Implement `_phase_power_core()` (Phase 4):
   - Search for: battery-pack, copper-coil → build power-core if found
   - Search for: crystal-oscillator, ice-cubes → build focusing-array if found
   - No new orders
 
-- [ ] **4.7** Implement `_phase_activation()` (Phase 5):
+- [x] **4.7** Implement `_phase_activation()` (Phase 5):
   - Search for: signal-amplifier → install as convergence-device
   - Check `device_state.is_device_complete()`
   - If complete: set `gamestate.device_activated = True`
   - If incomplete: output evidence of failed activation
 
-- [ ] **4.8** Implement `_is_trapped_in_closet()` helper:
+- [x] **4.8** Implement `_is_trapped_in_closet()` helper:
   - Check: hero is in closet AND closet.state == NAILED
   - If trapped: output "You hear sounds of splintering wood...", reset closet.state to READY
   - AE's phase does NOT advance
 
-- [ ] **4.9** Implement `_handle_barricade()` helper:
+- [x] **4.9** Implement `_handle_barricade()` helper:
   - Check: `gamestate.bedroom_barricaded == True`
   - If barricaded: output "You hear heavy pounding...", set barricaded to False
   - AE's phase does NOT advance
 
-- [ ] **4.10** Implement `_find_item_in_apartment()` helper:
+- [x] **4.10** Implement `_find_item_in_apartment()` helper:
   - Recursively search all rooms and containers for a named item
   - Return the Object if found, None otherwise
   - The AE uses this to locate delivered materials anywhere in the apartment
 
-- [ ] **4.11** Implement `_consume_item()` helper:
+- [x] **4.11** Implement `_consume_item()` helper:
   - Remove an item from its parent container (simulating AE picking it up and using it)
 
-- [ ] **4.12** Add `device_activated: bool = False` flag to `GameState` in `src/core/game_world.py`
+- [x] **4.12** Add `device_activated: bool = False` flag to `GameState` in `src/core/game_world.py`
 
-- [ ] **4.13** Update `GameState.IntroPrompt()` in `src/core/game_world.py` to display phase-specific evidence text:
+- [x] **4.13** Update `GameState.IntroPrompt()` in `src/core/game_world.py` to display phase-specific evidence text:
   - After Phase 1: `"Something feels... off. The phone is sitting off the hook."`
   - After Phase 2: `"There's a strange smell. Sawdust?"`
   - After Phase 3: `"Your fingertips are blackened. Solder burns?"`
   - After Phase 4: `"The lights flicker as you open your eyes."`
   - After Phase 5 (failed): `"The device sparks and whines, then falls silent. Something is missing."`
 
-- [ ] **4.14** Update `SuperNumber.Interact()` Day 6+ response in `src/core/items.py`:
+- [x] **4.14** Update `SuperNumber.Interact()` Day 6+ response in `src/core/items.py`:
   - If device has power-core: `"The power surges have stopped, at least. But if I hear one more complaint, I'm calling the city."`
   - If not: `"Things seem to have calmed down. Try to keep it that way."`
 
