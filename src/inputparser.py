@@ -141,6 +141,12 @@ def create_barricade_bedroom_command() -> BaseCommand:
 def create_read_journal_command() -> BaseCommand:
     return ReadJournalCommand()
 
+def create_let_go_command() -> BaseCommand:
+    return LetGoCommand()
+
+def create_hold_on_command() -> BaseCommand:
+    return HoldOnCommand()
+
 # Map commands to their factory functions
 COMMANDS: dict[str, Callable[..., BaseCommand]] = {
     "debug items": create_debug_items_command,
@@ -180,6 +186,8 @@ COMMANDS: dict[str, Callable[..., BaseCommand]] = {
     "remove crystal": create_remove_crystal_command,
     "barricade bedroom": create_barricade_bedroom_command,
     "read journal": create_read_journal_command,
+    "let go": create_let_go_command,
+    "hold on": create_hold_on_command,
     "undo": create_undo_command,
     "redo": create_redo_command
 }

@@ -1,0 +1,36 @@
+# Test: Victory Ending - Day 7 with components missing
+# Ponder enough to reach Day 7. AE lacks materials so device stays incomplete.
+# Game should display victory text and exit.
+
+# CHECK: You wake up in your apartment
+
+# Ponder 20 hours - will pass out, AE runs, wake up
+> ponder
+# CHECK: How many hours
+> 20
+# CHECK: You ponder
+
+# Keep pondering to advance days
+> ponder
+# CHECK: How many hours
+> 20
+
+> ponder
+# CHECK: How many hours
+> 20
+
+> ponder
+# CHECK: How many hours
+> 20
+
+> ponder
+# CHECK: How many hours
+> 20
+
+> ponder
+# CHECK: How many hours
+> 20
+
+# By now we should be past Day 7 (each cycle is ponder + sleep ~26 hours).
+# The victory ending should trigger.
+# CHECK: THE ANOMALY HAS CLOSED

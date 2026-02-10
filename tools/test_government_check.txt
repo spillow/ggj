@@ -1,18 +1,15 @@
 # Test government check delivery system
-# This test advances time to trigger the government check delivery
+# The government check arrives after 2 weeks of game time.
+# Since the game ends at Day 7, we ponder 336 hours to reach the delivery
+# and verify the check message appears before the ending triggers.
 
-# Advance time by pondering for enough hours to trigger the 2-week check
 > ponder
 # CHECK: hours?
 > 336
 # CHECK: I'm feeling very tired
 
-# Check if we received the government check (should see output when it's delivered)
+# After passout and wakeup, the government check delivery fires
 # CHECK: Government check in the mail!
 
-# Try to open cabinet and examine it
-> open cabinet
-# CHECK: The cabinet is now open
-
-> examine cabinet
-# CHECK: check
+# The game ends with victory since we're past Day 7
+# CHECK: THE ANOMALY HAS CLOSED

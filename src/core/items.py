@@ -554,11 +554,17 @@ class Journal(Object):
     @sameroom
     def Examine(self, hero: 'Hero') -> None:
         """
-        Display the journal description.
+        Display the journal description with finalized backstory text.
         """
         hero.io.output(
             "A worn leather journal. The pages are filled with your "
             "handwriting, though you don't remember writing most of it."
+        )
+        hero.io.output("")
+        hero.io.output(
+            "I don't remember when I stopped wanting to leave. "
+            "I don't remember when the door started feeling like a wall. "
+            "Was it always like this?"
         )
         hero.io.output("")
 

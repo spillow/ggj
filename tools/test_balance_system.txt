@@ -1,4 +1,5 @@
 # Test balance and money system
+# Verify starting balance and that spending money updates it.
 
 # CHECK: You wake up in your apartment.
 
@@ -11,38 +12,21 @@
 
 # CHECK: What do we do next?:
 
-# Wait for government check (14 days)
-> ponder
-> 336
+# Order something from hardware store to spend money
+> call phone
 
-# CHECK: Government check in the mail!
+# CHECK: What number?:
+> 592-2874
 
-# CHECK: What do we do next?:
+# CHECK: hardware store
 
-# Open cabinet to get check
-> open cabinet
+> duct-tape
 
-# CHECK: The cabinet is now open.
-
-# CHECK: What do we do next?:
-
-# Get the check
-> get check from cabinet
-
-# CHECK: Got it.
+# CHECK: Thanks!
 
 # CHECK: What do we do next?:
 
-# Mail the check
-> mail check
-
-# CHECK: Check is out.  Big money tomorrow!
-
-# CHECK: What do we do next?:
-
-# Check balance after mailing
+# Balance should be reduced by $3
 > balance
 
-# CHECK: Current Balance: $
-
-# CHECK: What do we do next?:
+# CHECK: Current Balance: $97

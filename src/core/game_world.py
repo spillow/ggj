@@ -65,7 +65,12 @@ class GameState:
 
         # Phase 4: Alter Ego AI
         self.device_activated: bool = False
-        
+
+        # Phase 5: Endings
+        self.game_over: bool = False
+        self.ending_type: str | None = None
+        self.in_dream_confrontation: bool = False
+
         # Initialize command pattern facilities
         self.command_invoker = CommandInvoker()
         self.command_history = CommandHistory()
@@ -124,15 +129,34 @@ class GameState:
     def Examine(self) -> None:
         """
         Check the hero's feel and handle passing out if necessary.
+        Checks secret ending conditions before AE runs, and defeat after.
         """
+        from ..endings import GameEndings
+
         if self.hero.feel <= 0:
             self.hero.feel = 0
             self.emit("I'm feeling very tired.  I'm going to pass out.....")
             for _ in range(5):
                 self.emit(".")
                 self.io.sleep(1)
+
+            # Check secret ending BEFORE AE runs
+            if GameEndings.check_secret_ending(self):
+                GameEndings.display_dream_confrontation(self.io)
+                self.in_dream_confrontation = True
+                self.hero.feel = self.hero.INITIAL_FEEL
+                return  # Don't run AE, wait for let go / hold on
+
             # Now run the alterego during his sleep
             self.alter_ego.run(self)
+
+            # Check defeat after AE runs
+            if self.device_activated:
+                GameEndings.display_defeat(self.io)
+                self.game_over = True
+                self.ending_type = "defeat"
+                return
+
             # Now that he is finished, reset
             self.hero.feel = self.hero.INITIAL_FEEL
             self.IntroPrompt()

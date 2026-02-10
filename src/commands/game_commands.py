@@ -1472,3 +1472,55 @@ class ReadJournalCommand(BaseCommand):
 
     def can_undo(self) -> bool:
         return False
+
+
+# Phase 5: Dream Confrontation Commands
+
+class LetGoCommand(BaseCommand):
+    """Command to let go during the dream confrontation (secret ending)."""
+
+    def __init__(self):
+        super().__init__("Let go")
+
+    def execute(self, game_state: "GameState") -> CommandResult:
+        """Trigger the secret ending if in dream confrontation."""
+        if not game_state.in_dream_confrontation:
+            return CommandResult(
+                success=False,
+                message="That doesn't make sense right now."
+            )
+        from ..endings import GameEndings
+        GameEndings.display_secret_ending(game_state.io)
+        game_state.in_dream_confrontation = False
+        game_state.game_over = True
+        game_state.ending_type = "secret"
+        self.mark_executed()
+        return CommandResult(success=True, message="")
+
+    def can_undo(self) -> bool:
+        return False
+
+
+class HoldOnCommand(BaseCommand):
+    """Command to hold on during the dream confrontation (resume normal play)."""
+
+    def __init__(self):
+        super().__init__("Hold on")
+
+    def execute(self, game_state: "GameState") -> CommandResult:
+        """Clear dream state and resume normal gameplay."""
+        if not game_state.in_dream_confrontation:
+            return CommandResult(
+                success=False,
+                message="That doesn't make sense right now."
+            )
+        game_state.in_dream_confrontation = False
+        game_state.hero.feel = game_state.hero.INITIAL_FEEL
+        game_state.io.output("You hold on. The darkness recedes. You wake up.")
+        game_state.io.output("")
+        game_state.IntroPrompt()
+        self.mark_executed()
+        return CommandResult(success=True, message="")
+
+    def can_undo(self) -> bool:
+        return False

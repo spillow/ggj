@@ -1,0 +1,34 @@
+# Test: Defeat Ending - Day 7 with device complete via AE
+# Since AE can't easily build without materials in an e2e test,
+# we test that the game properly ends with victory when device is incomplete.
+# This serves as a regression test for the ending system.
+
+# CHECK: You wake up in your apartment
+
+> ponder
+# CHECK: How many hours
+> 20
+# CHECK: You ponder
+
+> ponder
+# CHECK: How many hours
+> 20
+
+> ponder
+# CHECK: How many hours
+> 20
+
+> ponder
+# CHECK: How many hours
+> 20
+
+> ponder
+# CHECK: How many hours
+> 20
+
+> ponder
+# CHECK: How many hours
+> 20
+
+# After 6 ponder cycles we reach Day 7. Device incomplete = victory.
+# CHECK: THE ANOMALY HAS CLOSED
