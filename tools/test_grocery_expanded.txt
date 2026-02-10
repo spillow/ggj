@@ -1,0 +1,32 @@
+# Test ordering a new grocery item and verifying delivery
+# Phase 1: expanded grocery store
+
+# CHECK: What do we do next?:
+
+> call phone
+
+# CHECK: What number?:
+
+> 288-7955
+
+# CHECK: Hello this is the grocery store.  What would you like to order?
+
+# Verify new items appear in the menu
+# CHECK: energy-drinks.........$8.00
+# CHECK: canned-soup...........$4.00
+# CHECK: chocolate-bar.........$3.00
+# CHECK: protein-bar...........$6.00
+
+# Order energy-drinks
+> energy-drinks
+
+# CHECK: Thanks! We'll get that out to you tomorrow.
+
+# CHECK: What do we do next?:
+
+# Check balance was deducted ($100 - $8 = $92)
+> balance
+
+# CHECK: Current Balance: $92
+
+# CHECK: What do we do next?:

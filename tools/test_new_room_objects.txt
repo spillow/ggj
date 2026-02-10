@@ -1,0 +1,77 @@
+# Test bedroom and bathroom new objects
+# Phase 1: new room objects (bookshelf, journal, mirror, medicine-cabinet)
+
+# CHECK: What do we do next?:
+
+# Go to bedroom
+> go to bedroom
+
+# CHECK: You are now in the bedroom
+
+# CHECK: What do we do next?:
+
+# Inspect bedroom to see bookshelf
+> inspect room
+
+# CHECK: You look around the room.  You see:
+# CHECK: bookshelf
+
+# CHECK: What do we do next?:
+
+# Examine the bookshelf — shows journal inside
+> examine bookshelf
+
+# CHECK: bookshelf contains:
+# CHECK: journal
+
+# CHECK: What do we do next?:
+
+# Pick up the journal from the bookshelf
+> get journal from bookshelf
+
+# CHECK: What do we do next?:
+
+# Go to bathroom
+> go to bathroom
+
+# CHECK: You are now in the bathroom
+
+# CHECK: What do we do next?:
+
+# Inspect bathroom to see mirror and medicine-cabinet
+> inspect room
+
+# CHECK: You look around the room.  You see:
+# CHECK: medicine-cabinet
+# CHECK: mirror
+
+# CHECK: What do we do next?:
+
+# Examine the mirror
+> examine mirror
+
+# CHECK: You look in the mirror. You see yourself. You look tired.
+
+# CHECK: What do we do next?:
+
+# Medicine cabinet must be opened first
+> examine medicine-cabinet
+
+# CHECK: medicine-cabinet must be opened first.
+
+# CHECK: What do we do next?:
+
+# Open the medicine cabinet
+> open medicine-cabinet
+
+# CHECK: medicine-cabinet is now open.
+
+# CHECK: What do we do next?:
+
+# Now examine it
+> examine medicine-cabinet
+
+# CHECK: medicine-cabinet contains:
+# CHECK: aspirin
+
+# CHECK: What do we do next?:

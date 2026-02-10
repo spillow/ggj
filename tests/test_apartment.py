@@ -135,12 +135,13 @@ class TestApartment:
         phone = main_room.GetFirstItemByName("phone")
         
         assert phone.gamestate is self.state
-        assert len(phone.phone_numbers) == 3  # grocery, hardware, super
-        
+        assert len(phone.phone_numbers) == 4  # grocery, hardware, electronics, super
+
         # Check phone number names
         number_names = [pn.name for pn in phone.phone_numbers]
         assert "Grocery" in number_names
         assert "Hardware Store" in number_names
+        assert "Electronics Surplus" in number_names
         assert "The Super" in number_names
     
     def test_room_navigation_capability(self):
@@ -174,10 +175,12 @@ class TestApartment:
         assert hasattr(main_room, 'tv')
     
     def test_empty_rooms_structure(self):
-        """Test that other rooms are empty initially."""
-        # Bedroom, bathroom should be empty
-        assert len(self.apartment.bedroom.contents) == 0
-        assert len(self.apartment.bathroom.contents) == 0
+        """Test that closet is empty and bedroom/bathroom have expected objects."""
+        # Bedroom has bookshelf (which contains journal)
+        assert len(self.apartment.bedroom.contents) == 1  # bookshelf
+        # Bathroom has medicine-cabinet and mirror
+        assert len(self.apartment.bathroom.contents) == 2  # medicine-cabinet, mirror
+        # Closet should be empty
         assert len(self.apartment.closet.contents) == 0
     
     def test_apartment_object_access_patterns(self):

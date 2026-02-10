@@ -14,7 +14,7 @@
 
 # CHECK: You look around the room.  You see:
 
-# CHECK: Nothing!
+# CHECK: bookshelf
 
 # CHECK: What do we do next?:
 

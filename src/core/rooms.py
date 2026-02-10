@@ -14,7 +14,7 @@ from .game_objects import Container, Openable
 
 if TYPE_CHECKING:
     from .characters import Hero
-    from .items import Phone, TV
+    from .items import Journal, Mirror, Phone, TV
     from .game_world import GameState
 
 
@@ -84,6 +84,60 @@ class MainRoom(Room):
         pass
 
 
+class Bedroom(Room):
+    """
+    Represents the bedroom with a bookshelf containing a journal.
+    """
+    gamestate: 'GameState'
+    bookshelf: Container
+    journal: 'Journal'
+
+    def __init__(self, name: str, parent: Container | None, gamestate: 'GameState') -> None:
+        """
+        Initialize the bedroom with its objects.
+        """
+        super().__init__(name, parent)
+        self.gamestate = gamestate
+
+        from .items import Journal
+
+        self.bookshelf = Container("bookshelf", self)
+        self.journal = Journal(self.bookshelf)
+
+    def Interact(self) -> None:
+        """
+        Bedroom doesn't have special interactions.
+        """
+        pass
+
+
+class Bathroom(Room):
+    """
+    Represents the bathroom with a medicine cabinet and mirror.
+    """
+    medicine_cabinet: Openable
+    mirror: 'Mirror'
+
+    def __init__(self, name: str, parent: Container | None) -> None:
+        """
+        Initialize the bathroom with its objects.
+        """
+        super().__init__(name, parent)
+
+        from .items import Mirror
+        from .game_objects import Object
+
+        self.medicine_cabinet = Openable("medicine-cabinet", self)
+        self.mirror = Mirror(self)
+        Object("aspirin", self.medicine_cabinet)
+
+    def Interact(self) -> None:
+        """
+        Bathroom doesn't have special interactions.
+        """
+        pass
+
+
 class Closet(Room):
     """
     Represents a closet, which may be nailed shut.
@@ -129,8 +183,8 @@ class Apartment(Container):
     """
     gamestate: 'GameState'
     main: MainRoom
-    bedroom: Room
-    bathroom: Room
+    bedroom: Bedroom
+    bathroom: Bathroom
     closet: Closet
 
     def __init__(self, gamestate: 'GameState') -> None:
@@ -141,8 +195,8 @@ class Apartment(Container):
         self.gamestate = gamestate
 
         self.main = MainRoom("main", self, gamestate)
-        self.bedroom = Room("bedroom", self)
-        self.bathroom = Room("bathroom", self)
+        self.bedroom = Bedroom("bedroom", self, gamestate)
+        self.bathroom = Bathroom("bathroom", self)
         self.closet = Closet("closet", self)
 
     def Interact(self) -> None:

@@ -31,7 +31,7 @@
 
 # CHECK: Hello this is the grocery store.  What would you like to order?
 
-# CHECK: spicy-food.........$10.00
+# CHECK: spicy-food............$10.00
 
 # Order bananas (cheapest option)
 > bananas

@@ -11,10 +11,14 @@
 
 # CHECK: Hello this is the grocery store.  What would you like to order?
 
-# CHECK: spicy-food.........$10.00
-# CHECK-NEXT: caffeine...........$5.00
-# CHECK-NEXT: bananas............$2.00
-# CHECK-NEXT: ice-cubes..........$6.00
+# CHECK: spicy-food............$10.00
+# CHECK-NEXT: caffeine..............$5.00
+# CHECK-NEXT: bananas...............$2.00
+# CHECK-NEXT: ice-cubes.............$6.00
+# CHECK-NEXT: energy-drinks.........$8.00
+# CHECK-NEXT: canned-soup...........$4.00
+# CHECK-NEXT: chocolate-bar.........$3.00
+# CHECK-NEXT: protein-bar...........$6.00
 
 # Let's order something
 > spicy-food

@@ -1,0 +1,33 @@
+# Test ordering a new hardware item and verifying delivery
+# Phase 1: expanded hardware store
+
+# CHECK: What do we do next?:
+
+> call phone
+
+# CHECK: What number?:
+
+> 592-2874
+
+# CHECK: Hello this is the hardware store.  Hope we got what you're looking for!
+
+# Verify new items appear in the menu
+# CHECK: copper-wire
+# CHECK: metal-brackets
+# CHECK: soldering-iron
+# CHECK: duct-tape
+# CHECK: wire-cutters
+
+# Order duct-tape (cheapest new item, $3)
+> duct-tape
+
+# CHECK: Thanks! We'll get that out to you in a couple days.
+
+# CHECK: What do we do next?:
+
+# Check balance was deducted ($100 - $3 = $97)
+> balance
+
+# CHECK: Current Balance: $97
+
+# CHECK: What do we do next?:

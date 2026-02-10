@@ -146,7 +146,11 @@ class GroceryNumber(StoreNumber):
             "spicy-food": 10,
             "caffeine": 5,
             "bananas": 2,
-            "ice-cubes": 6
+            "ice-cubes": 6,
+            "energy-drinks": 8,
+            "canned-soup": 4,
+            "chocolate-bar": 3,
+            "protein-bar": 6
         }
         return foods
 
@@ -177,7 +181,11 @@ class GroceryNumber(StoreNumber):
             "spicy-food": 30,
             "caffeine": 20,
             "bananas": 5,
-            "ice-cubes": 2
+            "ice-cubes": 2,
+            "energy-drinks": 25,
+            "canned-soup": 10,
+            "chocolate-bar": 8,
+            "protein-bar": 15
         }
         return feel
 
@@ -209,7 +217,12 @@ class HardwareNumber(StoreNumber):
         hardware = {
             "hammer": 20,
             "box-of-nails": 5,
-            "plywood-sheet": 30
+            "plywood-sheet": 30,
+            "copper-wire": 15,
+            "metal-brackets": 10,
+            "soldering-iron": 25,
+            "duct-tape": 3,
+            "wire-cutters": 12
         }
         return hardware
 
@@ -249,6 +262,57 @@ class HardwareNumber(StoreNumber):
             Object(choice, location)
         if self.gamestate.event_queue is not None:
             self.gamestate.event_queue.AddEvent(purchase, two_days)
+
+
+class ElectronicsNumber(StoreNumber):
+    """
+    Phone number for the electronics surplus store.
+    """
+
+    def GetStoreItems(self) -> dict[str, int]:
+        """
+        Return available electronics items and their costs.
+        """
+        electronics = {
+            "vacuum-tubes": 20,
+            "crystal-oscillator": 35,
+            "copper-coil": 18,
+            "battery-pack": 12,
+            "signal-amplifier": 40,
+            "insulated-cable": 8
+        }
+        return electronics
+
+    def Greeting(self) -> None:
+        """
+        Print the electronics surplus store greeting.
+        """
+        self.gamestate.emit("Electronics Surplus. What do you need?")
+
+    def TimeWaste(self, choice: str) -> None:
+        """
+        Advance time by 5 minutes for electronics orders.
+        """
+        self.gamestate.watch.curr_time += timedelta(minutes=5)
+
+    def FeelChange(self) -> None:
+        """
+        Decrease hero's feel by 5 for electronics orders.
+        """
+        self.gamestate.hero.feel -= 5
+
+    def ScheduleOrder(self, choice: str) -> None:
+        """
+        Schedule the delivery of the ordered electronics item in three days.
+        """
+        emit = self.gamestate.emit
+        emit("We'll ship that out. Should arrive in about 3 days.")
+        three_days = self.gamestate.watch.curr_time + timedelta(days=3)
+
+        def purchase(_curr_time: datetime, _event_time: datetime) -> None:
+            Object(choice, self.gamestate.apartment.main.toolbox)
+        if self.gamestate.event_queue is not None:
+            self.gamestate.event_queue.AddEvent(purchase, three_days)
 
 
 class SuperNumber(PhoneNumber):
@@ -318,6 +382,7 @@ class Phone(Object):
         self.phone_numbers = [
             GroceryNumber("Grocery", "288-7955", gamestate),
             HardwareNumber("Hardware Store", "592-2874", gamestate),
+            ElectronicsNumber("Electronics Surplus", "743-8291", gamestate),
             SuperNumber("The Super", "198-2888", gamestate)
         ]
 
@@ -383,4 +448,63 @@ class Watch(Object):
         Display the current time.
         """
         hero.io.output(f"\nThe current time is {self.GetDateAsString()}")
+        hero.io.output("")
+
+
+class Journal(Object):
+    """
+    A worn leather journal found in the bedroom bookshelf.
+    Contains backstory text (finalized in Phase 5).
+    """
+
+    def __init__(self, parent: Container | None) -> None:
+        """
+        Initialize the journal as a lightweight, pickable object.
+        """
+        super().__init__("journal", parent)
+        self.weight = 1
+
+    def Interact(self) -> None:
+        """
+        Journal is examined rather than directly interacted with.
+        """
+        pass
+
+    @sameroom
+    def Examine(self, hero: 'Hero') -> None:
+        """
+        Display the journal description.
+        """
+        hero.io.output(
+            "A worn leather journal. The pages are filled with your "
+            "handwriting, though you don't remember writing most of it."
+        )
+        hero.io.output("")
+
+
+class Mirror(Object):
+    """
+    A bathroom mirror. Too heavy to pick up.
+    Phase 2 will add day-based AE flicker; Phase 3 will add mirror_seen flag.
+    """
+
+    def __init__(self, parent: Container | None) -> None:
+        """
+        Initialize the mirror as a heavy, non-pickable object.
+        """
+        super().__init__("mirror", parent)
+        self.weight = 1000
+
+    def Interact(self) -> None:
+        """
+        Mirror is examined rather than directly interacted with.
+        """
+        pass
+
+    @sameroom
+    def Examine(self, hero: 'Hero') -> None:
+        """
+        Display what the hero sees in the mirror.
+        """
+        hero.io.output("You look in the mirror. You see yourself. You look tired.")
         hero.io.output("")

@@ -64,7 +64,7 @@ The codebase uses pytest for automated testing with a comprehensive test suite c
 - State management and time progression
 - **Command Pattern implementation** (commands, invokers, history, macros)
 
-**Current Test Count**: 177+ unit tests covering all aspects of the game, including 29 Command Pattern tests
+**Current Test Count**: 236+ unit tests covering all aspects of the game, including 29 Command Pattern tests, 22 expanded inventory tests, and 22 room object tests
 
 #### End-to-End Testing
 ```bash
@@ -84,7 +84,7 @@ The project includes a **FileCheck-like tool** (`tools/filecheck.py`) for end-to
 - **Output Validation**: Whitespace-insensitive pattern matching
 - **Test Files**: Located in `tools/` directory with `.txt` extension
 
-**Current E2E Tests**: 27 comprehensive test files including:
+**Current E2E Tests**: 31 comprehensive test files including:
 - `test_basic.txt` - Basic game functionality
 - `test_comprehensive_start.txt` - Game startup and initial state
 - `test_fridge_food.txt` - Food system and eating mechanics
@@ -99,6 +99,10 @@ The project includes a **FileCheck-like tool** (`tools/filecheck.py`) for end-to
 - `test_tv_news.txt` - TV interaction and news display
 - `test_ice_bath.txt` - Ice bath command parsing and error handling
 - `test_ice_bath_success.txt` - Complete ice bath workflow testing
+- `test_grocery_expanded.txt` - Expanded grocery store ordering
+- `test_hardware_expanded.txt` - Expanded hardware store ordering
+- `test_electronics_store.txt` - Electronics Surplus store ordering
+- `test_new_room_objects.txt` - Bedroom/bathroom objects (bookshelf, journal, mirror, medicine-cabinet)
 
 #### Code Coverage
 
@@ -345,10 +349,11 @@ This is a text-based adventure game written in Python for Global Game Jam 2015. 
 
 - **Closet Nailing**: Player can nail themselves into the closet using hammer, nails, and plywood (both nails and plywood are consumed)
 - **Ice Bath**: Player can take an ice bath in the bathroom using ice cubes (+40 feel boost, +1 hour time, consumes ice cubes)
-- **Phone System**: Three numbers - grocery store (288-7955), hardware store (592-2874), and building super (198-2888)
+- **Phone System**: Four numbers - grocery store (288-7955), hardware store (592-2874), electronics surplus (743-8291), and building super (198-2888)
 - **TV News**: Shows astrophysics anomaly news when examined
-- **Food System**: Different foods provide different feel boosts (spicy-food: 30, caffeine: 20, bananas: 5, ice-cubes: 2)
-- **Hardware Items**: Hammer ($20), box-of-nails ($5), plywood-sheet ($30)
+- **Food System**: Different foods provide different feel boosts (spicy-food: 30, caffeine: 20, bananas: 5, ice-cubes: 2, energy-drinks: 25, canned-soup: 10, chocolate-bar: 8, protein-bar: 15)
+- **Hardware Items**: Hammer ($20), box-of-nails ($5), plywood-sheet ($30), copper-wire ($15), metal-brackets ($10), soldering-iron ($25), duct-tape ($3), wire-cutters ($12)
+- **Electronics Items**: Vacuum-tubes ($20), crystal-oscillator ($35), copper-coil ($18), battery-pack ($12), signal-amplifier ($40), insulated-cable ($8)
 
 ### State Management
 
@@ -374,17 +379,22 @@ All game objects maintain parent-child relationships for location tracking, and 
 - `Watch`: Extends Object, tracks current game time with GetDateAsString() method
 - `Phone`: Extends Object, handles phone calls with list of PhoneNumber objects
 - `TV`: Extends Object, displays news when examined
+- `Journal`: Extends Object, pickable (weight 1), found in bedroom bookshelf
+- `Mirror`: Extends Object, not pickable (weight 1000), found in bathroom
 
 **Specialized Rooms:**
 - `MainRoom`: Contains phone, toolbox, fridge, cabinet, table, tv
+- `Bedroom`: Contains bookshelf (with journal inside)
+- `Bathroom`: Contains medicine-cabinet (with aspirin), mirror
 - `Closet`: Can be nailed shut, prevents leaving when CLOSET_NAILED state
 - `Apartment`: Top-level container holding all rooms
 
 **Phone System:**
 - `PhoneNumber`: Base class for callable numbers
 - `StoreNumber`: Abstract base for stores with ordering logic
-- `GroceryNumber`: Grocery store with food items and next-day delivery
-- `HardwareNumber`: Hardware store with tools and 2-day delivery
+- `GroceryNumber`: Grocery store with 8 food items and next-day delivery
+- `HardwareNumber`: Hardware store with 8 items and 2-day delivery
+- `ElectronicsNumber`: Electronics surplus with 6 items and 3-day delivery
 - `SuperNumber`: Building super who never answers
 
 ## Testing Architecture & Design Principles
@@ -599,6 +609,8 @@ ggj/
 ├── tests/
 │   ├── __init__.py
 │   ├── test_command_pattern.py   # Command pattern tests (29 tests)
+│   ├── test_expanded_inventory.py # Expanded store and electronics tests (22 tests)
+│   ├── test_room_objects.py      # Bedroom/bathroom object tests (22 tests)
 │   ├── test_gamestate.py         # Game state tests
 │   ├── test_actions.py           # Action function tests
 │   ├── test_apartment.py         # Room and apartment tests
@@ -621,7 +633,11 @@ ggj/
     ├── test_room_navigation.txt  # Room movement test
     ├── test_time_pondering.txt   # Time system test
     ├── test_toolbox_exploration.txt # Container test
-    └── test_tv_news.txt          # TV interaction test
+    ├── test_tv_news.txt          # TV interaction test
+    ├── test_grocery_expanded.txt # Expanded grocery store test
+    ├── test_hardware_expanded.txt # Expanded hardware store test
+    ├── test_electronics_store.txt # Electronics surplus store test
+    └── test_new_room_objects.txt # Bedroom/bathroom objects test
 ```
 
 ## Coding Style
@@ -657,6 +673,17 @@ This project adheres to PEP-8 guidelines and requires type hints, with emphasis 
 - **Modular Refactoring**: Separated monolithic code into logical modules (core, logic, actions, commands)
 - **Enhanced Testing**: Added 29 comprehensive Command Pattern tests
 - **Python 3.13 Modernization**: Updated codebase to use latest Python features and best practices
+
+### Phase 1: Expanded Inventory and New Store (Complete)
+- **Grocery Store Expansion**: 4 new food items (energy-drinks, canned-soup, chocolate-bar, protein-bar) with prices and feel boosts
+- **Hardware Store Expansion**: 5 new items (copper-wire, metal-brackets, soldering-iron, duct-tape, wire-cutters)
+- **Electronics Surplus Store**: New store (743-8291) with 6 items (vacuum-tubes, crystal-oscillator, copper-coil, battery-pack, signal-amplifier, insulated-cable), 3-day delivery
+- **Bedroom Room**: New `Bedroom` class with bookshelf containing a pickable journal
+- **Bathroom Room**: New `Bathroom` class with medicine-cabinet (containing aspirin) and non-pickable mirror
+- **Journal**: Pickable object with placeholder backstory text (finalized in Phase 5)
+- **Mirror**: Non-pickable bathroom object (Phase 2 adds day-based flicker, Phase 3 adds mirror_seen flag)
+- **Debug Items**: `debug items` now also gives wire-cutters for testing
+- **Test Coverage**: 44 new unit tests (22 inventory + 22 room objects), 4 new E2E tests
 
 ### Bug Fixes
 - **Nail Consumption Fix**: Modified `nail_self_in` function in `src/actions.py:284` to consume both plywood and nails: `hero.Destroy([plywood, nails])`

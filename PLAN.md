@@ -44,16 +44,16 @@ None. Can be developed in parallel with Phase 2.
 
 ### TODO
 
-- [ ] **1.1** Add 4 new grocery items to `GroceryNumber` in `src/core/items.py`
+- [x] **1.1** Add 4 new grocery items to `GroceryNumber` in `src/core/items.py`
   - `GetStoreItems()` additions: `"energy-drinks": 8`, `"canned-soup": 4`, `"chocolate-bar": 3`, `"protein-bar": 6`
   - `FoodFeel()` additions: `"energy-drinks": 25`, `"canned-soup": 10`, `"chocolate-bar": 8`, `"protein-bar": 15`
   - No other method changes needed — delivery and feel mechanics work generically
 
-- [ ] **1.2** Add 5 new hardware items to `HardwareNumber` in `src/core/items.py`
+- [x] **1.2** Add 5 new hardware items to `HardwareNumber` in `src/core/items.py`
   - `GetStoreItems()` additions: `"copper-wire": 15`, `"metal-brackets": 10`, `"soldering-iron": 25`, `"duct-tape": 3`, `"wire-cutters": 12`
   - `ScheduleOrder()`: all new items follow the existing non-plywood path (delivered to `toolbox` — see line 247)
 
-- [ ] **1.3** Create `ElectronicsNumber(StoreNumber)` class in `src/core/items.py`
+- [x] **1.3** Create `ElectronicsNumber(StoreNumber)` class in `src/core/items.py`
   - Follow the `HardwareNumber` pattern (line 200)
   - `GetStoreItems()`: `{"vacuum-tubes": 20, "crystal-oscillator": 35, "copper-coil": 18, "battery-pack": 12, "signal-amplifier": 40, "insulated-cable": 8}`
   - `Greeting()`: `"Electronics Surplus. What do you need?"`
@@ -61,37 +61,37 @@ None. Can be developed in parallel with Phase 2.
   - `FeelChange()`: decrease feel by 5
   - `ScheduleOrder()`: deliver in 3 days to `toolbox`; message: `"We'll ship that out. Should arrive in about 3 days."`
 
-- [ ] **1.4** Register new store in `Phone.__init__()` in `src/core/items.py` (line 318)
+- [x] **1.4** Register new store in `Phone.__init__()` in `src/core/items.py` (line 318)
   - Add `ElectronicsNumber("Electronics Surplus", "743-8291", gamestate)` to `self.phone_numbers`
 
-- [ ] **1.5** Create `Bedroom(Room)` class in `src/core/rooms.py`
+- [x] **1.5** Create `Bedroom(Room)` class in `src/core/rooms.py`
   - Follow the `MainRoom` pattern (line 53)
   - Constructor creates `self.bookshelf = Container("bookshelf", self)`
   - Creates a `Journal` inside the bookshelf (see 1.7)
 
-- [ ] **1.6** Create `Bathroom(Room)` class in `src/core/rooms.py`
+- [x] **1.6** Create `Bathroom(Room)` class in `src/core/rooms.py`
   - Constructor creates `self.medicine_cabinet = Openable("medicine-cabinet", self)`
   - Creates `self.mirror = Mirror(self)` (see 1.8)
   - Optionally: `Object("aspirin", self.medicine_cabinet)`
 
-- [ ] **1.7** Create `Journal` class in `src/core/items.py`
+- [x] **1.7** Create `Journal` class in `src/core/items.py`
   - Extends `Object`, weight = 1 (pickable)
   - `@sameroom` decorated `Examine()` outputs placeholder text: `"A worn leather journal. The pages are filled with your handwriting, though you don't remember writing most of it."`
   - Phase 5 will add the full backstory text
 
-- [ ] **1.8** Create `Mirror` class in `src/core/items.py`
+- [x] **1.8** Create `Mirror` class in `src/core/items.py`
   - Extends `Object`, weight = 1000 (not pickable)
   - `@sameroom` decorated `Examine()` outputs: `"You look in the mirror. You see yourself. You look tired."`
   - Phase 2 will add day-based AE flicker; Phase 3 will add `mirror_seen` flag
 
-- [ ] **1.9** Update `Apartment.__init__()` in `src/core/rooms.py` (line 136)
+- [x] **1.9** Update `Apartment.__init__()` in `src/core/rooms.py` (line 136)
   - Change `self.bedroom = Room("bedroom", self)` → `self.bedroom = Bedroom("bedroom", self, gamestate)`
   - Change `self.bathroom = Room("bathroom", self)` → `self.bathroom = Bathroom("bathroom", self)`
   - Update type annotations: `bedroom: Bedroom`, `bathroom: Bathroom`
 
-- [ ] **1.10** Update legacy exports in `src/gamestate.py` `__all__` if new classes need to be importable externally
+- [x] **1.10** Update legacy exports in `src/gamestate.py` `__all__` if new classes need to be importable externally
 
-- [ ] **1.11** Update `debug_items` in `src/game_actions/utility_actions.py` to also give wire-cutters (for testing sabotage commands in Phase 3)
+- [x] **1.11** Update `debug_items` in `src/game_actions/utility_actions.py` to also give wire-cutters (for testing sabotage commands in Phase 3)
 
 ### Files Modified
 
@@ -141,13 +141,13 @@ None. Can be developed in parallel with Phase 2.
 
 ### Exit Criteria
 
-- [ ] All 177+ existing tests pass (zero regressions)
-- [ ] All 20+ new unit tests pass
-- [ ] All 4+ new e2e tests pass
-- [ ] `rolodex` shows 4 phone numbers including `Electronics Surplus: 743-8291`
-- [ ] All 8 grocery items, 8 hardware items, 6 electronics items visible in store menus
-- [ ] Bedroom has bookshelf containing journal; bathroom has medicine-cabinet and mirror
-- [ ] Combined test coverage ≥ 80%
+- [x] All 192 existing tests pass (zero regressions)
+- [x] All 44 new unit tests pass (22 inventory + 22 room objects)
+- [x] All 4 new e2e tests pass (grocery, hardware, electronics, room objects)
+- [x] `rolodex` shows 4 phone numbers including `Electronics Surplus: 743-8291`
+- [x] All 8 grocery items, 8 hardware items, 6 electronics items visible in store menus
+- [x] Bedroom has bookshelf containing journal; bathroom has medicine-cabinet and mirror
+- [x] Combined test coverage ≥ 80% (91% on actively-used modules)
 
 ---
 

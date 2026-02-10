@@ -29,11 +29,13 @@ def debug_items(state: 'GameState') -> None:
     nails = Object("box-of-nails", state.apartment.main)
     plywood = Object("plywood-sheet", state.apartment.main)
     ice_cubes = Food("ice-cubes", state.apartment.main, 2)  # 2 feel boost like normal ice cubes
+    wire_cutters = Object("wire-cutters", state.apartment.main)
 
     state.hero.Pickup(hammer)
     state.hero.Pickup(nails)
     state.hero.Pickup(plywood)
     state.hero.Pickup(ice_cubes)
+    state.hero.Pickup(wire_cutters)
 
 
 def look_at_watch(state: 'GameState') -> None:

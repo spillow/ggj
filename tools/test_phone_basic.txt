@@ -9,6 +9,7 @@
 
 # CHECK: Grocery: 288-7955
 # CHECK-NEXT: Hardware Store: 592-2874
+# CHECK-NEXT: Electronics Surplus: 743-8291
 # CHECK-NEXT: The Super: 198-2888
 
 # CHECK: What do we do next?:

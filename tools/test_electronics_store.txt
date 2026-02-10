@@ -1,0 +1,42 @@
+# Test calling the Electronics Surplus store and ordering an item
+# Phase 1: new electronics store
+
+# CHECK: What do we do next?:
+
+# First verify the new store appears in rolodex
+> rolodex
+
+# CHECK: Electronics Surplus: 743-8291
+
+# CHECK: What do we do next?:
+
+# Call the electronics store
+> call phone
+
+# CHECK: What number?:
+
+> 743-8291
+
+# CHECK: Electronics Surplus. What do you need?
+
+# Verify items appear in the menu
+# CHECK: vacuum-tubes
+# CHECK: crystal-oscillator
+# CHECK: copper-coil
+# CHECK: battery-pack
+# CHECK: signal-amplifier
+# CHECK: insulated-cable
+
+# Order a battery-pack ($12)
+> battery-pack
+
+# CHECK: We'll ship that out. Should arrive in about 3 days.
+
+# CHECK: What do we do next?:
+
+# Check balance was deducted ($100 - $12 = $88)
+> balance
+
+# CHECK: Current Balance: $88
+
+# CHECK: What do we do next?:
