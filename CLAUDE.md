@@ -64,7 +64,7 @@ The codebase uses pytest for automated testing with a comprehensive test suite c
 - State management and time progression
 - **Command Pattern implementation** (commands, invokers, history, macros)
 
-**Current Test Count**: 236+ unit tests covering all aspects of the game, including 29 Command Pattern tests, 22 expanded inventory tests, and 22 room object tests
+**Current Test Count**: 272+ unit tests covering all aspects of the game, including 29 Command Pattern tests, 22 expanded inventory tests, 22 room object tests, 12 day tracking tests, and 24 evolving world tests
 
 #### End-to-End Testing
 ```bash
@@ -84,7 +84,7 @@ The project includes a **FileCheck-like tool** (`tools/filecheck.py`) for end-to
 - **Output Validation**: Whitespace-insensitive pattern matching
 - **Test Files**: Located in `tools/` directory with `.txt` extension
 
-**Current E2E Tests**: 31 comprehensive test files including:
+**Current E2E Tests**: 34 comprehensive test files including:
 - `test_basic.txt` - Basic game functionality
 - `test_comprehensive_start.txt` - Game startup and initial state
 - `test_fridge_food.txt` - Food system and eating mechanics
@@ -103,6 +103,9 @@ The project includes a **FileCheck-like tool** (`tools/filecheck.py`) for end-to
 - `test_hardware_expanded.txt` - Expanded hardware store ordering
 - `test_electronics_store.txt` - Electronics Surplus store ordering
 - `test_new_room_objects.txt` - Bedroom/bathroom objects (bookshelf, journal, mirror, medicine-cabinet)
+- `test_tv_day1.txt` - Day 1 TV news verification (backward compat)
+- `test_day_tracking.txt` - Day tracking via ponder + watch + evolving TV news
+- `test_super_day4.txt` - Day 4 super phone response (answers with complaints)
 
 #### Code Coverage
 
@@ -141,8 +144,10 @@ uv run coverage erase && uv run coverage run -m pytest && uv run coverage run -a
 
 **Module Breakdown (Combined Coverage):**
 - **🟢 Excellent (100%)**: `inputparser.py` - command parsing fully tested
+- **🟢 Excellent (100%)**: `game_world.py` - game state and day tracking fully tested
 - **🟢 Excellent (95%)**: `actions.py` - game actions comprehensively covered
 - **🟢 Good (93%)**: `delivery.py` - event system well tested by e2e
+- **🟢 Good (91%)**: `items.py` - items, TV news, and super responses well covered
 - **🟢 Good (87%)**: `io_interface.py` - I/O abstractions mostly covered  
 - **🟢 Good (80%)**: `gamestate.py` - core game objects well exercised
 - **🟢 Good (77%)**: `gameloop.py` - main game loop tested via e2e
@@ -350,7 +355,9 @@ This is a text-based adventure game written in Python for Global Game Jam 2015. 
 - **Closet Nailing**: Player can nail themselves into the closet using hammer, nails, and plywood (both nails and plywood are consumed)
 - **Ice Bath**: Player can take an ice bath in the bathroom using ice cubes (+40 feel boost, +1 hour time, consumes ice cubes)
 - **Phone System**: Four numbers - grocery store (288-7955), hardware store (592-2874), electronics surplus (743-8291), and building super (198-2888)
-- **TV News**: Shows astrophysics anomaly news when examined
+- **TV News**: Shows day-appropriate astrophysics anomaly news when examined (7 unique broadcasts, Days 1-7, from STORY.md)
+- **Day Tracking**: `GameState.get_current_day()` computes current day from watch time (Day 1 = March 15, 1982)
+- **Building Super Evolution**: Days 1-3 no answer; Day 4 answers with tenant noise complaints; Day 5 power company threat; Day 6+ calmed down
 - **Food System**: Different foods provide different feel boosts (spicy-food: 30, caffeine: 20, bananas: 5, ice-cubes: 2, energy-drinks: 25, canned-soup: 10, chocolate-bar: 8, protein-bar: 15)
 - **Hardware Items**: Hammer ($20), box-of-nails ($5), plywood-sheet ($30), copper-wire ($15), metal-brackets ($10), soldering-iron ($25), duct-tape ($3), wire-cutters ($12)
 - **Electronics Items**: Vacuum-tubes ($20), crystal-oscillator ($35), copper-coil ($18), battery-pack ($12), signal-amplifier ($40), insulated-cable ($8)
@@ -378,7 +385,7 @@ All game objects maintain parent-child relationships for location tracking, and 
 - `Hero`: Extends Container, player character with feel, curr_balance, and Pickup() logic
 - `Watch`: Extends Object, tracks current game time with GetDateAsString() method
 - `Phone`: Extends Object, handles phone calls with list of PhoneNumber objects
-- `TV`: Extends Object, displays news when examined
+- `TV`: Extends Object, displays day-appropriate news when examined (accepts gamestate for day lookup)
 - `Journal`: Extends Object, pickable (weight 1), found in bedroom bookshelf
 - `Mirror`: Extends Object, not pickable (weight 1000), found in bathroom
 
@@ -395,7 +402,7 @@ All game objects maintain parent-child relationships for location tracking, and 
 - `GroceryNumber`: Grocery store with 8 food items and next-day delivery
 - `HardwareNumber`: Hardware store with 8 items and 2-day delivery
 - `ElectronicsNumber`: Electronics surplus with 6 items and 3-day delivery
-- `SuperNumber`: Building super who never answers
+- `SuperNumber`: Building super — Days 1-3 no answer, Day 4+ answers with evolving responses
 
 ## Testing Architecture & Design Principles
 
@@ -611,6 +618,8 @@ ggj/
 │   ├── test_command_pattern.py   # Command pattern tests (29 tests)
 │   ├── test_expanded_inventory.py # Expanded store and electronics tests (22 tests)
 │   ├── test_room_objects.py      # Bedroom/bathroom object tests (22 tests)
+│   ├── test_day_tracking.py     # Day computation tests (12 tests)
+│   ├── test_evolving_world.py   # TV news and super response tests (24 tests)
 │   ├── test_gamestate.py         # Game state tests
 │   ├── test_actions.py           # Action function tests
 │   ├── test_apartment.py         # Room and apartment tests
@@ -637,7 +646,10 @@ ggj/
     ├── test_grocery_expanded.txt # Expanded grocery store test
     ├── test_hardware_expanded.txt # Expanded hardware store test
     ├── test_electronics_store.txt # Electronics surplus store test
-    └── test_new_room_objects.txt # Bedroom/bathroom objects test
+    ├── test_new_room_objects.txt # Bedroom/bathroom objects test
+    ├── test_tv_day1.txt         # Day 1 TV news backward compat test
+    ├── test_day_tracking.txt    # Day tracking via ponder/watch/TV test
+    └── test_super_day4.txt      # Day 4 super phone response test
 ```
 
 ## Coding Style
@@ -684,6 +696,14 @@ This project adheres to PEP-8 guidelines and requires type hints, with emphasis 
 - **Mirror**: Non-pickable bathroom object (Phase 2 adds day-based flicker, Phase 3 adds mirror_seen flag)
 - **Debug Items**: `debug items` now also gives wire-cutters for testing
 - **Test Coverage**: 44 new unit tests (22 inventory + 22 room objects), 4 new E2E tests
+
+### Phase 2: Day Tracking and Evolving World (Complete)
+- **Day Tracking**: `GameState.get_current_day()` computes current day number from watch time (Day 1 = March 15, 1982, no cap)
+- **TV News Evolution**: 7 unique daily broadcasts (`TV_NEWS` dict) from STORY.md. Day 1 matches original text exactly. Days 8+ default to Day 7 message.
+- **TV Gamestate Integration**: `TV.__init__()` now accepts `gamestate` parameter; `TV.Examine()` uses `get_current_day()` for day-appropriate news
+- **Super Phone Evolution**: `SuperNumber.Interact()` now day-aware — Days 1-3 no answer (-30 feel, +20 min); Day 4+ answers with evolving responses (-10 feel, +5 min)
+- **Super Response Texts**: `SUPER_RESPONSES` dict with Day 4 (tenant complaints), Day 5 (power company threat), Day 6+ default (calmed down)
+- **Test Coverage**: 36 new unit tests (12 day tracking + 24 evolving world), 3 new E2E tests
 
 ### Bug Fixes
 - **Nail Consumption Fix**: Modified `nail_self_in` function in `src/actions.py:284` to consume both plywood and nails: `hero.Destroy([plywood, nails])`

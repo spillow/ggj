@@ -1,0 +1,38 @@
+# Test day tracking — verify watch shows advancing dates as we ponder
+# Also tests that TV news evolves to match the current day.
+
+# CHECK: You wake up in your apartment.
+
+# Game starts March 15, 1982 at 3:14 AM
+# CHECK: What do we do next?:
+
+> look at watch
+
+# CHECK: March 15, 1982
+
+# CHECK: What do we do next?:
+
+# Ponder 24 hours to advance to Day 2
+# Note: pondering 24h will cause feel to hit 0 (50 - 10*24 < 0)
+# and hero will pass out and wake up. The clock resets to 3:14 AM next day.
+> ponder
+
+# CHECK: How many hours?:
+> 24
+
+# CHECK: What do we do next?:
+
+> look at watch
+
+# CHECK: March 16, 1982
+
+# CHECK: What do we do next?:
+
+# Watch TV — should show Day 2 updated news
+> examine tv
+
+# CHECK: You turn on the tv.
+
+# CHECK: UPDATE: The anomaly has been confirmed to be growing
+
+# CHECK: What do we do next?:

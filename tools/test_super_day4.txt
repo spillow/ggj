@@ -1,0 +1,50 @@
+# Test calling the super on Day 4 — verifies the super answers with complaint text
+# Strategy: ponder enough hours to advance past Day 3 (March 18 = Day 4),
+# then call the super and verify the response.
+
+# CHECK: You wake up in your apartment.
+
+# CHECK: What do we do next?:
+
+# Advance a LOT of time — we need to get from March 15 3:14 AM to March 18
+# Each ponder of 24h will trigger a pass-out/wake cycle.
+> ponder
+
+# CHECK: How many hours?:
+> 24
+
+# Hero passes out and wakes up on March 16
+
+# CHECK: What do we do next?:
+
+> ponder
+
+# CHECK: How many hours?:
+> 24
+
+# Hero passes out and wakes up on March 17
+
+# CHECK: What do we do next?:
+
+> ponder
+
+# CHECK: How many hours?:
+> 24
+
+# Hero passes out and wakes up on March 18 = Day 4
+
+# CHECK: What do we do next?:
+
+# Now we should be on Day 4 (March 18). Call the super.
+> call phone
+
+# CHECK: What number?:
+> 198-2888
+
+# CHECK: Calling the super...
+# CHECK: ring...
+
+# Day 4: The super should answer
+# CHECK: other tenants have been complaining
+
+# CHECK: What do we do next?:

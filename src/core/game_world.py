@@ -7,6 +7,7 @@ Contains the main GameState class that orchestrates all game components.
 
 from __future__ import annotations
 
+from datetime import date
 from enum import IntEnum
 from typing import TYPE_CHECKING
 
@@ -64,6 +65,16 @@ class GameState:
         Set the event queue for scheduled events.
         """
         self.event_queue = queue
+
+    def get_current_day(self) -> int:
+        """
+        Return the current in-game day number.
+        Day 1 = March 15, 1982. Days > 7 return the actual day number (no cap).
+        Uses date-only comparison so time of day doesn't affect the result.
+        """
+        start_date = date(1982, 3, 15)
+        current_date = self.watch.curr_time.date()
+        return (current_date - start_date).days + 1
 
     def emit(self, s: str) -> None:
         """

@@ -315,36 +315,108 @@ class ElectronicsNumber(StoreNumber):
             self.gamestate.event_queue.AddEvent(purchase, three_days)
 
 
+# Day-specific responses when the building super answers (Day 4+)
+SUPER_RESPONSES: dict[int, str] = {
+    4: (
+        "Yeah? Oh, you. Listen, other tenants have been complaining about "
+        "noises from your apartment at night. Banging, drilling sounds. "
+        "And the electrical -- the whole building's been having power surges. "
+        "You know anything about that?"
+    ),
+    5: (
+        "Look, whatever you're doing up there, the power company is "
+        "threatening to cut the whole building's service. I've got half "
+        "a mind to come up there myself."
+    ),
+}
+
+# Default response for Day 6+ (used when no device-conditional logic applies)
+SUPER_DEFAULT_RESPONSE: str = "Things seem to have calmed down. Try to keep it that way."
+
+
 class SuperNumber(PhoneNumber):
     """
     Phone number for the building super.
+    Days 1-3: no answer (rings 3 times). Day 4+: answers with day-specific response.
     """
 
     def Interact(self) -> None:
         """
-        Simulate calling the super, who does not answer.
+        Simulate calling the super. Days 1-3 no answer; Day 4+ answers with
+        day-specific response and reduced feel/time penalties.
         """
+        day = self.gamestate.get_current_day()
+
         self.gamestate.io.output("Calling the super...")
         for _ in range(3):
             self.gamestate.io.output("ring...")
             self.gamestate.io.sleep(1)
 
-        self.gamestate.io.output("Okay, doesn't look like anybody is answering.")
+        if day < 4:
+            # Days 1-3: no answer (original behavior)
+            self.gamestate.io.output("Okay, doesn't look like anybody is answering.")
+            self.gamestate.hero.feel -= 30
+            self.gamestate.watch.curr_time += timedelta(minutes=20)
+        else:
+            # Day 4+: super answers
+            response = SUPER_RESPONSES.get(day, SUPER_DEFAULT_RESPONSE)
+            self.gamestate.io.output(response)
+            self.gamestate.hero.feel -= 10
+            self.gamestate.watch.curr_time += timedelta(minutes=5)
 
-        self.gamestate.hero.feel -= 30
-        self.gamestate.watch.curr_time += timedelta(minutes=20)
+
+# Day-specific TV news broadcasts from STORY.md
+TV_NEWS: dict[int, str] = {
+    1: (
+        "Breaking news: prominent astrophysicists have recently\n"
+        "discovered a strange anomaly in space.  The origins are not yet clear.\n"
+        "Stay tuned for further details."
+    ),
+    2: (
+        "UPDATE: The anomaly has been confirmed to be growing. Scientists "
+        "describe a 'spacetime distortion' of unknown origin. Localized "
+        "gravitational effects have been reported near observatories worldwide."
+    ),
+    3: (
+        "DEVELOPING: Gravitational disturbances now reported worldwide. "
+        "Emergency services placed on alert. Scientists say the anomaly "
+        "appears to be a 'rift' in the fabric of spacetime itself."
+    ),
+    4: (
+        "EMERGENCY BULLETIN: Localized reality distortions reported near "
+        "the anomaly's apparent origin point. Residents urged to remain "
+        "indoors. The rift appears to be destabilizing surrounding spacetime."
+    ),
+    5: (
+        "Scientists now predict the anomaly will collapse and close within "
+        "48 to 72 hours. 'The rift is healing itself,' says Dr. Hernandez "
+        "of the Jet Propulsion Laboratory. 'Spacetime wants to be whole.'"
+    ),
+    6: (
+        "The anomaly is visibly shrinking. Scientists are cautiously "
+        "optimistic. 'We expect full closure within 24 hours,' says the "
+        "lead researcher. Worldwide vigils continue."
+    ),
+    7: (
+        "THE ANOMALY HAS CLOSED. Scientists confirm the rift in spacetime "
+        "has sealed completely. The event is over. World leaders express "
+        "relief. Scientists warn that the cause remains unknown."
+    ),
+}
 
 
 class TV(Object):
     """
-    Represents a TV object that can be examined for news.
+    Represents a TV object that can be examined for day-appropriate news.
     """
+    gamestate: 'GameState'
 
-    def __init__(self, parent: Container | None) -> None:
+    def __init__(self, parent: Container | None, gamestate: 'GameState') -> None:
         """
-        Initialize the TV object.
+        Initialize the TV object with a reference to the game state.
         """
         super().__init__("tv", parent)
+        self.gamestate = gamestate
 
     def Interact(self) -> None:
         """
@@ -355,13 +427,14 @@ class TV(Object):
     @sameroom
     def Examine(self, hero: 'Hero') -> None:
         """
-        Display a news message when the TV is examined.
+        Display day-appropriate news when the TV is examined.
+        Days 1-7 show unique broadcasts. Days 8+ default to the Day 7 message.
         """
+        day = self.gamestate.get_current_day()
+        news = TV_NEWS.get(day, TV_NEWS[7])
         hero.io.output("You turn on the tv.")
         hero.io.output("")
-        hero.io.output("""Breaking news: prominent astrophysicists have recently
-discovered a strange anomaly in space.  The origins are not yet clear.
-Stay tuned for further details.""")
+        hero.io.output(news)
         hero.io.output("")
 
 

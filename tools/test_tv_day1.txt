@@ -1,0 +1,22 @@
+# Test watching TV on Day 1 — verifies Day 1 news is the original text
+
+# CHECK: You wake up in your apartment.
+
+# CHECK: What do we do next?:
+
+> examine tv
+
+# CHECK: You turn on the tv.
+
+# CHECK: Breaking news: prominent astrophysicists have recently
+
+# CHECK: What do we do next?:
+
+# Watch TV again using the watch command
+> watch tv
+
+# CHECK: You turn on the tv.
+
+# CHECK: Breaking news: prominent astrophysicists have recently
+
+# CHECK: What do we do next?:

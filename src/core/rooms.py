@@ -75,7 +75,7 @@ class MainRoom(Room):
         self.fridge = Openable("fridge", self)
         self.cabinet = Openable("cabinet", self)
         self.table = Container("table", self)
-        self.tv = TV(self)
+        self.tv = TV(self, gamestate)
 
     def Interact(self) -> None:
         """

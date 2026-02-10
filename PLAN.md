@@ -163,30 +163,30 @@ None. Can be developed in parallel with Phase 1.
 
 ### TODO
 
-- [ ] **2.1** Add `get_current_day() -> int` method to `GameState` in `src/core/game_world.py`
+- [x] **2.1** Add `get_current_day() -> int` method to `GameState` in `src/core/game_world.py`
   - `Day 1 = March 15, 1982`, `Day 7 = March 21, 1982`
   - Formula: `(self.watch.curr_time.date() - date(1982, 3, 15)).days + 1`
   - Days > 7 return actual day number (no cap)
 
-- [ ] **2.2** Define `TV_NEWS` dictionary as module-level constant in `src/core/items.py`
+- [x] **2.2** Define `TV_NEWS` dictionary as module-level constant in `src/core/items.py`
   - 7 entries keyed by day number, values are the broadcast strings from STORY.md
   - Default for days > 7: use the Day 7 message
 
-- [ ] **2.3** Modify `TV.__init__()` to accept `gamestate` parameter in `src/core/items.py` (line 274)
+- [x] **2.3** Modify `TV.__init__()` to accept `gamestate` parameter in `src/core/items.py` (line 274)
   - Store `self.gamestate = gamestate`
   - Update `MainRoom.__init__()` (line 78): change `TV(self)` to `TV(self, gamestate)`
 
-- [ ] **2.4** Modify `TV.Examine()` to use day-based news in `src/core/items.py`
+- [x] **2.4** Modify `TV.Examine()` to use day-based news in `src/core/items.py`
   - Look up `self.gamestate.get_current_day()` and display corresponding `TV_NEWS` entry
   - Keep the `"You turn on the tv."` preamble
   - **Important**: Day 1 message must match the existing text exactly so `tools/test_tv_news.txt` doesn't break
 
-- [ ] **2.5** Define `SUPER_RESPONSES` dictionary in `src/core/items.py`
+- [x] **2.5** Define `SUPER_RESPONSES` dictionary in `src/core/items.py`
   - Day 4: `"Yeah? Oh, you. Listen, other tenants have been complaining about noises from your apartment at night. Banging, drilling sounds. And the electrical -- the whole building's been having power surges. You know anything about that?"`
   - Day 5: `"Look, whatever you're doing up there, the power company is threatening to cut the whole building's service. I've got half a mind to come up there myself."`
   - Day 6+: `"Things seem to have calmed down. Try to keep it that way."` (default; Phase 4 can add device-conditional text later)
 
-- [ ] **2.6** Modify `SuperNumber.Interact()` in `src/core/items.py` (line 259)
+- [x] **2.6** Modify `SuperNumber.Interact()` in `src/core/items.py` (line 259)
   - Days 1-3: keep existing behavior (ring 3 times, no answer, -30 feel, +20 min)
   - Day 4+: super answers with day-specific response, still apply feel/time penalties (reduced: -10 feel, +5 min since they actually picked up)
 
@@ -229,13 +229,13 @@ None. Can be developed in parallel with Phase 1.
 
 ### Exit Criteria
 
-- [ ] All existing tests pass (zero regressions) — particularly `tools/test_tv_news.txt`
-- [ ] All 15+ new unit tests pass
-- [ ] All 3+ new e2e tests pass
-- [ ] `get_current_day()` correctly returns 1-7+ from watch time
-- [ ] TV shows 7 distinct day-appropriate broadcasts
-- [ ] Super has 3 response patterns (Days 1-3, Day 4, Day 5+)
-- [ ] Combined test coverage ≥ 80%
+- [x] All existing tests pass (zero regressions) — particularly `tools/test_tv_news.txt`
+- [x] All 36 new unit tests pass (12 day tracking + 24 evolving world)
+- [x] All 3 new e2e tests pass
+- [x] `get_current_day()` correctly returns 1-7+ from watch time
+- [x] TV shows 7 distinct day-appropriate broadcasts
+- [x] Super has 3 response patterns (Days 1-3, Day 4, Day 5+)
+- [x] Combined test coverage ≥ 80% (91% on actively-used modules)
 
 ---
 
