@@ -1,0 +1,25 @@
+# E2E test: AE closet trap
+# Nail self into closet, pass out, verify AE was trapped and phase didn't advance
+# Hero starts with feel=50. Nailing costs 20 feel (2 hours). Ponder 3 hours costs 30 feel.
+
+> debug items
+# CHECK: Got it
+> enter closet
+# CHECK: closet
+> nail self in
+# CHECK: nailed yourself into
+> ponder
+# CHECK: How many hours?
+> 3
+# CHECK: You ponder for 3 hours
+
+# Feel is now 0, should pass out and AE runs while trapped
+# CHECK: feeling very tired
+
+# AE should output splintering wood text (trapped in nailed closet)
+# CHECK: splintering wood
+
+# After waking up, verify no Phase 1 evidence (AE didn't advance)
+# CHECK: You wake up in your apartment
+# CHECK-NOT: phone is sitting off the hook
+# CHECK: toolbox

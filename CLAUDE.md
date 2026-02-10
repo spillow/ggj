@@ -64,7 +64,7 @@ The codebase uses pytest for automated testing with a comprehensive test suite c
 - State management and time progression
 - **Command Pattern implementation** (commands, invokers, history, macros)
 
-**Current Test Count**: 337+ unit tests covering all aspects of the game, including 29 Command Pattern tests, 22 expanded inventory tests, 22 room object tests, 12 day tracking tests, 24 evolving world tests, 25 device state tests, and 40 sabotage/investigation command tests
+**Current Test Count**: 397+ unit tests covering all aspects of the game, including 29 Command Pattern tests, 22 expanded inventory tests, 22 room object tests, 12 day tracking tests, 24 evolving world tests, 25 device state tests, 40 sabotage/investigation command tests, and 62 Alter Ego AI tests
 
 #### End-to-End Testing
 ```bash
@@ -84,7 +84,7 @@ The project includes a **FileCheck-like tool** (`tools/filecheck.py`) for end-to
 - **Output Validation**: Whitespace-insensitive pattern matching
 - **Test Files**: Located in `tools/` directory with `.txt` extension
 
-**Current E2E Tests**: 37 comprehensive test files including:
+**Current E2E Tests**: 40 comprehensive test files including:
 - `test_basic.txt` - Basic game functionality
 - `test_comprehensive_start.txt` - Game startup and initial state
 - `test_fridge_food.txt` - Food system and eating mechanics
@@ -109,6 +109,9 @@ The project includes a **FileCheck-like tool** (`tools/filecheck.py`) for end-to
 - `test_read_journal.txt` - Read journal command in bedroom (Phase 3)
 - `test_barricade_bedroom.txt` - Barricade bedroom with debug items (Phase 3)
 - `test_sabotage_device.txt` - Sabotage flow: journal + barricade (Phase 3)
+- `test_ae_phase1.txt` - AE Phase 1 evidence after passing out (Phase 4)
+- `test_ae_closet_trap.txt` - AE closet trap wastes turn (Phase 4)
+- `test_ae_resource_denial.txt` - AE resource denial with empty funds (Phase 4)
 
 #### Code Coverage
 
@@ -142,19 +145,25 @@ uv run coverage erase && uv run coverage run -m pytest && uv run coverage run -a
 ```
 
 **Coverage Analysis:**
-- **Unit Tests Only**: 73% statement coverage 
-- **Combined (Unit + E2E)**: 91% statement coverage ⭐
+- **Combined (Unit + E2E)**: 85% statement coverage on actively-used modules (77% including unused scaffolding in `logic/` and `time_system.py`)
 
 **Module Breakdown (Combined Coverage):**
+- **🟢 Excellent (100%)**: `alterego.py` - full 5-phase AE AI comprehensively tested
 - **🟢 Excellent (100%)**: `inputparser.py` - command parsing fully tested
-- **🟢 Excellent (100%)**: `game_world.py` - game state and day tracking fully tested
-- **🟢 Excellent (95%)**: `actions.py` - game actions comprehensively covered
-- **🟢 Good (93%)**: `delivery.py` - event system well tested by e2e
-- **🟢 Good (91%)**: `items.py` - items, TV news, and super responses well covered
-- **🟢 Good (87%)**: `io_interface.py` - I/O abstractions mostly covered  
-- **🟢 Good (80%)**: `gamestate.py` - core game objects well exercised
-- **🟢 Good (77%)**: `gameloop.py` - main game loop tested via e2e
-- **🟠 Fair (80%)**: `alterego.py` - placeholder system (1 line missing)
+- **🟢 Excellent (100%)**: `game_world.py` - game state, day tracking, evidence text fully tested
+- **🟢 Excellent (100%)**: `actions.py` - game actions comprehensively covered
+- **🟢 Excellent (100%)**: `delivery.py` - event system fully tested
+- **🟢 Excellent (100%)**: `device_state.py` - device component tracking fully tested
+- **🟢 Excellent (100%)**: `utility_actions.py` - debug items, ponder, balance, feel fully tested
+- **🟢 Excellent (100%)**: `movement_actions.py` - room navigation fully tested
+- **🟢 Good (97%)**: `gameloop.py` - main game loop tested via e2e
+- **🟢 Good (94%)**: `game_objects.py` - core object model well covered
+- **🟢 Good (92%)**: `items.py` - items, TV news, super responses, mirror, journal well covered
+- **🟢 Good (92%)**: `rooms.py` - room hierarchy and apartment well covered
+- **🟢 Good (87%)**: `io_interface.py` - I/O abstractions mostly covered
+- **🟢 Good (85%)**: `inputparser.py` - command parsing well covered
+- **🟢 Good (84%)**: `characters.py` - hero and character classes well covered
+- **🟢 Good (81%)**: `game_commands.py` - 709 statements, extensive command coverage
 
 **Key Insight**: E2E tests dramatically improve coverage by exercising the full game loop and real user interactions that unit tests miss.
 
@@ -347,7 +356,8 @@ This is a text-based adventure game written in Python for Global Game Jam 2015. 
 
 ### Key Game Mechanics
 
-- **Feel System**: Player energy that decreases over time, causes passing out at 0, restored by eating or ice baths
+- **Feel System**: Player energy that decreases over time, causes passing out at 0 (triggering AE run), restored by eating or ice baths
+- **Alter Ego System**: 5-phase AI that runs when hero passes out — orders materials, builds device components, countered by closet trap and barricade
 - **Money System**: Player has $100 starting balance, can order items by phone with costs deducted
 - **Time System**: All actions advance time, some significantly (pondering, phone calls, ice baths)
 - **Inventory**: Weight-based system, hero can carry up to 100 weight units
@@ -374,6 +384,11 @@ This is a text-based adventure game written in Python for Global Game Jam 2015. 
 - **Sabotage System** (Phase 3): 4 commands to dismantle device components: `disassemble frame`, `cut wires`, `remove battery`, `remove crystal`; all require being in bedroom with component BUILT
 - **Barricade System** (Phase 3): `barricade bedroom` consumes plywood + nails (keeps hammer), sets `bedroom_barricaded` flag; must NOT be inside bedroom
 - **Device State** (Phase 3): `DeviceState` tracks 5 components as BUILT/MISSING; AE builds them, player sabotages them
+- **Alter Ego AI** (Phase 4): 5-phase construction AI runs during sleep — orders materials, builds device components, checked by closet trap and barricade
+- **AE Phases** (Phase 4): Phase 1 (Surveying) orders copper-wire/metal-brackets/vacuum-tubes/battery-pack; Phase 2 (Frame) builds device-frame; Phase 3 (Wiring) builds wiring-harness; Phase 4 (Power Core) builds power-core + focusing-array; Phase 5 (Activation) installs convergence-device
+- **Evidence System** (Phase 4): Wake-up text changes based on AE phase progress — phone off hook, sawdust, solder burns, lights flicker, device sparks
+- **Closet Trap** (Phase 4): Nailing into closet before sleeping wastes AE's turn — phase doesn't advance, closet resets to READY
+- **Barricade Counter** (Phase 4): Barricading bedroom wastes AE's turn — phase doesn't advance, barricade cleared
 - **Food System**: Different foods provide different feel boosts (spicy-food: 30, caffeine: 20, bananas: 5, ice-cubes: 2, energy-drinks: 25, canned-soup: 10, chocolate-bar: 8, protein-bar: 15)
 - **Hardware Items**: Hammer ($20), box-of-nails ($5), plywood-sheet ($30), copper-wire ($15), metal-brackets ($10), soldering-iron ($25), duct-tape ($3), wire-cutters ($12)
 - **Electronics Items**: Vacuum-tubes ($20), crystal-oscillator ($35), copper-coil ($18), battery-pack ($12), signal-amplifier ($40), insulated-cable ($8)
@@ -385,12 +400,13 @@ The game uses a centralized `GameState` object that contains:
 - `hero`: Player character with stats and inventory
 - `watch`: Time tracking object (Watch class)
 - `event_queue`: Scheduled events system (EventQueue class)
-- `alterEgo`: AlterEgo system (currently unused)
+- `alter_ego`: AlterEgo 5-phase AI system (runs during sleep when feel <= 0)
 - `io`: IOInterface for all input/output operations
 - `device_state`: DeviceState tracking 5 Convergence Amplifier components (Phase 3)
 - `journal_read`: Boolean flag, True after player reads the journal (Phase 3)
 - `mirror_seen`: Boolean flag, True after mirror shows AE flicker on Day 4+ (Phase 3)
 - `bedroom_barricaded`: Boolean flag, True after player barricades bedroom (Phase 3)
+- `device_activated`: Boolean flag, True when AE completes all 5 device components (Phase 4)
 
 All game objects maintain parent-child relationships for location tracking, and the `@sameroom` decorator ensures actions only work when the player is in the same room as objects.
 
@@ -481,7 +497,7 @@ def some_method(self):
 - `tests/test_inputparser.py`: Command parsing system
 - `tests/test_delivery.py`: Event queue system
 - `tests/test_gameloop.py`: Main game loop functionality
-- `tests/test_alterego.py`: AlterEgo system (placeholder)
+- `tests/test_alterego.py`: AlterEgo 5-phase AI system (62 tests)
 - **`tests/test_command_pattern.py`: Command pattern implementation (29 tests)**
 
 **Test Fixtures**: Each test gets fresh instances to prevent test pollution:
@@ -632,7 +648,7 @@ ggj/
 │   ├── inputparser.py     # Command parsing
 │   ├── io_interface.py    # I/O abstraction
 │   ├── delivery.py        # Event system
-│   └── alterego.py        # AlterEgo system (placeholder)
+│   └── alterego.py        # AlterEgo 5-phase AI system
 ├── tests/
 │   ├── __init__.py
 │   ├── test_command_pattern.py   # Command pattern tests (29 tests)
@@ -669,7 +685,10 @@ ggj/
     ├── test_new_room_objects.txt # Bedroom/bathroom objects test
     ├── test_tv_day1.txt         # Day 1 TV news backward compat test
     ├── test_day_tracking.txt    # Day tracking via ponder/watch/TV test
-    └── test_super_day4.txt      # Day 4 super phone response test
+    ├── test_super_day4.txt      # Day 4 super phone response test
+    ├── test_ae_phase1.txt       # AE Phase 1 evidence after sleep test
+    ├── test_ae_closet_trap.txt  # AE closet trap wastes turn test
+    └── test_ae_resource_denial.txt # AE resource denial test
 ```
 
 ## Coding Style
@@ -724,6 +743,18 @@ This project adheres to PEP-8 guidelines and requires type hints, with emphasis 
 - **Super Phone Evolution**: `SuperNumber.Interact()` now day-aware — Days 1-3 no answer (-30 feel, +20 min); Day 4+ answers with evolving responses (-10 feel, +5 min)
 - **Super Response Texts**: `SUPER_RESPONSES` dict with Day 4 (tenant complaints), Day 5 (power company threat), Day 6+ default (calmed down)
 - **Test Coverage**: 36 new unit tests (12 day tracking + 24 evolving world), 3 new E2E tests
+
+### Phase 4: Alter Ego AI (Complete)
+- **AlterEgo Rewrite**: Full 5-phase AI in `src/alterego.py` — Surveying, Frame, Wiring, Power Core, Activation
+- **Phase Logic**: Each phase checks for materials in apartment, orders from stores, builds device components when materials available
+- **Resource System**: AE deducts money from hero's balance, schedules deliveries via event queue, materials delivered to toolbox
+- **Closet Trap**: If hero nails into closet before sleeping, AE wastes turn (phase doesn't advance), closet resets to READY
+- **Barricade Counter**: If bedroom is barricaded, AE wastes turn clearing it (phase doesn't advance), flag cleared
+- **Evidence System**: `IntroPrompt()` shows phase-specific wake-up text (phone off hook, sawdust, solder burns, lights flicker, device sparks)
+- **Device Activation**: `device_activated` flag set only when all 5 components BUILT after Phase 5
+- **Super Day 6+ Conditional**: If power-core built, super mentions power surges stopped
+- **Item Search**: `_find_item_in_apartment()` recursively searches all rooms, containers, and hero inventory
+- **Test Coverage**: 62 new unit tests, 3 new E2E tests (ae_phase1, ae_closet_trap, ae_resource_denial)
 
 ### Bug Fixes
 - **Nail Consumption Fix**: Modified `nail_self_in` function in `src/actions.py:284` to consume both plywood and nails: `hero.Destroy([plywood, nails])`

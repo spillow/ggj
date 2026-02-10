@@ -1,0 +1,45 @@
+# E2E test: AE resource denial
+# Spend all money before passing out, verify AE couldn't order materials
+# Hero starts with $100 and feel=50
+
+# Order expensive items to drain money
+> call phone
+# CHECK: What number
+> 743-8291
+# CHECK: Electronics Surplus
+> signal-amplifier
+# CHECK: ship that out
+# balance is now $60
+
+> call phone
+# CHECK: What number
+> 743-8291
+# CHECK: Electronics Surplus
+> crystal-oscillator
+# CHECK: ship that out
+# balance is now $25
+
+> call phone
+# CHECK: What number
+> 743-8291
+# CHECK: Electronics Surplus
+> vacuum-tubes
+# CHECK: ship that out
+# balance is now $5
+
+# Now hero has $5 — not enough for any AE Phase 1 order (cheapest is $10)
+# Ponder to pass out. Feel started at 50, phone calls cost time but not feel directly
+# Actually phone calls cost feel. Let me just ponder a lot.
+> ponder
+# CHECK: How many hours?
+> 5
+# CHECK: You ponder for 5 hours
+
+# Feel is now 0 or below, should pass out
+# CHECK: feeling very tired
+
+# AE runs Phase 1 but can't afford anything ($5 left, cheapest order is $10)
+# After waking, Phase 1 evidence still shows (AE advanced phase but couldn't order)
+# CHECK: You wake up in your apartment
+# CHECK: phone is sitting off the hook
+# CHECK: toolbox

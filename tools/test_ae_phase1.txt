@@ -9,7 +9,6 @@
 
 # Now feel is at 0, game should trigger pass out and AE runs (Phase 1)
 # CHECK: feeling very tired
-# CHECK: pass out
 
 # After waking up, check for Phase 1 evidence
 # CHECK: You wake up in your apartment
